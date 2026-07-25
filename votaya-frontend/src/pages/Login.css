@@ -11,8 +11,8 @@
   background-color: #ffffff;
   border-radius: 16px;
   padding: 40px 32px;
-  box-shadow: 0 4px 30px #B5C2FF;
   text-align: center;
+  box-shadow: 0 20px 6px #B5C2FF;
 }
 
 .LoginTitulo {
@@ -99,7 +99,6 @@ input::placeholder {
   margin: 0;
 }
 
-/* Icono superior (logo) */
 .loginIconoTop {
   width: 64px;
   height: 64px;

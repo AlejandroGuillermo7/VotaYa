@@ -8,19 +8,36 @@ function Login({ onLoginExitoso }) {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
+  const [erroresCampos, setErroresCampos] = useState({});
   const [cargando, setCargando] = useState(false);
 
   function validarCampos() {
     const formato = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let nuevosErrores = {};
+
+    if (correo.trim() === "") nuevosErrores.correo = true;
+    if (contraseña.trim() === "") nuevosErrores.contraseña = true;
 
     if (correo.trim() === "" || contraseña.trim() === "") {
-      setError("Complete el correo y la contraseña.");
+      setError("Complete todos los campos requeridos.");
+      setErroresCampos(nuevosErrores);
       return false;
     }
+
     if (!formato.test(correo)) {
       setError("Ingresa un correo electrónico válido, ej: user@correo.com");
+      setErroresCampos({ correo: true });
       return false;
     }
+
+  
+    if (contraseña.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      setErroresCampos({ contraseña: true });
+      return false;
+    }
+
+    setErroresCampos({});
     return true;
   }
 
@@ -32,15 +49,21 @@ function Login({ onLoginExitoso }) {
 
     setCargando(true);
     try {
-      /*
-       * Aqui agregaremos lo que traigamos del backend
-       */
+      console.log("Datos", { correo, contraseña });
+      if (onLoginExitoso) onLoginExitoso();
     } catch (err) {
       setError(err.message);
     } finally {
       setCargando(false);
     }
   }
+
+  const limpiarError = (campo) => {
+    if (error) setError("");
+    if (erroresCampos[campo]) {
+      setErroresCampos((prev) => ({ ...prev, [campo]: false }));
+    }
+  };
 
   return (
     <div className="loginFondo">
@@ -51,27 +74,28 @@ function Login({ onLoginExitoso }) {
         <h2 className="LoginTitulo">Inicia sesión para continuar.</h2>
 
         <form onSubmit={enviar}>
+          {/* CORREO */}
           <div className="loginCampo">
             <label htmlFor="correo">Correo Electrónico</label>
-            <div className="loginInputConIcono">
+            <div className={`loginInputConIcono ${erroresCampos.correo ? "campo-error" : ""}`}>
               <img src={iconEmail} alt="" className="loginIcono" />
               <input
                 type="email"
-                name="email"
                 id="correo"
                 value={correo}
                 placeholder="nombre@correo.com"
                 onChange={(e) => {
                   setCorreo(e.target.value);
-                  if (error) setError("");
+                  limpiarError("correo");
                 }}
               />
             </div>
           </div>
 
+          
           <div className="loginCampo">
             <label htmlFor="contraseña">Contraseña</label>
-            <div className="loginInputConIcono">
+            <div className={`loginInputConIcono ${erroresCampos.contraseña ? "campo-error" : ""}`}>
               <img src={iconPassword} alt="" className="loginIcono" />
               <input
                 type="password"
@@ -80,19 +104,22 @@ function Login({ onLoginExitoso }) {
                 placeholder="********"
                 onChange={(e) => {
                   setContraseña(e.target.value);
-                  if (error) setError("");
+                  limpiarError("contraseña");
                 }}
               />
             </div>
           </div>
+
           <p className="loginContraseña">¿Olvidaste tu contraseña?</p>
           {error && <p className="loginError">{error}</p>}
+
           <button type="submit" className="loginBoton" disabled={cargando}>
-            {cargando ? "Entrando" : "Entrar"}
+            {cargando ? "Entrando..." : "Entrar"}
           </button>
+
           <div className="loginRegistrate">
             <label>¿No tienes cuenta?</label>
-            <p className="registrate">Registrate</p>
+            <p className="registrate">Regístrate</p>
           </div>
         </form>
       </div>
