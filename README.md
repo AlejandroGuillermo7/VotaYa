@@ -26,8 +26,6 @@ Actualmente muchas votaciones se realizan mediante formularios o métodos manual
 
 VotaYa busca ofrecer una solución donde las votaciones sean más seguras y organizadas, evitando votos duplicados, permitiendo controlar quién puede participar y mostrando los resultados de manera clara mediante estadísticas y gráficas.
 
-
-
 ## 2. Módulos principales
 
 ### Usuario
