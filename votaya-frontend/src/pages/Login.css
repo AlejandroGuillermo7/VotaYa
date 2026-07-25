@@ -1,0 +1,135 @@
+.loginFondo {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+}
+
+.loginCard {
+  width: 380px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 40px 32px;
+  box-shadow: 0 4px 30px #B5C2FF;
+  text-align: center;
+}
+
+.LoginTitulo {
+  color: #1D6FE0;
+  font-size: 15px;
+  font-weight: 400;
+  text-decoration: none;
+  margin: 0 0 24px;
+  
+}
+
+.loginCampo {
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.loginCampo label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #0F3D66;
+  margin-bottom: 6px;
+}
+
+input::placeholder {
+  color: #9AAFC2;
+}
+
+.loginCampo input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #D6E0EA;
+  border-radius: 8px;
+  background-color: #F4F7FB;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.loginError {
+  color: #c0392b;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.loginContraseña {
+  color: #1D6FE0;
+  font-size: 13px;
+  text-align: center;
+  margin: 8px 0 20px;
+  cursor: pointer;
+}
+
+.loginBoton {
+  width: 100%;
+  height: 46px;
+  background-color: #1D6FE0;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.loginBoton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loginRegistrate {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: #5C7A99;
+}
+
+.registrate {
+  color: #1D6FE0;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Icono superior (logo) */
+.loginIconoTop {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.loginIconoTopImg {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.loginInputConIcono {
+  position: relative;
+}
+
+.loginIcono {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  filter: invert(59%) sepia(4%) saturate(383%) hue-rotate(11deg) brightness(89%) contrast(87%);
+  pointer-events: none;
+}
+
+.loginInputConIcono input {
+  padding-left: 36px;
+}
