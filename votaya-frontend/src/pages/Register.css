@@ -1,0 +1,213 @@
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.registerFondo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.registerCarta {
+  position: relative;
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+  box-shadow: 0 0 20px #B5C2FF;
+}
+
+.register-close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 20px;
+  cursor: pointer;
+  color: #666;
+}
+
+.register-logo img {
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.registerCarta h2 {
+  margin: 0;
+  color: #1e3a8a;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.subtitulo {
+  font-size: 0.85rem;
+  color: #64748b;
+  display: block;
+  margin-top: 4px;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 15px 0;
+}
+
+
+.registerCampo {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.registerCampo label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 4px;
+}
+
+.register-row {
+  display: flex;
+  gap: 10px;
+}
+
+.register-row .registerCampo {
+  flex: 1;
+}
+
+
+.register-icon-input {
+  display: flex;
+  align-items: center;
+  background-color: #e2e8f0; 
+  border-radius: 8px;
+  padding: 0 12px;
+  height: 38px;
+  width: 100%;
+}
+
+.RegisterIcono {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  flex-shrink: 0; 
+}
+
+
+.register-icon-input input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.opciones-participar {
+  display: flex;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.opcion-card {
+  flex: 1;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+}
+
+.opcion-card img {
+  width: 28px;
+  height: 28px;
+  margin-bottom: 4px;
+}
+
+.opcion-titulo {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e3a8a;
+}
+
+.opcion-sub {
+  font-size: 0.68rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.opcion-card:hover {
+  border-color: #2563eb;
+}
+
+.opcion-card.activa {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.registerError {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin: 8px 0;
+}
+
+.campo-error {
+  border: 1.5px solid #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
+.campo-error-opciones {
+  border: 1.5px solid #ef4444;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.loginBoton {
+  width: 100%;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.loginBoton:hover {
+  background-color: #1d4ed8;
+}
+
+.loginBoton:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
+}
+
+.loginRegistrate {
+  font-size: 0.78rem;
+  margin-top: 12px;
+  color: #64748b;
+}
+
+.iniciarsesion {
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.iniciarsesion:hover {
+  text-decoration: underline;
+}
