@@ -1,27 +1,25 @@
 const URL_API = (
-  import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
-).replace(/\/$/, '');
+  import.meta.env.VITE_API_URL || "http://localhost:8080/api"
+).replace(/\/$/, "");
 
-const URL_SERVIDOR = URL_API.replace(/\/api$/, '');
+const URL_SERVIDOR = URL_API.replace(/\/api$/, "");
 
 export function obtenerToken() {
-  return localStorage.getItem('token');
+  return localStorage.getItem("token");
 }
 
 export function resolverUrlArchivo(ruta) {
-  if (!ruta) {
-    return null;
-  }
+  if (!ruta) return null;
 
   if (
-    ruta.startsWith('http://') ||
-    ruta.startsWith('https://') ||
-    ruta.startsWith('data:')
+    ruta.startsWith("http://") ||
+    ruta.startsWith("https://") ||
+    ruta.startsWith("data:")
   ) {
     return ruta;
   }
 
-  return `${URL_SERVIDOR}${ruta.startsWith('/') ? '' : '/'}${ruta}`;
+  return `${URL_SERVIDOR}${ruta.startsWith("/") ? "" : "/"}${ruta}`;
 }
 
 export async function peticionApi(ruta, opciones = {}) {
@@ -29,15 +27,15 @@ export async function peticionApi(ruta, opciones = {}) {
   const encabezados = new Headers(opciones.headers || {});
 
   if (token) {
-    encabezados.set('Authorization', `Bearer ${token}`);
+    encabezados.set("Authorization", `Bearer ${token}`);
   }
 
   if (
     opciones.body &&
     !(opciones.body instanceof FormData) &&
-    !encabezados.has('Content-Type')
+    !encabezados.has("Content-Type")
   ) {
-    encabezados.set('Content-Type', 'application/json');
+    encabezados.set("Content-Type", "application/json");
   }
 
   const respuesta = await fetch(`${URL_API}${ruta}`, {
@@ -48,20 +46,20 @@ export async function peticionApi(ruta, opciones = {}) {
   let datos = null;
 
   if (respuesta.status !== 204) {
-    const tipoContenido = respuesta.headers.get('content-type');
+    const tipoContenido = respuesta.headers.get("content-type");
 
-    datos = tipoContenido?.includes('application/json')
+    datos = tipoContenido?.includes("application/json")
       ? await respuesta.json()
       : await respuesta.text();
   }
 
   if (!respuesta.ok) {
     if (respuesta.status === 401) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     }
 
     const mensaje =
-      typeof datos === 'string'
+      typeof datos === "string"
         ? datos
         : datos?.mensaje ||
           datos?.error ||

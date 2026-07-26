@@ -1,19 +1,12 @@
 * {
   box-sizing: border-box;
-}
-
-:root {
-  font-family:
-    Inter, Montserrat, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  color: #10131a;
-  background: #f7f9fe;
+  font-family: "SN Pro", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
 }
 
 button,
@@ -27,27 +20,15 @@ button {
 }
 
 .pagina-inicio {
-  display: grid;
-  grid-template-columns: 205px minmax(0, 1fr);
-  min-height: 100vh;
-  background:
-    radial-gradient(
-      circle at 55% 15%,
-      rgba(226, 234, 255, 0.6),
-      transparent 35%
-    ),
-    #f8faff;
+  display: flex;
 }
 
-/* Barra lateral */
-
 .barra-lateral {
-  position: sticky;
-  top: 0;
+  position: fixed;
+  left: 0;
   height: 100vh;
-  padding: 22px 18px;
   background: #ffffff;
-  border-right: 2px solid #2580ee;
+  padding: 20px;
 }
 
 .marca-votaya {
@@ -65,13 +46,14 @@ button {
 
 .marca-votaya__nombre {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 500;
   letter-spacing: -0.5px;
+  color: black;
 }
 
 .marca-votaya__version {
   margin-left: auto;
-  color: #9399a8;
+  color: #000000;
   font-size: 7px;
 }
 

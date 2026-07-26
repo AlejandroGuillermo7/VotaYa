@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
 import TarjetaVotacion from "../Components/TarjetaVotacion";
-
 import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
 import "./Inicio.css";
