@@ -1,4 +1,4 @@
-import { resolverUrlArchivo } from '../api/clienteApi';
+import { resolverUrlArchivo } from "../api/clienteApi";
 
 function combinarOpciones(votacion) {
   const resultados = votacion.resultados?.opciones || [];
@@ -32,8 +32,7 @@ function GraficaVertical({ opciones }) {
     <div className="grafica-vertical">
       {opciones.map((opcion) => {
         const esMayorVotado =
-          opcion.idOpcion === mayorVotado?.idOpcion &&
-          opcion.totalVotos > 0;
+          opcion.idOpcion === mayorVotado?.idOpcion && opcion.totalVotos > 0;
 
         const altura =
           opcion.totalVotos === 0
@@ -45,22 +44,18 @@ function GraficaVertical({ opciones }) {
             <div
               className={
                 esMayorVotado
-                  ? 'grafica-vertical__barra grafica-vertical__barra--principal'
-                  : 'grafica-vertical__barra'
+                  ? "grafica-vertical__barra grafica-vertical__barra--principal"
+                  : "grafica-vertical__barra"
               }
               style={{ height: `${altura}px` }}
               title={`${opcion.nombre}: ${opcion.totalVotos} votos`}
             >
               {esMayorVotado && (
-                <span className="grafica-vertical__etiqueta">
-                  Más votado
-                </span>
+                <span className="grafica-vertical__etiqueta">Más votado</span>
               )}
             </div>
 
-            <span className="grafica-vertical__nombre">
-              {opcion.nombre}
-            </span>
+            <span className="grafica-vertical__nombre">{opcion.nombre}</span>
           </div>
         );
       })}
@@ -84,31 +79,25 @@ function GraficaHorizontal({ opciones }) {
     <div className="grafica-horizontal">
       {opciones.map((opcion) => {
         const esMayorVotado =
-          opcion.idOpcion === mayorVotado?.idOpcion &&
-          opcion.totalVotos > 0;
+          opcion.idOpcion === mayorVotado?.idOpcion && opcion.totalVotos > 0;
 
         const anchura =
           opcion.totalVotos === 0
             ? 8
-            : Math.max(
-                12,
-                (opcion.totalVotos / mayorCantidad) * 100,
-              );
+            : Math.max(12, (opcion.totalVotos / mayorCantidad) * 100);
 
         const imagen = resolverUrlArchivo(opcion.imagenUrl);
 
         return (
           <div className="grafica-horizontal__fila" key={opcion.idOpcion}>
-            <span className="grafica-horizontal__nombre">
-              {opcion.nombre}
-            </span>
+            <span className="grafica-horizontal__nombre">{opcion.nombre}</span>
 
             <div className="grafica-horizontal__pista">
               <div
                 className={
                   esMayorVotado
-                    ? 'grafica-horizontal__barra grafica-horizontal__barra--principal'
-                    : 'grafica-horizontal__barra'
+                    ? "grafica-horizontal__barra grafica-horizontal__barra--principal"
+                    : "grafica-horizontal__barra"
                 }
                 style={{ width: `${anchura}%` }}
                 title={`${opcion.totalVotos} votos`}
@@ -135,9 +124,7 @@ function GraficaHorizontal({ opciones }) {
 
 function TarjetaVotacion({ votacion }) {
   const opciones = combinarOpciones(votacion);
-  const imagenPortada = resolverUrlArchivo(
-    votacion.imagenPortadaUrl,
-  );
+  const imagenPortada = resolverUrlArchivo(votacion.imagenPortadaUrl);
 
   const usarGraficaHorizontal = opciones.length <= 3;
 
@@ -145,13 +132,9 @@ function TarjetaVotacion({ votacion }) {
     <article className="tarjeta-votacion">
       <header className="tarjeta-votacion__encabezado">
         <div>
-          <h2 className="tarjeta-votacion__titulo">
-            Elección activa
-          </h2>
+          <h2 className="tarjeta-votacion__titulo">Elección activa</h2>
 
-          <p className="tarjeta-votacion__pregunta">
-            {votacion.titulo}
-          </p>
+          <p className="tarjeta-votacion__pregunta">{votacion.titulo}</p>
         </div>
 
         {imagenPortada ? (

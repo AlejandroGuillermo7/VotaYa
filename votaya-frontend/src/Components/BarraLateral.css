@@ -1,0 +1,101 @@
+* {
+  box-sizing: border-box;
+  font-family: "SN Pro", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.pagina-inicio {
+  display: flex;
+}
+
+.barra-lateral {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 190px;
+  height: 100vh;
+  padding: 20px;
+  overflow-y: auto;
+  background: #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.marca-votaya {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px;
+}
+
+.marca-votaya__imagen {
+  width: 31px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.marca-votaya__nombre {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  color: black;
+}
+
+.marca-votaya__version {
+  margin-left: auto;
+  color: #000000;
+  font-size: 7px;
+}
+
+.menu-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.menu-lateral__boton {
+  min-height: 36px;
+  padding: 0 18px;
+  color: #787878;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  font-size: 15px;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.menu-lateral__boton:hover {
+  color: #246fdf;
+  background: #eef4ff;
+  transform: translateX(2px);
+}
+
+.menu-lateral__boton--activo {
+  color: #ffffff;
+  background: #2675e5;
+}
+
+.menu-lateral__boton--activo:hover {
+  color: #ffffff;
+  background: #1967d6;
+}

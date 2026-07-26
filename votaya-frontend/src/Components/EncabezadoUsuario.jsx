@@ -1,4 +1,5 @@
 import { resolverUrlArchivo } from "../api/clienteApi";
+import "./EncabezadoUsuario.css";
 
 function obtenerIniciales(perfil) {
   if (!perfil) {
@@ -17,7 +18,7 @@ function EncabezadoUsuario({ perfil }) {
   return (
     <header className="encabezado-usuario">
       <h1 className="encabezado-usuario__bienvenida">
-        Bienvenido {perfil?.nombres || "Usuario"} 👋
+        Bienvenido {perfil?.nombres || "Usuario"} 
       </h1>
 
       <div className="encabezado-usuario__perfil">

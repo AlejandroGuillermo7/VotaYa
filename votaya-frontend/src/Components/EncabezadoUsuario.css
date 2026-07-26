@@ -1,0 +1,56 @@
+
+/* Contenido */
+
+.encabezado-usuario {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 43px;
+}
+
+.encabezado-usuario__bienvenida {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 500;
+  color: #000000;
+}
+
+.encabezado-usuario__perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.encabezado-usuario__foto,
+.encabezado-usuario__iniciales {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+.encabezado-usuario__foto {
+  object-fit: cover;
+}
+
+.encabezado-usuario__iniciales {
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  font-weight: 700;
+  background: #2675e5;
+}
+
+.encabezado-usuario__nombre {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.encabezado-usuario__flecha {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: #000000;
+  border: 1px solid #dce2ee;
+  border-radius: 50%;
+}

@@ -1,4 +1,5 @@
 import logoVotaYa from "../assets/icons/icon-logo-offletters.png";
+import "./BarraLateral.css";
 
 function BarraLateral({ alCerrarSesion }) {
   return (

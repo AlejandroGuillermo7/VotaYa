@@ -67,31 +67,22 @@ function Inicio({ alCerrarSesion }) {
       setCargando(true);
       setError("");
 
-      const [datosPerfil, disponibles, eleccionesPropias] = await Promise.all([
+      const [datosPerfil, eleccionesPropias] = await Promise.all([
         peticionApi("/usuarios/perfil"),
-        peticionApi("/votaciones/disponibles"),
         peticionApi("/votaciones/mias"),
       ]);
 
+      const elecciones = eleccionesPropias || [];
+
       setPerfil(datosPerfil);
-      setMisElecciones(eleccionesPropias || []);
+      setMisElecciones(elecciones);
 
-      const eleccionesActivasPropias = (eleccionesPropias || []).filter(
-        (votacion) => votacion.estado === "ACTIVA",
-      );
-
-      const mapaVotaciones = new Map();
-
-      [...eleccionesActivasPropias, ...(disponibles || [])].forEach(
-        (votacion) => {
-          mapaVotaciones.set(votacion.idVotacion, votacion);
-        },
-      );
-
-      const destacadas = Array.from(mapaVotaciones.values()).slice(0, 2);
+      const eleccionesActivasPropias = elecciones
+        .filter((votacion) => votacion.estado === "ACTIVA")
+        .slice(0, 2);
 
       const destacadasConResultados = await Promise.all(
-        destacadas.map(async (votacion) => {
+        eleccionesActivasPropias.map(async (votacion) => {
           try {
             const resultados = await peticionApi(
               `/votaciones/${votacion.idVotacion}/resultados`,
@@ -208,7 +199,6 @@ function Inicio({ alCerrarSesion }) {
             ))
           ) : (
             <div className="estado-vacio estado-vacio--grande">
-              <span>🗳️</span>
               <h2>No hay elecciones activas</h2>
               <p>Las votaciones activas aparecerán en esta sección.</p>
             </div>
