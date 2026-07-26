@@ -1,21 +1,29 @@
-import { useState } from 'react'
-import './App.css'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import EditarVotacion from './pages/EditarVotacion'
-import CrearVotacion from './pages/CrearVotacion'
-import PerfilUser from './pages/PerfilUsuario'
+import { useState } from "react";
+
+import Login from "./pages/Login";
+import Inicio from "./pages/Inicio";
+
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [sesionActiva, setSesionActiva] = useState(
+    Boolean(localStorage.getItem("token")),
+  );
 
-  return (
-    <>
-      <div>
-      <CrearVotacion/>
-     </div>
-     </>
-  )
+  function cerrarSesion() {
+    localStorage.removeItem("token");
+    setSesionActiva(false);
+  }
+
+  return sesionActiva ? (
+    <Inicio alCerrarSesion={cerrarSesion} />
+  ) : (
+    <Login
+      alIniciarSesion={() => {
+        setSesionActiva(true);
+      }}
+    />
+  );
 }
 
-export default App
+export default App;
