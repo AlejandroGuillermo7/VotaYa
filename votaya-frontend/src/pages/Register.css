@@ -3,7 +3,7 @@
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.registerFondo {
+.registro-fondo-pantalla {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,7 +11,7 @@
   padding: 20px;
 }
 
-.registerCarta {
+.tarjeta-registro {
   position: relative;
   background: #ffffff;
   padding: 30px;
@@ -22,22 +22,13 @@
   box-shadow: 0 0 20px #B5C2FF;
 }
 
-.register-close {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  font-size: 20px;
-  cursor: pointer;
-  color: #666;
-}
-
-.register-logo img {
+.contenedor-logo img {
   height: 50px;
   object-fit: contain;
   margin-bottom: 8px;
 }
 
-.registerCarta h2 {
+.tarjeta-registro h2 {
   margin: 0;
   color: #1e3a8a;
   font-size: 1.5rem;
@@ -51,56 +42,54 @@
   margin-top: 4px;
 }
 
-.divider {
+.linea-divisora {
   border: none;
   border-top: 1px solid #e2e8f0;
   margin: 15px 0;
 }
 
-
-.registerCampo {
+.formulario-campo {
   display: flex;
   flex-direction: column;
   text-align: left;
   margin-bottom: 12px;
 }
 
-.registerCampo label {
+.formulario-campo label {
   font-size: 0.8rem;
   font-weight: 600;
   color: #334155;
   margin-bottom: 4px;
 }
 
-.register-row {
+.fila-doble-campo {
   display: flex;
   gap: 10px;
 }
 
-.register-row .registerCampo {
+.fila-doble-campo .formulario-campo {
   flex: 1;
 }
 
-
-.register-icon-input {
+.campo-con-icono {
   display: flex;
   align-items: center;
   background-color: #e2e8f0; 
   border-radius: 8px;
-  padding: 0 12px;
+  border: 1.5px solid transparent; 
+  overflow: hidden;
   height: 38px;
   width: 100%;
 }
 
-.RegisterIcono {
+.icono-campo-entrada {
   width: 16px;
   height: 16px;
   margin-right: 8px;
   flex-shrink: 0; 
 }
 
-
-.register-icon-input input {
+.campo-con-icono input {
   border: none;
   background: transparent;
   outline: none;
@@ -109,13 +98,13 @@
   color: #334155;
 }
 
-.opciones-participar {
+.contenedor-opciones-rol {
   display: flex;
   gap: 12px;
   margin-top: 5px;
 }
 
-.opcion-card {
+.tarjeta-opcion-rol {
   flex: 1;
   border: 1.5px solid #cbd5e1;
   border-radius: 8px;
@@ -128,35 +117,35 @@
   background-color: #ffffff;
 }
 
-.opcion-card img {
+.tarjeta-opcion-rol img {
   width: 28px;
   height: 28px;
   margin-bottom: 4px;
 }
 
-.opcion-titulo {
+.titulo-opcion {
   font-size: 0.85rem;
   font-weight: 700;
   color: #1e3a8a;
 }
 
-.opcion-sub {
+.subtitulo-opcion {
   font-size: 0.68rem;
   color: #64748b;
   margin-top: 2px;
 }
 
-.opcion-card:hover {
+.tarjeta-opcion-rol:hover {
   border-color: #2563eb;
 }
 
-.opcion-card.activa {
+.tarjeta-opcion-rol.activa {
   border-color: #2563eb;
   background-color: #eff6ff;
   box-shadow: 0 0 0 1px #2563eb;
 }
 
-.registerError {
+.mensaje-error-global {
   color: #ef4444;
   font-size: 0.75rem;
   margin: 8px 0;
@@ -173,7 +162,7 @@
   padding: 4px;
 }
 
-.loginBoton {
+.boton-crear-cuenta {
   width: 100%;
   background-color: #2563eb;
   color: white;
@@ -187,27 +176,27 @@
   transition: background 0.2s;
 }
 
-.loginBoton:hover {
+.boton-crear-cuenta:hover {
   background-color: #1d4ed8;
 }
 
-.loginBoton:disabled {
+.boton-crear-cuenta:disabled {
   background-color: #93c5fd;
   cursor: not-allowed;
 }
 
-.loginRegistrate {
+.contenedor-iniciar-sesion {
   font-size: 0.78rem;
   margin-top: 12px;
   color: #64748b;
 }
 
-.iniciarsesion {
+.enlace-iniciar-sesion {
   color: #2563eb;
   font-weight: 600;
   cursor: pointer;
 }
 
-.iniciarsesion:hover {
+.enlace-iniciar-sesion:hover {
   text-decoration: underline;
 }

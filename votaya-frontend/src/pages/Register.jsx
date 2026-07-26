@@ -94,52 +94,51 @@ function Register() {
   };
 
   return (
-    <div className="registerFondo">
-      <div className="registerCarta">
-        <span className="register-close">&times;</span>
+    <div className="registro-fondo-pantalla">
+      <div className="tarjeta-registro">
 
-        <div className="register-logo">
+        <div className="contenedor-logo">
           <img src={iconLogo} alt="Logo VotaYa" />
         </div>
 
         <h2>Crea tu cuenta</h2>
         <span className="subtitulo">Únete a VotaYa</span>
-        <hr className="divider" />
+        <hr className="linea-divisora" />
 
         <form onSubmit={enviar}>
-          <div className="registerCampo">
-            <label className="register-label-titulo">¿Cómo quieres participar?</label>
-            <div className={`opciones-participar ${erroresCampos.participar ? "campo-error-opciones" : ""}`}>
+          <div className="formulario-campo">
+            <label className="etiqueta-titulo-seccion">¿Cómo quieres participar?</label>
+            <div className={`contenedor-opciones-rol ${erroresCampos.participar ? "campo-error-opciones" : ""}`}>
               <div
-                className={`opcion-card ${participar === "organizador" ? "activa" : ""}`}
+                className={`tarjeta-opcion-rol ${participar === "organizador" ? "activa" : ""}`}
                 onClick={() => {
                   setParticipar("organizador");
                   limpiarError("participar");
                 }}
               >
                 <img src={iconOrganizing} alt="Organizador" />
-                <span className="opcion-titulo">Organizador</span>
-                <span className="opcion-sub">Crear votaciones</span>
+                <span className="titulo-opcion">Organizador</span>
+                <span className="subtitulo-opcion">Crear votaciones</span>
               </div>
 
               <div
-                className={`opcion-card ${participar === "votante" ? "activa" : ""}`}
+                className={`tarjeta-opcion-rol ${participar === "votante" ? "activa" : ""}`}
                 onClick={() => {
                   setParticipar("votante");
                   limpiarError("participar");
                 }}
               >
                 <img src={iconVotante} alt="Votante" />
-                <span className="opcion-titulo">Votante</span>
-                <span className="opcion-sub">Participe y vota</span>
+                <span className="titulo-opcion">Votante</span>
+                <span className="subtitulo-opcion">Participe y vota</span>
               </div>
             </div>
           </div>
 
-          <div className="registerCampo">
+          <div className="formulario-campo">
             <label htmlFor="nombre">Nombre(s)</label>
-            <div className={`register-icon-input ${erroresCampos.nombre ? "campo-error" : ""}`}>
-              <img src={iconUser} className="RegisterIcono" alt="" />
+            <div className={`campo-con-icono ${erroresCampos.nombre ? "campo-error" : ""}`}>
+              <img src={iconUser} className="icono-campo-entrada" alt="" />
               <input
                 type="text"
                 id="nombre"
@@ -153,11 +152,11 @@ function Register() {
             </div>
           </div>
 
-          <div className="register-row">
-            <div className="registerCampo">
+          <div className="fila-doble-campo">
+            <div className="formulario-campo">
               <label htmlFor="apellidoP">Apellido Paterno</label>
-              <div className={`register-icon-input ${erroresCampos.apellidoP ? "campo-error" : ""}`}>
-                <img src={iconUser} className="RegisterIcono" alt="" />
+              <div className={`campo-con-icono ${erroresCampos.apellidoP ? "campo-error" : ""}`}>
+                <img src={iconUser} className="icono-campo-entrada" alt="" />
                 <input
                   type="text"
                   id="apellidoP"
@@ -171,10 +170,10 @@ function Register() {
               </div>
             </div>
 
-            <div className="registerCampo">
+            <div className="formulario-campo">
               <label htmlFor="apellidoM">Apellido Materno</label>
-              <div className={`register-icon-input ${erroresCampos.apellidoM ? "campo-error" : ""}`}>
-                <img src={iconUser} className="RegisterIcono" alt="" />
+              <div className={`campo-con-icono ${erroresCampos.apellidoM ? "campo-error" : ""}`}>
+                <img src={iconUser} className="icono-campo-entrada" alt="" />
                 <input
                   type="text"
                   id="apellidoM"
@@ -189,9 +188,9 @@ function Register() {
             </div>
           </div>
 
-          <div className="registerCampo">
+          <div className="formulario-campo">
             <label htmlFor="fNacimiento">Fecha de nacimiento</label>
-            <div className={`register-icon-input ${erroresCampos.fNacimiento ? "campo-error" : ""}`}>
+            <div className={`campo-con-icono ${erroresCampos.fNacimiento ? "campo-error" : ""}`}>
               <input
                 type="date"
                 id="fNacimiento"
@@ -204,10 +203,10 @@ function Register() {
             </div>
           </div>
 
-          <div className="registerCampo">
+          <div className="formulario-campo">
             <label htmlFor="correo">Correo electrónico</label>
-            <div className={`register-icon-input ${erroresCampos.correo ? "campo-error" : ""}`}>
-              <img src={iconEmail} className="RegisterIcono" alt="" />
+            <div className={`campo-con-icono ${erroresCampos.correo ? "campo-error" : ""}`}>
+              <img src={iconEmail} className="icono-campo-entrada" alt="" />
               <input
                 type="email"
                 id="correo"
@@ -221,10 +220,10 @@ function Register() {
             </div>
           </div>
 
-          <div className="registerCampo">
+          <div className="formulario-campo">
             <label htmlFor="contraseña">Contraseña</label>
-            <div className={`register-icon-input ${erroresCampos.contraseña ? "campo-error" : ""}`}>
-              <img src={iconPassword} className="RegisterIcono" alt="" />
+            <div className={`campo-con-icono ${erroresCampos.contraseña ? "campo-error" : ""}`}>
+              <img src={iconPassword} className="icono-campo-entrada" alt="" />
               <input
                 type="password"
                 id="contraseña"
@@ -238,10 +237,10 @@ function Register() {
             </div>
           </div>
 
-          <div className="registerCampo">
+          <div className="formulario-campo">
             <label htmlFor="confContraseña">Confirme contraseña</label>
-            <div className={`register-icon-input ${erroresCampos.confContraseña ? "campo-error" : ""}`}>
-              <img src={iconPassword} className="RegisterIcono" alt="" />
+            <div className={`campo-con-icono ${erroresCampos.confContraseña ? "campo-error" : ""}`}>
+              <img src={iconPassword} className="icono-campo-entrada" alt="" />
               <input
                 type="password"
                 id="confContraseña"
@@ -255,15 +254,15 @@ function Register() {
             </div>
           </div>
 
-          {error && <p className="registerError">{error}</p>}
+          {error && <p className="mensaje-error-global">{error}</p>}
 
-          <button type="submit" className="loginBoton" disabled={cargando}>
+          <button type="submit" className="boton-crear-cuenta" disabled={cargando}>
             {cargando ? "Creando cuenta..." : "Crear cuenta"}
           </button>
 
-          <div className="loginRegistrate">
+          <div className="contenedor-iniciar-sesion">
             <span>¿Ya tienes cuenta? </span>
-            <span className="iniciarsesion">Inicia sesión</span>
+            <span className="enlace-iniciar-sesion">Inicia sesión</span>
           </div>
         </form>
       </div>

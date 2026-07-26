@@ -3,7 +3,7 @@ body {
   margin: 0;
 }
 
-.editarVotacion {
+.editar-votacion-contenedor {
   width: 90%;
   max-width: 1080px;
   margin: 15px auto 40px;
@@ -16,37 +16,37 @@ body {
   box-sizing: border-box;
 }
 
-.encabezado {
+.encabezado-seccion {
   text-align: center;
   margin-bottom: 30px;
 }
 
-.icon-logo-oficial {
+.logo-oficial-icono {
   width: 110px;
   height: 110px;
   object-fit: contain;
   margin-bottom: 10px;
 }
 
-.encabezado h1 {
+.encabezado-seccion h1 {
   font-size: 1.75rem;
   color: #0f172a;
   margin: 0;
   font-weight: 700;
 }
 
-.encabezado h3 {
+.encabezado-seccion h3 {
   font-size: 0.95rem;
   color: #64748b;
   font-weight: 400;
   margin-top: 4px;
 }
 
-.seccion-form {
+.bloque-formulario {
   margin-bottom: 35px;
 }
 
-.seccion-form h2 {
+.bloque-formulario h2 {
   font-size: 1.15rem;
   color: #1e3a8a;
   margin-bottom: 18px;
@@ -55,43 +55,33 @@ body {
   text-align: left;
 }
 
-.grid-datos-generales {
+.cuadrícula-datos-generales {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 16px;
 }
 
-.grid-fechas {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(140px, 1fr));
-  gap: 16px;
-}
-
-.col-span-2 {
+.columna-doble {
   grid-column: span 4;
 }
 
-.col-span-1 {
-  grid-column: span 1;
-}
-
-.formulario-campo {
+.campo-formulario {
   display: flex;
   flex-direction: column;
   gap: 6px;
   text-align: left;
 }
 
-.formulario-campo label {
+.campo-formulario label {
   font-size: 0.85rem;
   font-weight: 600;
   color: #475569;
   white-space: nowrap;
 }
 
-.formulario-campo input,
-.formulario-campo textarea,
-.formulario-campo select {
+.campo-formulario input,
+.campo-formulario textarea,
+.campo-formulario select {
   padding: 10px 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
@@ -102,18 +92,18 @@ body {
   width: 100%;
 }
 
-.formulario-campo select {
+.campo-formulario select {
   cursor: pointer;
 }
 
-.formulario-campo input:focus,
-.formulario-campo textarea:focus,
-.formulario-campo select:focus {
+.campo-formulario input:focus,
+.campo-formulario textarea:focus,
+.campo-formulario select:focus {
   border-color: #2563eb;
   background-color: #ffffff;
 }
 
-.grid-opciones {
+.cuadrícula-opciones {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 16px;
@@ -130,7 +120,7 @@ body {
   background-color: #ffffff;
 }
 
-.btn-eliminar-opcion {
+.boton-eliminar-opcion {
   position: absolute;
   top: 8px;
   right: 8px;
@@ -142,7 +132,7 @@ body {
   z-index: 10;
 }
 
-.upload-imagen-box {
+.caja-subir-imagen {
   width: 100%;
   height: 120px;
   border: 2px solid #cbd5e1;
@@ -157,7 +147,7 @@ body {
   box-sizing: border-box;
 }
 
-.img-preview {
+.imagen-vista-previa {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -165,21 +155,21 @@ body {
   display: block;
 }
 
-.placeholder-img {
+.marcador-posicion-imagen {
   text-align: center;
   color: #64748b;
 }
 
-.placeholder-img span {
+.marcador-posicion-imagen span {
   display: block;
   font-size: 20px;
 }
 
-.placeholder-img small {
+.marcador-posicion-imagen small {
   font-size: 0.75rem;
 }
 
-.opcion-numero {
+.numero-opcion {
   font-size: 0.8rem;
   font-weight: 600;
   color: #64748b;
@@ -195,7 +185,7 @@ body {
   box-sizing: border-box;
 }
 
-.btn-agregar-card {
+.boton-agregar-tarjeta {
   min-height: 165px;
   justify-content: center;
   cursor: pointer;
@@ -210,7 +200,7 @@ body {
   margin-top: 4px;
 }
 
-.grid-reglas {
+.cuadrícula-reglas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
@@ -229,7 +219,7 @@ body {
   color: #475569;
 }
 
-.toggle-group {
+.grupo-conmutador {
   display: flex;
   background-color: #f1f5f9;
   padding: 4px;
@@ -237,7 +227,7 @@ body {
   border: 1px solid #e2e8f0;
 }
 
-.toggle-group button {
+.grupo-conmutador button {
   flex: 1;
   padding: 8px 6px;
   border: none;
@@ -249,13 +239,74 @@ body {
   font-weight: 500;
 }
 
-.toggle-group button.activo {
+.grupo-conmutador button.activo {
   background-color: #2563eb;
   color: #ffffff;
   font-weight: 600;
 }
 
-.acciones-finales {
+.entrada-max-selecciones {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 0.85rem;
+}
+
+.cuadrícula-seleccion-grafica {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.tarjeta-grafica-opcion {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  background-color: #f8fafc;
+  cursor: pointer;
+}
+
+.tarjeta-grafica-opcion:hover {
+  border-color: #cbd5e1;
+}
+
+.tarjeta-grafica-opcion.seleccionada {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+}
+
+.imagen-icono-grafica {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.tarjeta-grafica-opcion strong {
+  display: block;
+  font-size: 0.95rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.tarjeta-grafica-opcion small {
+  display: block;
+  font-size: 0.78rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.mensaje-error-servidor {
+  color: #ef4444;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.contenedor-acciones-finales {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -263,7 +314,7 @@ body {
   margin-top: 35px;
 }
 
-.EditarBoton {
+.boton-editar-formulario {
   width: 100%;
   max-width: 320px;
   padding: 12px 24px;
@@ -276,165 +327,102 @@ body {
   cursor: pointer;
 }
 
-.EditarBoton:hover {
+.boton-editar-formulario:hover {
   background-color: #1d4ed8;
 }
 
-.Editar-volver {
+.contenedor-regresar {
   font-size: 0.85rem;
   color: #64748b;
 }
 
-.Editar-volver-click {
+.enlace-regresar {
   color: #2563eb;
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
 }
 
-.tarjetas-seleccion-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 8px;
-}
-.error {
-  color: #ef4444;
-  text-align: center; 
-  margin-top: 1rem
-}
-.card-opcion {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 18px;
-  border: 2px solid #e2e8f0;
-  border-radius: 14px;
-  background-color: #f8fafc;
-  cursor: pointer;
-}
-
-.card-opcion:hover {
-  border-color: #cbd5e1;
-}
-
-.card-opcion.seleccionada {
-  border-color: #2563eb;
-  background-color: #eff6ff;
-}
-
-.icon-grafica-img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.card-opcion strong {
-  display: block;
-  font-size: 0.95rem;
-  color: #1e293b;
-  font-weight: 600;
-}
-
-.card-opcion small {
-  display: block;
-  font-size: 0.78rem;
-  color: #64748b;
-  margin-top: 2px;
-}
 /* ========================= */
-/* RESPONSIVE
+/* DISEÑO ADAPTABLE (RESPONSIVE) */
 /* ========================= */
+
 @media (max-width: 992px) {
-
-  .editarVotacion {
+  .editar-votacion-contenedor {
     width: 95%;
     padding: 5px 40px 40px;
   }
 
-  .grid-datos-generales {
+  .cuadrícula-datos-generales {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .grid-fechas {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .col-span-2 {
+  .columna-doble {
     grid-column: span 2;
   }
 
-  .tarjetas-seleccion-grid {
+  .cuadrícula-seleccion-grafica {
     grid-template-columns: 1fr;
   }
-
 }
 
-
 @media (max-width: 768px) {
-
-  .editarVotacion {
+  .editar-votacion-contenedor {
     width: 95%;
     padding: 15px;
   }
 
-  .grid-datos-generales,
-  .grid-fechas,
-  .grid-opciones,
-  .grid-reglas,
-  .tarjetas-seleccion-grid {
+  .cuadrícula-datos-generales,
+  .cuadrícula-opciones,
+  .cuadrícula-reglas,
+  .cuadrícula-seleccion-grafica {
     grid-template-columns: 1fr;
   }
 
-  .col-span-1,
-  .col-span-2 {
+  .columna-doble {
     grid-column: span 1;
   }
 
-  .encabezado h1 {
+  .encabezado-seccion h1 {
     font-size: 1.5rem;
   }
 
-  .encabezado h3 {
-    font-size: .9rem;
+  .encabezado-seccion h3 {
+    font-size: 0.9rem;
   }
 
-  .icon-logo-oficial {
+  .logo-oficial-icono {
     width: 80px;
     height: 80px;
   }
 
-  .EditarBoton {
+  .boton-editar-formulario {
     max-width: 100%;
   }
 
-  .card-opcion {
+  .tarjeta-grafica-opcion {
     padding: 12px;
   }
-
 }
 
 @media (max-width: 480px) {
-
-  .editarVotacion {
+  .editar-votacion-contenedor {
     padding: 10px;
   }
 
-  .encabezado h1 {
+  .encabezado-seccion h1 {
     font-size: 1.3rem;
   }
 
-  .seccion-form h2 {
+  .bloque-formulario h2 {
     font-size: 1rem;
   }
 
-  .formulario-campo label {
+  .campo-formulario label {
     white-space: normal;
   }
 
-  .upload-imagen-box {
+  .caja-subir-imagen {
     height: 100px;
   }
-
 }

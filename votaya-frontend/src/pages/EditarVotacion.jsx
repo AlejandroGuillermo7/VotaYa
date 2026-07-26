@@ -32,10 +32,6 @@ function EditarVotacion() {
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-    /* 
-      API Backend:
-    */
-
     setCategoriasLista([
       { id_categoria: 1, nombre: "Escolar / Académico" },
       { id_categoria: 2, nombre: "Política y Elecciones" },
@@ -117,24 +113,24 @@ function EditarVotacion() {
       })),
     };
 
-    console.log("Payload para insertar en MySQL:", payload);
+    console.log("Payload para el MySQL:", payload);
     setCargando(false);
   };
 
   return (
-    <div className="editarVotacion">
-      <div className="encabezado">
-        <img src={logo} alt="VotaYa Logo" className="icon-logo-oficial" />
+    <div className="editar-votacion-contenedor">
+      <div className="encabezado-seccion">
+        <img src={logo} alt="VotaYa Logo" className="logo-oficial-icono" />
         <h1>Editar votación</h1>
         <h3>Únete a VotaYa</h3>
       </div>
 
-      <form onSubmit={enviar} className="formulario">
-        <section className="seccion-form">
+      <form onSubmit={enviar} className="formulario-edicion">
+        <section className="bloque-formulario">
           <h2>Datos Generales</h2>
-          <div className="grid-datos-generales">
+          <div className="cuadrícula-datos-generales">
             
-            <div className="formulario-campo col-span-2">
+            <div className="campo-formulario columna-doble">
               <label htmlFor="titulo">Título o Asunto *</label>
               <input
                 id="titulo"
@@ -145,7 +141,7 @@ function EditarVotacion() {
               />
             </div>
 
-            <div className="formulario-campo col-span-2">
+            <div className="campo-formulario columna-doble">
               <label htmlFor="categoria">Categoría *</label>
               <select
                 id="categoria"
@@ -161,7 +157,7 @@ function EditarVotacion() {
               </select>
             </div>
 
-            <div className="formulario-campo">
+            <div className="campo-formulario">
               <label htmlFor="fechaC">Fecha de comienzo *</label>
               <input
                 id="fechaC"
@@ -171,7 +167,7 @@ function EditarVotacion() {
               />
             </div>
 
-            <div className="formulario-campo">
+            <div className="campo-formulario">
               <label htmlFor="horaC">Hora de comienzo *</label>
               <input
                 id="horaC"
@@ -181,7 +177,7 @@ function EditarVotacion() {
               />
             </div>
 
-            <div className="formulario-campo">
+            <div className="campo-formulario">
               <label htmlFor="fechaF">Fecha de finalización *</label>
               <input
                 id="fechaF"
@@ -191,7 +187,7 @@ function EditarVotacion() {
               />
             </div>
 
-            <div className="formulario-campo">
+            <div className="campo-formulario">
               <label htmlFor="horaF">Hora de finalización *</label>
               <input
                 id="horaF"
@@ -201,7 +197,7 @@ function EditarVotacion() {
               />
             </div>
 
-            <div className="formulario-campo col-span-2">
+            <div className="campo-formulario columna-doble">
               <label htmlFor="descripcion">Descripción</label>
               <textarea
                 id="descripcion"
@@ -215,38 +211,38 @@ function EditarVotacion() {
           </div>
         </section>
 
-        <section className="seccion-form">
+        <section className="bloque-formulario">
           <h2>Agregar Opciones</h2>
-          <div className="grid-opciones">
+          <div className="cuadrícula-opciones">
             {opciones.map((opcion, index) => (
               <div key={opcion.id} className="tarjeta-opcion">
                 <button
                   type="button"
-                  className="btn-eliminar-opcion"
+                  className="boton-eliminar-opcion"
                   onClick={() => eliminarOpcion(opcion.id)}
                 >
                   &times;
                 </button>
-                <div className="upload-imagen-box">
-                  <label htmlFor={`file-${opcion.id}`}>
+                <div className="caja-subir-imagen">
+                  <label htmlFor={`archivo-${opcion.id}`}>
                     {opcion.imagen_url ? (
-                      <img src={opcion.imagen_url} alt="Preview" className="img-preview" />
+                      <img src={opcion.imagen_url} alt="Vista previa" className="imagen-vista-previa" />
                     ) : (
-                      <div className="placeholder-img">
+                      <div className="marcador-posicion-imagen">
                         <span>🖼️</span>
                         <small>Subir imagen</small>
                       </div>
                     )}
                   </label>
                   <input
-                    id={`file-${opcion.id}`}
+                    id={`archivo-${opcion.id}`}
                     type="file"
                     accept="image/*"
                     onChange={(e) => cambiarImagenOpcion(opcion.id, e)}
                     hidden
                   />
                 </div>
-                <span className="opcion-numero">Opción {index + 1}</span>
+                <span className="numero-opcion">Opción {index + 1}</span>
                 <input
                   type="text"
                   placeholder={`Ej: Opción ${index + 1}`}
@@ -258,7 +254,7 @@ function EditarVotacion() {
 
             <button
               type="button"
-              className="tarjeta-opcion btn-agregar-card"
+              className="tarjeta-opcion boton-agregar-tarjeta"
               onClick={agregarOpcion}
             >
               <span>Agregar</span>
@@ -267,13 +263,13 @@ function EditarVotacion() {
           </div>
         </section>
 
-        <section className="seccion-form">
+        <section className="bloque-formulario">
           <h2>Reglas de Votación</h2>
-          <div className="grid-reglas">
+          <div className="cuadrícula-reglas">
             
             <div className="grupo-regla">
               <label>Privacidad</label>
-              <div className="toggle-group">
+              <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={privacidad === "PUBLICA" ? "activo" : ""}
@@ -293,7 +289,7 @@ function EditarVotacion() {
 
             <div className="grupo-regla">
               <label>Identificación de Voto</label>
-              <div className="toggle-group">
+              <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={tipoVoto === "ANONIMO" ? "activo" : ""}
@@ -313,7 +309,7 @@ function EditarVotacion() {
 
             <div className="grupo-regla">
               <label>Tipo de Selección</label>
-              <div className="toggle-group">
+              <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={tipoSeleccion === "UNICA" ? "activo" : ""}
@@ -340,14 +336,14 @@ function EditarVotacion() {
                   max={opciones.length}
                   value={maxSelecciones}
                   onChange={(e) => setMaxSelecciones(e.target.value)}
-                  style={{ padding: "8px", borderRadius: "8px", border: "1px solid #cbd5e1" }}
+                  className="entrada-max-selecciones"
                 />
               </div>
             )}
 
             <div className="grupo-regla">
               <label>¿Permitir cambiar voto?</label>
-              <div className="toggle-group">
+              <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={!permiteCambioVoto ? "activo" : ""}
@@ -367,7 +363,7 @@ function EditarVotacion() {
 
             <div className="grupo-regla">
               <label>Restricción de Edad</label>
-              <div className="toggle-group">
+              <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={restriccionEdad === "todos" ? "activo" : ""}
@@ -385,10 +381,9 @@ function EditarVotacion() {
               </div>
             </div>
 
-          
             <div className="grupo-regla">
               <label>Comentarios</label>
-              <div className="toggle-group">
+              <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={!comentariosPermitidos ? "activo" : ""}
@@ -406,16 +401,15 @@ function EditarVotacion() {
               </div>
             </div>
 
-
             <div className="grupo-regla">
               <label>Tipo de gráfica</label>
-              <div className="tarjetas-seleccion-grid">
+              <div className="cuadrícula-seleccion-grafica">
                 
                 <div 
-                  className={`card-opcion ${tipoGrafica === 'BARRAS' ? 'seleccionada' : ''}`}
+                  className={`tarjeta-grafica-opcion ${tipoGrafica === 'BARRAS' ? 'seleccionada' : ''}`}
                   onClick={() => setTipoGrafica('BARRAS')}
                 >
-                  <img src={imgBarras} alt="Gráfico de Barras" className="icon-grafica-img" />
+                  <img src={imgBarras} alt="Gráfico de Barras" className="imagen-icono-grafica" />
                   <div>
                     <strong>Gráfica Barras</strong>
                     <small>Comparativa vertical</small>
@@ -423,10 +417,10 @@ function EditarVotacion() {
                 </div>
 
                 <div 
-                  className={`card-opcion ${tipoGrafica === 'PASTEL' ? 'seleccionada' : ''}`}
+                  className={`tarjeta-grafica-opcion ${tipoGrafica === 'PASTEL' ? 'seleccionada' : ''}`}
                   onClick={() => setTipoGrafica('PASTEL')}
                 >
-                  <img src={imgPastel} alt="Gráfico Pastel" className="icon-grafica-img" />
+                  <img src={imgPastel} alt="Gráfico Pastel" className="imagen-icono-grafica" />
                   <div>
                     <strong>Gráfica Circular</strong>
                     <small>Porcentajes y proporciones</small>
@@ -439,15 +433,15 @@ function EditarVotacion() {
           </div>
         </section>
 
-        {error && <p class="error">{error}</p>}
+        {error && <p className="mensaje-error-servidor">{error}</p>}
 
-        <div className="acciones-finales">
-          <button type="submit" className="EditarBoton" disabled={cargando}>
+        <div className="contenedor-acciones-finales">
+          <button type="submit" className="boton-editar-formulario" disabled={cargando}>
             {cargando ? "Editando..." : "Editar votación"}
           </button>
-          <div className="Editar-volver">
+          <div className="contenedor-regresar">
             <span>¿Deseas regresar? </span>
-            <span className="Editar-volver-click">Volver</span>
+            <span className="enlace-regresar">Volver</span>
           </div>
         </div>
       </form>

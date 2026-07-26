@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import EditarVotacion from './pages/EditarVotacion'
 import CrearVotacion from './pages/CrearVotacion'
+import PerfilUser from './pages/PerfilUsuario'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -11,7 +12,7 @@ function App() {
   return (
     <>
       <div>
-      <EditarVotacion/>
+      <CrearVotacion/>
      </div>
      </>
   )
