@@ -1,16 +1,18 @@
 import { useState } from "react";
+import Swal from "sweetalert2"; // Import movido a la parte superior
 import iconLogo from "../assets/icons/icon-login.png";
 import iconEmail from "../assets/icons/icon-email.svg";
 import iconPassword from "../assets/icons/icon-password.svg";
 import "./Login.css";
 
-function Login({alIniciarSesion, irARegistro}) {
+function Login({alIniciarSesion, irARegistro, irARecuperar}) {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
   const [erroresCampos, setErroresCampos] = useState({});
   const [cargando, setCargando] = useState(false);
 
+  
   function validarCampos() {
     const formato = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     let nuevosErrores = {};
@@ -71,7 +73,6 @@ function Login({alIniciarSesion, irARegistro}) {
       }
       if (alIniciarSesion) alIniciarSesion(data);
 
-
     } catch (err) {
       setError(err.message || "Error al conectar con el servidor.");
     } finally {
@@ -129,7 +130,10 @@ function Login({alIniciarSesion, irARegistro}) {
             </div>
           </div>
 
-          <p className="loginContraseña">¿Olvidaste tu contraseña?</p>
+          <p className="loginContraseña" onClick={irARecuperar}>
+            ¿Olvidaste tu contraseña?
+          </p>
+          
           {error && <p className="loginError">{error}</p>}
 
           <button type="submit" className="loginBoton" disabled={cargando}>
@@ -139,7 +143,7 @@ function Login({alIniciarSesion, irARegistro}) {
           <div className="loginRegistrate">
             <label>¿No tienes cuenta?</label>
             <p className="registrate" onClick={irARegistro} style={{ cursor: "pointer" }}>
-            Regístrate
+              Regístrate
             </p>
           </div>
         </form>
