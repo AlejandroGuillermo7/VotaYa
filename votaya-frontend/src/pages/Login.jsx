@@ -71,7 +71,7 @@ function Login({ onLoginExitoso }) {
         <div className="loginIconoTop">
           <img src={iconLogo} alt="" className="loginIconoTopImg" />
         </div>
-        <h2 className="LoginTitulo">Inicia sesión para continuar.</h2>
+        <h2 className="LoginTitulo">Inicia sesión</h2>
 
         <form onSubmit={enviar}>
           {/* CORREO */}
