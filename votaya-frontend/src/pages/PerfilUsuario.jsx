@@ -3,8 +3,6 @@ import logo from "../assets/icons/icon-logo-offletters.png";
 import user from "../assets/icons/icon-username.svg";
 import email from "../assets/icons/icon-email.svg";
 import password from "../assets/icons/icon-password.svg";
-import votante from "../assets/icons/icon-votante.svg";
-import notes from "../assets/icons/icon-notes.svg";
 import "./PerfilUsuario.css";
 
 function PerfilUsuario() {
@@ -13,7 +11,6 @@ function PerfilUsuario() {
   const [apellidoM, setApellidoM] = useState("");
   const [fechaN, setFechaN] = useState("");
   const [correo, setCorreo] = useState("");
-  const [rol, setRol] = useState("votante");
   const [fotoPerfil, setFotoPerfil] = useState(null);
 
   // para contraseñas
@@ -42,7 +39,7 @@ function PerfilUsuario() {
     setMensaje({ tipo: "", texto: "" });
 
     try {
-      /* BACKEND */
+
     } catch (error) {
       setMensaje({ tipo: "error", texto: "Error al conectar con el servidor." });
     } finally {
@@ -156,49 +153,20 @@ function PerfilUsuario() {
             </div>
           </div>
 
-          {/* Fila exclusiva para el correo (mantiene el ancho de 1 columna) */}
-            <div className="fila-correo-unico">
+          <div className="fila-correo-unico">
             <div className="formulario-campo">
-                <label htmlFor="correo">Correo electrónico</label>
-                <div className="campo-con-icono">
+              <label htmlFor="correo">Correo electrónico</label>
+              <div className="campo-con-icono">
                 <img src={email} alt="Icono correo" />
                 <input
-                    type="email"
-                    id="correo"
-                    value={correo}
-                    onChange={(e) => setCorreo(e.target.value)}
+                  type="email"
+                  id="correo"
+                  value={correo}
+                  onChange={(e) => setCorreo(e.target.value)}
                 />
-                </div>
+              </div>
             </div>
-            </div>
-
-        {/* Bloque que va DEBAJO y se expande a todo lo ancho */}
-            <div className="seccion-participacion-ancho">
-            <label className="label-participar">¿Cómo quieres participar?</label>
-            <div className="contenedor-tarjetas-rol">
-                <div
-                className={`tarjeta-rol ${rol === "organizador" ? "seleccionada" : ""}`}
-                onClick={() => setRol("organizador")}
-                >
-                <img src={notes} alt="Organizador" className="icono-tarjeta-rol" />
-                <div>
-                    <strong>Organizador</strong>
-                    <small>Crear votaciones</small>
-                </div>
-                </div>
-
-                <div
-                className={`tarjeta-rol ${rol === "votante" ? "seleccionada" : ""}`}
-                onClick={() => setRol("votante")}
-                >
-                <img src={votante} alt="Votante" className="icono-tarjeta-rol" />
-                <div>
-                    <strong>Votante</strong>
-                    <small>Participa y vota</small>
-                </div>
-                </div>
-            </div>
-        </div>
+          </div>
         </section>
 
         <section className="seccion-form">

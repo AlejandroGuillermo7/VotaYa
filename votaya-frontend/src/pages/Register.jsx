@@ -3,13 +3,10 @@ import iconLogo from "../assets/icons/icon-login.png";
 import iconEmail from "../assets/icons/icon-email.svg";
 import iconPassword from "../assets/icons/icon-password.svg";
 import iconUser from "../assets/icons/icon-username.svg";
-import iconVotante from "../assets/icons/icon-votante.svg";
-import iconOrganizing from "../assets/icons/icon-notes.svg";
 import Swal from "sweetalert2";
 import "./Register.css";
 
-function Register({irALogin, alRegistrar}) {
-  const [participar, setParticipar] = useState("");
+function Register({ irALogin }) {
   const [nombre, setNombre] = useState("");
   const [apellidoP, setApellidoP] = useState("");
   const [apellidoM, setApellidoM] = useState("");
@@ -26,7 +23,6 @@ function Register({irALogin, alRegistrar}) {
     const formato = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     let nuevosErrores = {};
 
-    if (!participar) nuevosErrores.participar = true;
     if (!nombre.trim()) nuevosErrores.nombre = true;
     if (!apellidoP.trim()) nuevosErrores.apellidoP = true;
     if (!apellidoM.trim()) nuevosErrores.apellidoM = true;
@@ -70,7 +66,7 @@ function Register({irALogin, alRegistrar}) {
     if (!validarCampos()) return;
 
     setCargando(true);
-    
+
     try {
       const respuesta = await fetch("http://localhost:8080/api/auth/registro", {
         method: "POST",
@@ -81,7 +77,7 @@ function Register({irALogin, alRegistrar}) {
           nombres: nombre,
           apellidoPaterno: apellidoP,
           apellidoMaterno: apellidoM,
-          fechaNacimiento: fNacimiento, 
+          fechaNacimiento: fNacimiento,
           correo: correo,
           contrasena: contraseña,
         }),
@@ -138,35 +134,6 @@ function Register({irALogin, alRegistrar}) {
         <hr className="linea-divisora" />
 
         <form onSubmit={enviar}>
-          <div className="formulario-campo">
-            <label className="etiqueta-titulo-seccion">¿Cómo quieres participar?</label>
-            <div className={`contenedor-opciones-rol ${erroresCampos.participar ? "campo-error-opciones" : ""}`}>
-              <div
-                className={`tarjeta-opcion-rol ${participar === "organizador" ? "activa" : ""}`}
-                onClick={() => {
-                  setParticipar("organizador");
-                  limpiarError("participar");
-                }}
-              >
-                <img src={iconOrganizing} alt="Organizador" />
-                <span className="titulo-opcion">Organizador</span>
-                <span className="subtitulo-opcion">Crear votaciones</span>
-              </div>
-
-              <div
-                className={`tarjeta-opcion-rol ${participar === "votante" ? "activa" : ""}`}
-                onClick={() => {
-                  setParticipar("votante");
-                  limpiarError("participar");
-                }}
-              >
-                <img src={iconVotante} alt="Votante" />
-                <span className="titulo-opcion">Votante</span>
-                <span className="subtitulo-opcion">Participe y vota</span>
-              </div>
-            </div>
-          </div>
-
           <div className="formulario-campo">
             <label htmlFor="nombre">Nombre(s)</label>
             <div className={`campo-con-icono ${erroresCampos.nombre ? "campo-error" : ""}`}>
