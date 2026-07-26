@@ -99,3 +99,75 @@ button {
   color: #ffffff;
   background: #1967d6;
 }
+
+.barra-lateral__cerrar {
+  display: none;
+}
+
+@media (min-width: 681px) and (max-width: 950px) {
+  .barra-lateral {
+    width: 165px;
+    padding-inline: 14px;
+  }
+}
+
+@media (max-width: 680px) {
+  .barra-lateral {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1001;
+
+    width: min(280px, 82vw);
+    height: 100vh;
+    padding: 20px;
+
+    overflow-y: auto;
+    border-right: 0;
+    border-bottom: 0;
+
+    transform: translateX(-105%);
+    transition: transform 250ms ease;
+  }
+
+  .barra-lateral--abierta {
+    transform: translateX(0);
+  }
+
+  .barra-lateral__cerrar {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    display: grid;
+    place-items: center;
+
+    width: 32px;
+    height: 32px;
+
+    color: #787878;
+    font-size: 24px;
+    line-height: 1;
+
+    background: #f0f4fc;
+    border: 0;
+    border-radius: 6px;
+  }
+
+  .marca-votaya {
+    padding-right: 35px;
+  }
+
+  .menu-lateral {
+    flex-direction: column;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .menu-lateral__boton {
+    width: 100%;
+    flex: none;
+    white-space: nowrap;
+  }
+}
