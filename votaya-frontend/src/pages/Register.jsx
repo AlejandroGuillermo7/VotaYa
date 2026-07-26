@@ -5,9 +5,10 @@ import iconPassword from "../assets/icons/icon-password.svg";
 import iconUser from "../assets/icons/icon-username.svg";
 import iconVotante from "../assets/icons/icon-votante.svg";
 import iconOrganizing from "../assets/icons/icon-notes.svg";
+import Swal from "sweetalert2";
 import "./Register.css";
 
-function Register() {
+function Register({irALogin, alRegistrar}) {
   const [participar, setParticipar] = useState("");
   const [nombre, setNombre] = useState("");
   const [apellidoP, setApellidoP] = useState("");
@@ -62,25 +63,56 @@ function Register() {
     return true;
   }
 
-  function enviar(e) {
+  async function enviar(e) {
     e.preventDefault();
     setError("");
 
     if (!validarCampos()) return;
 
     setCargando(true);
+    
     try {
-      console.log("Datos", {
-        participar,
-        nombre,
-        apellidoP,
-        apellidoM,
-        fNacimiento,
-        correo,
-        contraseña,
+      const respuesta = await fetch("http://localhost:8080/api/auth/registro", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nombres: nombre,
+          apellidoPaterno: apellidoP,
+          apellidoMaterno: apellidoM,
+          fechaNacimiento: fNacimiento, 
+          correo: correo,
+          contrasena: contraseña,
+        }),
       });
+
+      const data = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(data.mensaje || "Ocurrió un error al registrar la cuenta.");
+      }
+
+      Swal.fire({
+        title: "¡Cuenta creada con éxito!",
+        text: "Ya puedes iniciar sesión con tus credenciales.",
+        icon: "success",
+        confirmButtonText: "Ir al Login",
+        confirmButtonColor: "#3085d6",
+      }).then((result) => {
+        if (result.isConfirmed && irALogin) {
+          irALogin();
+        }
+      });
+
     } catch (err) {
-      setError(err.message);
+      Swal.fire({
+        title: "Error",
+        text: err.message || "No se pudo conectar con el servidor.",
+        icon: "error",
+        confirmButtonText: "Entendido",
+        confirmButtonColor: "#d33",
+      });
     } finally {
       setCargando(false);
     }
@@ -262,7 +294,7 @@ function Register() {
 
           <div className="contenedor-iniciar-sesion">
             <span>¿Ya tienes cuenta? </span>
-            <span className="enlace-iniciar-sesion">Inicia sesión</span>
+            <span className="enlace-iniciar-sesion" onClick={irALogin}>Inicia sesión</span>
           </div>
         </form>
       </div>

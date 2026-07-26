@@ -4,7 +4,7 @@ import iconEmail from "../assets/icons/icon-email.svg";
 import iconPassword from "../assets/icons/icon-password.svg";
 import "./Login.css";
 
-function Login({ onLoginExitoso }) {
+function Login({alIniciarSesion, irARegistro}) {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
@@ -30,7 +30,6 @@ function Login({ onLoginExitoso }) {
       return false;
     }
 
-  
     if (contraseña.length < 8) {
       setError("La contraseña debe tener al menos 8 caracteres.");
       setErroresCampos({ contraseña: true });
@@ -48,11 +47,33 @@ function Login({ onLoginExitoso }) {
     if (!validarCampos()) return;
 
     setCargando(true);
+
     try {
-      console.log("Datos", { correo, contraseña });
-      if (onLoginExitoso) onLoginExitoso();
+      const respuesta = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          correo: correo,
+          contrasena: contraseña, 
+        }),
+      });
+
+      const data = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(data.mensaje || "Correo o contraseña incorrectos.");
+      }
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+      }
+      if (alIniciarSesion) alIniciarSesion(data);
+
+
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Error al conectar con el servidor.");
     } finally {
       setCargando(false);
     }
@@ -69,12 +90,11 @@ function Login({ onLoginExitoso }) {
     <div className="loginFondo">
       <div className="loginCard">
         <div className="loginIconoTop">
-          <img src={iconLogo} alt="" className="loginIconoTopImg" />
+          <img src={iconLogo} alt="Logo" className="loginIconoTopImg" />
         </div>
         <h2 className="LoginTitulo">Inicia sesión</h2>
 
         <form onSubmit={enviar}>
-          {/* CORREO */}
           <div className="loginCampo">
             <label htmlFor="correo">Correo Electrónico</label>
             <div className={`loginInputConIcono ${erroresCampos.correo ? "campo-error" : ""}`}>
@@ -92,7 +112,6 @@ function Login({ onLoginExitoso }) {
             </div>
           </div>
 
-          
           <div className="loginCampo">
             <label htmlFor="contraseña">Contraseña</label>
             <div className={`loginInputConIcono ${erroresCampos.contraseña ? "campo-error" : ""}`}>
@@ -119,7 +138,9 @@ function Login({ onLoginExitoso }) {
 
           <div className="loginRegistrate">
             <label>¿No tienes cuenta?</label>
-            <p className="registrate">Regístrate</p>
+            <p className="registrate" onClick={irARegistro} style={{ cursor: "pointer" }}>
+            Regístrate
+            </p>
           </div>
         </form>
       </div>
