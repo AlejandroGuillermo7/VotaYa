@@ -61,6 +61,7 @@ function Inicio({ alCerrarSesion }) {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
+  const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -179,10 +180,26 @@ function Inicio({ alCerrarSesion }) {
 
   return (
     <div className="pagina-inicio">
-      <BarraLateral alCerrarSesion={alCerrarSesion} />
+      <BarraLateral
+        alCerrarSesion={alCerrarSesion}
+        abierta={menuLateralAbierto}
+        alCerrar={() => setMenuLateralAbierto(false)}
+      />
+
+      {menuLateralAbierto && (
+        <button
+          type="button"
+          className="fondo-sidebar-movil"
+          aria-label="Cerrar menú lateral"
+          onClick={() => setMenuLateralAbierto(false)}
+        />
+      )}
 
       <main className="contenido-inicio">
-        <EncabezadoUsuario perfil={perfil} />
+        <EncabezadoUsuario
+          perfil={perfil}
+          alAbrirMenu={() => setMenuLateralAbierto(true)}
+        />
 
         {error && <div className="mensaje mensaje--error">{error}</div>}
 

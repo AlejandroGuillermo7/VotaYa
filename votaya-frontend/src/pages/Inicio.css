@@ -32,7 +32,6 @@ button {
   margin-left: 190px;
   padding: 20px 28px 32px;
 }
-/* Mensajes */
 
 .mensaje {
   margin-top: 14px;
@@ -53,8 +52,6 @@ button {
   border: 1px solid #c3f1d4;
 }
 
-/* Bienvenida */
-
 .bienvenida-panel {
   display: flex;
   align-items: center;
@@ -72,8 +69,6 @@ button {
   font-weight: 550;
   color: black;
 }
-
-/* Tarjetas */
 
 .votaciones-destacadas {
   display: grid;
@@ -135,7 +130,6 @@ button {
   font-size: 12px;
 }
 
-/* Gráfica vertical */
 
 .grafica-vertical {
   display: flex;
@@ -191,7 +185,6 @@ button {
   white-space: nowrap;
 }
 
-/* Gráfica horizontal */
 
 .grafica-horizontal {
   display: flex;
@@ -242,7 +235,6 @@ button {
   text-align: center;
 }
 
-/* Tabla */
 
 .seccion-elecciones {
   margin-top: 16px;
@@ -278,7 +270,7 @@ button {
   width: 155px;
   height: 30px;
   padding: 0 10px;
-  color: #8993a8;
+  color: #000000;
   background: #f7f9fd;
   border-radius: 6px;
 }
@@ -286,7 +278,7 @@ button {
 .campo-busqueda input {
   width: 100%;
   margin-left: 6px;
-  color: #3a4250;
+  color: #000000;
   font-size: 10px;
   background: transparent;
   border: 0;
@@ -296,7 +288,7 @@ button {
 .selector-periodo {
   height: 30px;
   padding: 0 30px 0 12px;
-  color: #7e879a;
+  color: #000000;
   font-size: 9px;
   background: #f7f9fd;
   border: 0;
@@ -462,14 +454,15 @@ button {
     transform: rotate(360deg);
   }
 }
+/* Fondo del sidebar oculto normalmente */
 
-/* Responsive */
+.fondo-sidebar-movil {
+  display: none;
+}
+
+/* Responsive para tablet */
 
 @media (max-width: 950px) {
-  .barra-lateral {
-    width: 165px;
-  }
-
   .contenido-inicio {
     width: calc(100% - 165px);
     margin-left: 165px;
@@ -479,41 +472,33 @@ button {
   .votaciones-destacadas {
     grid-template-columns: 1fr;
   }
-  .contenido-inicio {
-    padding-inline: 20px;
-  }
-
-  .votaciones-destacadas {
-    grid-template-columns: 1fr;
-  }
 }
+
+/* Responsive para teléfono */
 
 @media (max-width: 680px) {
   .pagina-inicio {
     display: block;
   }
 
-  .barra-lateral {
-    position: static;
-    width: 100%;
-    height: auto;
-    border-right: 0;
-    border-bottom: 2px solid #2580ee;
-  }
-
-  .menu-lateral {
-    flex-direction: row;
-    overflow-x: auto;
-  }
-
-  .menu-lateral__boton {
-    flex: 0 0 auto;
-  }
-
   .contenido-inicio {
-    padding: 18px 14px 30px;
     width: 100%;
     margin-left: 0;
+    padding: 18px 14px 30px;
+  }
+
+  .fondo-sidebar-movil {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+
+    background: rgba(0, 0, 0, 0.35);
+    border: 0;
   }
 
   .encabezado-usuario__nombre,
@@ -537,5 +522,6 @@ button {
 
   .campo-busqueda {
     flex: 1;
+    min-width: 0;
   }
 }

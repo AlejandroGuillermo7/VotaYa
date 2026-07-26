@@ -1,9 +1,36 @@
 import logoVotaYa from "../assets/icons/icon-logo-offletters.png";
 import "./BarraLateral.css";
 
-function BarraLateral({ alCerrarSesion }) {
+function BarraLateral({
+  alCerrarSesion,
+  abierta = false,
+  alCerrar,
+}) {
+  function navegar(ruta) {
+    alCerrar?.();
+    window.location.href = ruta;
+  }
+
+  function cerrarSesion() {
+    alCerrar?.();
+    alCerrarSesion();
+  }
+
   return (
-    <aside className="barra-lateral">
+    <aside
+      className={`barra-lateral ${
+        abierta ? "barra-lateral--abierta" : ""
+      }`}
+    >
+      <button
+        type="button"
+        className="barra-lateral__cerrar"
+        aria-label="Cerrar menú"
+        onClick={alCerrar}
+      >
+        ×
+      </button>
+
       <div className="marca-votaya">
         <img
           src={logoVotaYa}
@@ -19,6 +46,7 @@ function BarraLateral({ alCerrarSesion }) {
         <button
           type="button"
           className="menu-lateral__boton menu-lateral__boton--activo"
+          onClick={alCerrar}
         >
           Inicio
         </button>
@@ -26,9 +54,7 @@ function BarraLateral({ alCerrarSesion }) {
         <button
           type="button"
           className="menu-lateral__boton"
-          onClick={() => {
-            window.location.href = "/mis-elecciones";
-          }}
+          onClick={() => navegar("/mis-elecciones")}
         >
           Mis elecciones
         </button>
@@ -36,9 +62,7 @@ function BarraLateral({ alCerrarSesion }) {
         <button
           type="button"
           className="menu-lateral__boton"
-          onClick={() => {
-            window.location.href = "/mis-votos";
-          }}
+          onClick={() => navegar("/mis-votos")}
         >
           Mis votos
         </button>
@@ -46,7 +70,7 @@ function BarraLateral({ alCerrarSesion }) {
         <button
           type="button"
           className="menu-lateral__boton"
-          onClick={alCerrarSesion}
+          onClick={cerrarSesion}
         >
           Salir
         </button>
