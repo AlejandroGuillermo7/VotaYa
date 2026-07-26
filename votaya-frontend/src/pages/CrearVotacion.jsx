@@ -4,7 +4,7 @@ import imgBarras from "../assets/icons/icon-grafico-barras.webp";
 import imgPastel from "../assets/icons/icon-grafico-pastel.webp";
 import "./EditarVotacion.css";
 
-function EditarVotacion() {
+function CrearVotacion() {
   const [titulo, setTitulo] = useState("");
   const [idCategoria, setIdCategoria] = useState("");
   const [categoriasLista, setCategoriasLista] = useState([]);
@@ -125,7 +125,7 @@ function EditarVotacion() {
     <div className="editarVotacion">
       <div className="encabezado">
         <img src={logo} alt="VotaYa Logo" className="icon-logo-oficial" />
-        <h1>Editar votación</h1>
+        <h1>Crear una votación</h1>
         <h3>Únete a VotaYa</h3>
       </div>
 
@@ -439,11 +439,11 @@ function EditarVotacion() {
           </div>
         </section>
 
-        {error && <p class="error">{error}</p>}
+        {error && <p className="error">{error}</p>}
 
         <div className="acciones-finales">
           <button type="submit" className="EditarBoton" disabled={cargando}>
-            {cargando ? "Editando..." : "Editar votación"}
+            {cargando ? "Guardando..." : "Crear votación"}
           </button>
           <div className="Editar-volver">
             <span>¿Deseas regresar? </span>
@@ -455,4 +455,4 @@ function EditarVotacion() {
   );
 }
 
-export default EditarVotacion;
+export default CrearVotacion;
