@@ -23,9 +23,10 @@ public class ControladorRecuperacion {
     }
 
     @PostMapping("/restablecer")
-    public ResponseEntity<Void> restablecer(
+    public ResponseEntity<RecuperacionDTO.RespuestaToken> restablecer(
             @Valid @RequestBody RecuperacionDTO.SolicitudRestablecer solicitud) {
         servicioRecuperacion.restablecer(solicitud);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(new RecuperacionDTO.RespuestaToken(
+                "Contraseña restablecida exitosamente", ""));
     }
 }
