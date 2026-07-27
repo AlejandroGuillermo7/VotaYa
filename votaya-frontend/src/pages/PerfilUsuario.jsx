@@ -6,6 +6,15 @@ import email from "../assets/icons/icon-email.svg";
 import password from "../assets/icons/icon-password.svg";
 import "./PerfilUsuario.css";
 
+
+function resolverUrlArchivo(ruta) {
+  if (!ruta) return null;
+  if (ruta.startsWith("http://") || ruta.startsWith("https://") || ruta.startsWith("blob:")) {
+    return ruta;
+  }
+  return `http://localhost:8080${ruta.startsWith("/") ? "" : "/"}${ruta}`;
+}
+
 function PerfilUsuario({ volver }) {
   const [nombre, setNombre] = useState("");
   const [apellidoP, setApellidoP] = useState("");
@@ -45,7 +54,11 @@ function PerfilUsuario({ volver }) {
         setApellidoM(data.apellidoMaterno || "");
         setFechaN(data.fechaNacimiento || "");
         setCorreo(data.correo || "");
-        if (data.fotoUrl) setFotoPerfil(data.fotoUrl);
+        
+
+        if (data.fotoUrl) {
+          setFotoPerfil(resolverUrlArchivo(data.fotoUrl));
+        }
 
       } catch (error) {
         setMensaje({ tipo: "error", texto: "Error al cargar la información del perfil." });
@@ -172,7 +185,12 @@ function PerfilUsuario({ volver }) {
           <div className="wrapper-foto">
             <label htmlFor="fotoPerfilInput" className="marco-foto-perfil">
               {fotoPerfil ? (
-                <img src={fotoPerfil} alt="Foto de perfil" className="foto-perfil-imagen" />
+                <img 
+                  src={fotoPerfil} 
+                  alt="" 
+                  className="foto-perfil-imagen"
+                  onError={() => setFotoPerfil(null)} // Si la URL falla, cae al icono por defecto
+                />
               ) : (
                 <div className="place-holder-foto">
                   <FiUser className="icono-avatar-svg" />

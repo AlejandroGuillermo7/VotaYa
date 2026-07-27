@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
 import TarjetaVotacion from "../Components/TarjetaVotacion";
+import PerfilUsuario from "./PerfilUsuario";
 import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
 import "./Inicio.css";
@@ -62,6 +63,9 @@ function Inicio({ alCerrarSesion }) {
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
+
+
+  const [vistaActiva, setVistaActiva] = useState("INICIO");
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -184,7 +188,7 @@ function Inicio({ alCerrarSesion }) {
         alCerrarSesion={alCerrarSesion}
         abierta={menuLateralAbierto}
         alCerrar={() => setMenuLateralAbierto(false)}
-        seccionActiva="mis-elecciones"
+        seccionActiva={vistaActiva === "PERFIL" ? "perfil" : "mis-elecciones"}
       />
 
       {menuLateralAbierto && (
@@ -200,151 +204,164 @@ function Inicio({ alCerrarSesion }) {
         <EncabezadoUsuario
           perfil={perfil}
           alAbrirMenu={() => setMenuLateralAbierto(true)}
+          alIrAPerfil={() => setVistaActiva("PERFIL")}
+          alCerrarSesion={alCerrarSesion}
         />
 
         {error && <div className="mensaje mensaje--error">{error}</div>}
 
         {mensaje && <div className="mensaje mensaje--correcto">{mensaje}</div>}
 
-        <section className="bienvenida-panel">
-          <p>Aquí puedes consultar tus votaciones activas.</p>
-        </section>
+        {vistaActiva === "PERFIL" ? (
+          <PerfilUsuario 
+            volver={() => {
+              setVistaActiva("INICIO");
+              cargarDatos(); 
+            }} 
+          />
+        ) : (
+          <>
+            <section className="bienvenida-panel">
+              <p>Aquí puedes consultar tus votaciones activas.</p>
+            </section>
 
-        <section className="votaciones-destacadas">
-          {votacionesDestacadas.length > 0 ? (
-            votacionesDestacadas.map((votacion) => (
-              <TarjetaVotacion key={votacion.idVotacion} votacion={votacion} />
-            ))
-          ) : (
-            <div className="estado-vacio estado-vacio--grande">
-              <h2>No hay elecciones activas</h2>
-              <p>Las votaciones activas aparecerán en esta sección.</p>
-            </div>
-          )}
-        </section>
+            <section className="votaciones-destacadas">
+              {votacionesDestacadas.length > 0 ? (
+                votacionesDestacadas.map((votacion) => (
+                  <TarjetaVotacion key={votacion.idVotacion} votacion={votacion} />
+                ))
+              ) : (
+                <div className="estado-vacio estado-vacio--grande">
+                  <h2>No hay elecciones activas</h2>
+                  <p>Las votaciones activas aparecerán en esta sección.</p>
+                </div>
+              )}
+            </section>
 
-        <section className="seccion-elecciones">
-          <div className="seccion-elecciones__superior">
-            <h2>Todas tus elecciones.</h2>
+            <section className="seccion-elecciones">
+              <div className="seccion-elecciones__superior">
+                <h2>Todas tus elecciones.</h2>
 
-            <div className="seccion-elecciones__filtros">
-              <label className="campo-busqueda">
-                <span>⌕</span>
+                <div className="seccion-elecciones__filtros">
+                  <label className="campo-busqueda">
+                    <span>⌕</span>
 
-                <input
-                  type="search"
-                  placeholder="Buscar"
-                  value={busqueda}
-                  onChange={(evento) => setBusqueda(evento.target.value)}
-                />
-              </label>
+                    <input
+                      type="search"
+                      placeholder="Buscar"
+                      value={busqueda}
+                      onChange={(evento) => setBusqueda(evento.target.value)}
+                    />
+                  </label>
 
-              <select
-                className="selector-periodo"
-                value={periodo}
-                onChange={(evento) => setPeriodo(evento.target.value)}
-              >
-                <option value="TODAS">Todas</option>
-                <option value="30">Últimos 30 días</option>
-                <option value="90">Últimos 90 días</option>
-                <option value="365">Último año</option>
-              </select>
-            </div>
-          </div>
+                  <select
+                    className="selector-periodo"
+                    value={periodo}
+                    onChange={(evento) => setPeriodo(evento.target.value)}
+                  >
+                    <option value="TODAS">Todas</option>
+                    <option value="30">Últimos 30 días</option>
+                    <option value="90">Últimos 90 días</option>
+                    <option value="365">Último año</option>
+                  </select>
+                </div>
+              </div>
 
-          <div className="contenedor-tabla">
-            <table className="tabla-elecciones">
-              <thead>
-                <tr>
-                  <th>Nombre elección</th>
-                  <th>Total votos</th>
-                  <th>Fecha inicio</th>
-                  <th>Fecha de cierre</th>
-                  <th>Privacidad</th>
-                  <th aria-label="Acciones" />
-                </tr>
-              </thead>
-
-              <tbody>
-                {eleccionesFiltradas.map((votacion) => {
-                  const imagen = obtenerImagenEleccion(votacion);
-
-                  return (
-                    <tr key={votacion.idVotacion}>
-                      <td>
-                        <div className="informacion-eleccion">
-                          {imagen ? (
-                            <img
-                              src={imagen}
-                              alt=""
-                              className="informacion-eleccion__imagen"
-                            />
-                          ) : (
-                            <div className="informacion-eleccion__icono">
-                              🗳️
-                            </div>
-                          )}
-
-                          <div>
-                            <strong>{traducirEstado(votacion.estado)}</strong>
-
-                            <span>{votacion.titulo}</span>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>
-                        {formateadorNumero.format(votacion.totalVotos || 0)}
-                      </td>
-
-                      <td>{formatearFecha(votacion.fechaInicio)}</td>
-
-                      <td>
-                        {votacion.estado === "ACTIVA"
-                          ? "Aún activa"
-                          : formatearFecha(votacion.fechaFin)}
-                      </td>
-
-                      <td>{traducirPrivacidad(votacion.privacidad)}</td>
-
-                      <td>
-                        <div className="acciones-eleccion">
-                          <button
-                            type="button"
-                            className="boton-accion boton-accion--editar"
-                            onClick={() => editarVotacion(votacion.idVotacion)}
-                          >
-                            Editar
-                          </button>
-
-                          <button
-                            type="button"
-                            className="boton-accion boton-accion--eliminar"
-                            onClick={() =>
-                              eliminarVotacion(votacion.idVotacion)
-                            }
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
+              <div className="contenedor-tabla">
+                <table className="tabla-elecciones">
+                  <thead>
+                    <tr>
+                      <th>Nombre elección</th>
+                      <th>Total votos</th>
+                      <th>Fecha inicio</th>
+                      <th>Fecha de cierre</th>
+                      <th>Privacidad</th>
+                      <th aria-label="Acciones" />
                     </tr>
-                  );
-                })}
+                  </thead>
 
-                {eleccionesFiltradas.length === 0 && (
-                  <tr>
-                    <td colSpan="6">
-                      <div className="tabla-elecciones__vacia">
-                        No se encontraron elecciones.
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                  <tbody>
+                    {eleccionesFiltradas.map((votacion) => {
+                      const imagen = obtenerImagenEleccion(votacion);
+
+                      return (
+                        <tr key={votacion.idVotacion}>
+                          <td>
+                            <div className="informacion-eleccion">
+                              {imagen ? (
+                                <img
+                                  src={imagen}
+                                  alt=""
+                                  className="informacion-eleccion__imagen"
+                                />
+                              ) : (
+                                <div className="informacion-eleccion__icono">
+                                  🗳️
+                                </div>
+                              )}
+
+                              <div>
+                                <strong>{traducirEstado(votacion.estado)}</strong>
+
+                                <span>{votacion.titulo}</span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>
+                            {formateadorNumero.format(votacion.totalVotos || 0)}
+                          </td>
+
+                          <td>{formatearFecha(votacion.fechaInicio)}</td>
+
+                          <td>
+                            {votacion.estado === "ACTIVA"
+                              ? "Aún activa"
+                              : formatearFecha(votacion.fechaFin)}
+                          </td>
+
+                          <td>{traducirPrivacidad(votacion.privacidad)}</td>
+
+                          <td>
+                            <div className="acciones-eleccion">
+                              <button
+                                type="button"
+                                className="boton-accion boton-accion--editar"
+                                onClick={() => editarVotacion(votacion.idVotacion)}
+                              >
+                                Editar
+                              </button>
+
+                              <button
+                                type="button"
+                                className="boton-accion boton-accion--eliminar"
+                                onClick={() =>
+                                  eliminarVotacion(votacion.idVotacion)
+                                }
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {eleccionesFiltradas.length === 0 && (
+                      <tr>
+                        <td colSpan="6">
+                          <div className="tabla-elecciones__vacia">
+                            No se encontraron elecciones.
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );

@@ -1,16 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import logo from "../assets/icons/icon-logo-offletters.png";
 import imgBarras from "../assets/icons/icon-grafico-barras.webp";
 import imgPastel from "../assets/icons/icon-grafico-pastel.webp";
 import "./EditarVotacion.css";
 
-const API_BASE_URL = "http://localhost:8080/api";
-
 function EditarVotacion() {
-  const { id } = useParams(); 
-  const navigate = useNavigate();
-
   const [titulo, setTitulo] = useState("");
   const [idCategoria, setIdCategoria] = useState("");
   const [categoriasLista, setCategoriasLista] = useState([]);
@@ -20,109 +14,37 @@ function EditarVotacion() {
   const [horaF, setHoraF] = useState("");
   const [descripcion, setDescripcion] = useState("");
 
-  const [opciones, setOpciones] = useState([]);
+  const [opciones, setOpciones] = useState([
+    { id: 1, nombre: "", imagen_url: "", orden_visual: 1 },
+    { id: 2, nombre: "", imagen_url: "", orden_visual: 2 },
+  ]);
 
-  const [privacidad, setPrivacidad] = useState("PUBLICA");
-  const [tipoVoto, setTipoVoto] = useState("ANONIMO");
-  const [tipoSeleccion, setTipoSeleccion] = useState("UNICA");
+  const [privacidad, setPrivacidad] = useState("PUBLICA"); 
+  const [tipoVoto, setTipoVoto] = useState("ANONIMO"); 
+  const [tipoSeleccion, setTipoSeleccion] = useState("UNICA"); 
   const [maxSelecciones, setMaxSelecciones] = useState(1);
-  const [permiteCambioVoto, setPermiteCambioVoto] = useState(false);
+  const [permiteCambioVoto, setPermiteCambioVoto] = useState(false); 
   const [restriccionEdad, setRestriccionEdad] = useState("todos");
-  const [tipoGrafica, setTipoGrafica] = useState("BARRAS");
-  const [comentariosPermitidos, setComentariosPermitidos] = useState(false);
+  const [tipoGrafica, setTipoGrafica] = useState("BARRAS"); 
+  const [comentariosPermitidos, setComentariosPermitidos] = useState(false); 
 
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
-  const [cargandoDatos, setCargandoDatos] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    const cargarCategorias = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/categorias`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setCategoriasLista(data);
-        }
-      } catch (err) {
-        console.error("Error al cargar categorías:", err);
-      }
-    };
-
-    const cargarVotacion = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/elecciones/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!res.ok) {
-          throw new Error("No se pudo obtener la información de la votación.");
-        }
-
-        const data = await res.json();
-
-        // Precargar campos de texto y reglas
-        setTitulo(data.titulo || "");
-        setIdCategoria(data.idCategoria || data.categoria?.idCategoria || "");
-        setDescripcion(data.descripcion || "");
-        setPrivacidad(data.privacidad || "PUBLICA");
-        setTipoVoto(data.tipoVoto || "ANONIMO");
-        setTipoSeleccion(data.tipoSeleccion || "UNICA");
-        setMaxSelecciones(data.maxSelecciones || 1);
-        setPermiteCambioVoto(data.permiteCambioVoto ?? false);
-        setRestriccionEdad(data.edadMinima === 18 ? "18" : "todos");
-        setTipoGrafica(data.tipoGrafica || "BARRAS");
-        setComentariosPermitidos(data.comentariosPermitidos ?? false);
-
-
-        if (data.fechaInicio) {
-          const [fC, hC] = data.fechaInicio.split(" ");
-          setFechaC(fC || "");
-          setHoraC(hC ? hC.substring(0, 5) : "");
-        }
-
-        if (data.fechaFin) {
-          const [fF, hF] = data.fechaFin.split(" ");
-          setFechaF(fF || "");
-          setHoraF(hF ? hF.substring(0, 5) : "");
-        }
-
-
-        if (data.opciones && data.opciones.length > 0) {
-          const opcionesMapeadas = data.opciones.map((op, idx) => ({
-            id: op.idOpcion || Date.now() + idx,
-            nombre: op.nombre || "",
-            imagen_url: op.imagenUrl || op.imagen_url || "",
-            archivo: null, 
-            orden_visual: op.ordenVisual || idx + 1,
-          }));
-          setOpciones(opcionesMapeadas);
-        } else {
-          setOpciones([
-            { id: 1, nombre: "", imagen_url: "", archivo: null, orden_visual: 1 },
-            { id: 2, nombre: "", imagen_url: "", archivo: null, orden_visual: 2 },
-          ]);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setCargandoDatos(false);
-      }
-    };
-
-    cargarCategorias();
-    cargarVotacion();
-  }, [id]);
-
+    setCategoriasLista([
+      { id_categoria: 1, nombre: "Escolar / Académico" },
+      { id_categoria: 2, nombre: "Política y Elecciones" },
+      { id_categoria: 3, nombre: "Deportes" },
+      { id_categoria: 4, nombre: "Entretenimiento" },
+    ]);
+  }, []);
 
   const agregarOpcion = () => {
     const nuevoOrden = opciones.length + 1;
     setOpciones([
       ...opciones,
-      { id: Date.now(), nombre: "", imagen_url: "", archivo: null, orden_visual: nuevoOrden },
+      { id: Date.now(), nombre: "", imagen_url: "", orden_visual: nuevoOrden },
     ]);
   };
 
@@ -148,20 +70,13 @@ function EditarVotacion() {
     if (file) {
       setOpciones(
         opciones.map((op) =>
-          op.id === id
-            ? {
-                ...op,
-                archivo: file,
-                imagen_url: URL.createObjectURL(file),
-              }
-            : op
+          op.id === id ? { ...op, imagen_url: URL.createObjectURL(file) } : op
         )
       );
     }
   };
 
-
-  const enviar = async (e) => {
+  const enviar = (e) => {
     e.preventDefault();
     setError("");
 
@@ -177,67 +92,30 @@ function EditarVotacion() {
 
     setCargando(true);
 
-    try {
-      const payload = {
-        id_categoria: Number(idCategoria),
-        titulo,
-        descripcion: descripcion || null,
-        fecha_inicio: `${fechaC} ${horaC}:00`,
-        fecha_fin: `${fechaF} ${horaF}:00`,
-        privacidad,
-        tipo_voto: tipoVoto,
-        tipo_seleccion: tipoSeleccion,
-        max_selecciones: tipoSeleccion === "MULTIPLE" ? Number(maxSelecciones) : 1,
-        permite_cambio_voto: permiteCambioVoto,
-        tipo_grafica: tipoGrafica,
-        edad_minima: restriccionEdad === "18" ? 18 : null,
-        comentarios_permitidos: comentariosPermitidos,
-        opciones: opciones.map((op) => ({
-          nombre: op.nombre,
-          imagen_url: op.archivo ? null : op.imagen_url, // Mantiene la URL vieja si no subió un archivo nuevo
-          orden_visual: op.orden_visual,
-        })),
-      };
+    const payload = {
+      id_categoria: Number(idCategoria),
+      titulo,
+      descripcion: descripcion || null,
+      fecha_inicio: `${fechaC} ${horaC}:00`,
+      fecha_fin: `${fechaF} ${horaF}:00`,
+      privacidad,
+      tipo_voto: tipoVoto,
+      tipo_seleccion: tipoSeleccion,
+      max_selecciones: tipoSeleccion === "MULTIPLE" ? Number(maxSelecciones) : 1,
+      permite_cambio_voto: permiteCambioVoto,
+      tipo_grafica: tipoGrafica,
+      edad_minima: restriccionEdad === "18" ? 18 : null,
+      comentarios_permitidos: comentariosPermitidos,
+      opciones: opciones.map((op) => ({
+        nombre: op.nombre,
+        imagen_url: op.imagen_url || null,
+        orden_visual: op.orden_visual,
+      })),
+    };
 
-      const formData = new FormData();
-      formData.append(
-        "datos",
-        new Blob([JSON.stringify(payload)], { type: "application/json" })
-      );
-
-
-      opciones.forEach((op) => {
-        if (op.archivo) {
-          formData.append("imagenes", op.archivo);
-        }
-      });
-
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE_URL}/elecciones/${id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => null);
-        throw new Error(errorData?.mensaje || "Error al actualizar la votación.");
-      }
-
-      alert("¡Votación editada con éxito!");
-      navigate("/mis-elecciones");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setCargando(false);
-    }
+    console.log("Payload para el MySQL:", payload);
+    setCargando(false);
   };
-
-  if (cargandoDatos) {
-    return <div className="cargando-contenedor">Cargando datos de la votación...</div>;
-  }
 
   return (
     <div className="editar-votacion-contenedor">
@@ -272,7 +150,7 @@ function EditarVotacion() {
               >
                 <option value="">-- Selecciona una categoría --</option>
                 {categoriasLista.map((cat) => (
-                  <option key={cat.id_categoria || cat.idCategoria} value={cat.id_categoria || cat.idCategoria}>
+                  <option key={cat.id_categoria} value={cat.id_categoria}>
                     {cat.nombre}
                   </option>
                 ))}
@@ -563,7 +441,7 @@ function EditarVotacion() {
           </button>
           <div className="contenedor-regresar">
             <span>¿Deseas regresar? </span>
-            <span className="enlace-regresar" onClick={() => navigate(-1)}>Volver</span>
+            <span className="enlace-regresar">Volver</span>
           </div>
         </div>
       </form>

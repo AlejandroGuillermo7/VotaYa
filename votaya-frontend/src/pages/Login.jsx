@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Swal from "sweetalert2"; // Import movido a la parte superior
+import Swal from "sweetalert2";
 import iconLogo from "../assets/icons/icon-login.png";
 import iconEmail from "../assets/icons/icon-email.svg";
 import iconPassword from "../assets/icons/icon-password.svg";
