@@ -6,7 +6,6 @@ import email from "../assets/icons/icon-email.svg";
 import password from "../assets/icons/icon-password.svg";
 import "./PerfilUsuario.css";
 
-
 function resolverUrlArchivo(ruta) {
   if (!ruta) return null;
   if (ruta.startsWith("http://") || ruta.startsWith("https://") || ruta.startsWith("blob:")) {
@@ -15,70 +14,76 @@ function resolverUrlArchivo(ruta) {
   return `http://localhost:8080${ruta.startsWith("/") ? "" : "/"}${ruta}`;
 }
 
-function PerfilUsuario({ volver }) {
+function PerfilUsuario({ volver, onActualizado }) {
   const [nombre, setNombre] = useState("");
   const [apellidoP, setApellidoP] = useState("");
   const [apellidoM, setApellidoM] = useState("");
   const [fechaN, setFechaN] = useState("");
   const [correo, setCorreo] = useState("");
-  
+
+  // Foto que se MUESTRA en pantalla (puede ser del servidor o un blob local temporal)
   const [fotoPerfil, setFotoPerfil] = useState(null);
+  // Archivo nuevo seleccionado, pendiente de subir
   const [archivoFoto, setArchivoFoto] = useState(null);
+  // Bandera para no pisar la vista previa local con onError mientras aún no se ha guardado
+  const [fotoFallo, setFotoFallo] = useState(false);
 
   const [contraseñaActual, setContraseñaActual] = useState("");
   const [contraseñaNueva, setContraseñaNueva] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
   const [isVerificada, setIsVerificada] = useState(false);
   const [cargando, setCargando] = useState(false);
+  const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
 
-  const token = localStorage.getItem("token"); 
+  const token = localStorage.getItem("token");
+
+  const obtenerPerfil = async () => {
+    try {
+      const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!respuesta.ok) throw new Error("No se pudieron obtener los datos.");
+
+      const data = await respuesta.json();
+
+      setNombre(data.nombres || "");
+      setApellidoP(data.apellidoPaterno || "");
+      setApellidoM(data.apellidoMaterno || "");
+      setFechaN(data.fechaNacimiento || "");
+      setCorreo(data.correo || "");
+
+      setFotoFallo(false);
+      setFotoPerfil(data.fotoUrl ? resolverUrlArchivo(data.fotoUrl) : null);
+    } catch (error) {
+      setMensaje({ tipo: "error", texto: "Error al cargar la información del perfil." });
+    }
+  };
 
   useEffect(() => {
-    const obtenerPerfil = async () => {
-      try {
-        const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!respuesta.ok) throw new Error("No se pudieron obtener los datos.");
-
-        const data = await respuesta.json();
-        
-        setNombre(data.nombres || "");
-        setApellidoP(data.apellidoPaterno || "");
-        setApellidoM(data.apellidoMaterno || "");
-        setFechaN(data.fechaNacimiento || "");
-        setCorreo(data.correo || "");
-        
-
-        if (data.fotoUrl) {
-          setFotoPerfil(resolverUrlArchivo(data.fotoUrl));
-        }
-
-      } catch (error) {
-        setMensaje({ tipo: "error", texto: "Error al cargar la información del perfil." });
-      }
-    };
-
     if (token) obtenerPerfil();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const cambiarFoto = (e) => {
     const archivo = e.target.files[0];
     if (archivo) {
-      setFotoPerfil(URL.createObjectURL(archivo)); 
-      setArchivoFoto(archivo); 
+      setFotoFallo(false);
+      setFotoPerfil(URL.createObjectURL(archivo));
+      setArchivoFoto(archivo);
     }
   };
 
   const eliminarFotoNueva = () => {
-    setFotoPerfil(null);
+    // Solo cancela la selección local; no borra la foto ya guardada en el servidor.
+    // Si no hay foto previa guardada, vuelve al placeholder.
     setArchivoFoto(null);
+    obtenerPerfil();
   };
 
   const handleVerificar = async (e) => {
@@ -109,7 +114,6 @@ function PerfilUsuario({ volver }) {
 
       setIsVerificada(true);
       setMensaje({ tipo: "exito", texto: "Contraseña verificada. Puedes ingresar la nueva." });
-
     } catch (error) {
       setIsVerificada(false);
       setMensaje({ tipo: "error", texto: error.message || "Error al verificar la contraseña." });
@@ -132,6 +136,9 @@ function PerfilUsuario({ volver }) {
       }
     }
 
+    setGuardando(true);
+    setMensaje({ tipo: "", texto: "" });
+
     try {
       const formData = new FormData();
 
@@ -144,7 +151,10 @@ function PerfilUsuario({ volver }) {
         ...(isVerificada && contraseñaNueva ? { nuevaContrasena: contraseñaNueva } : {}),
       };
 
-      formData.append("datos", new Blob([JSON.stringify(datosActualizados)], { type: "application/json" }));
+      formData.append(
+        "datos",
+        new Blob([JSON.stringify(datosActualizados)], { type: "application/json" })
+      );
 
       if (archivoFoto) {
         formData.append("foto", archivoFoto);
@@ -153,7 +163,7 @@ function PerfilUsuario({ volver }) {
       const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
         method: "PUT",
         headers: {
-          "Authorization": `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
         },
         body: formData,
       });
@@ -164,14 +174,31 @@ function PerfilUsuario({ volver }) {
         throw new Error(data.mensaje || "Ocurrió un error al actualizar los datos.");
       }
 
-      setMensaje({ tipo: "exito", texto: "Perfil actualizado correctamente." });
+      // IMPORTANTE: usar la respuesta real del servidor, no el blob local.
+      setNombre(data.nombres || "");
+      setApellidoP(data.apellidoPaterno || "");
+      setApellidoM(data.apellidoMaterno || "");
+      setFechaN(data.fechaNacimiento || "");
+      setCorreo(data.correo || "");
+      setFotoFallo(false);
+      setFotoPerfil(data.fotoUrl ? resolverUrlArchivo(data.fotoUrl) : null);
+
+      setArchivoFoto(null);
       setContraseñaActual("");
       setContraseñaNueva("");
       setConfirmarContraseña("");
       setIsVerificada(false);
 
+      setMensaje({ tipo: "exito", texto: "Perfil actualizado correctamente." });
+
+      // Avisar al padre (Inicio.jsx) para refrescar encabezado/tabla
+      if (typeof onActualizado === "function") {
+        onActualizado();
+      }
     } catch (error) {
       setMensaje({ tipo: "error", texto: error.message || "Error al actualizar los datos." });
+    } finally {
+      setGuardando(false);
     }
   };
 
@@ -184,12 +211,12 @@ function PerfilUsuario({ volver }) {
         <div className="contenedor-foto-perfil">
           <div className="wrapper-foto">
             <label htmlFor="fotoPerfilInput" className="marco-foto-perfil">
-              {fotoPerfil ? (
-                <img 
-                  src={fotoPerfil} 
-                  alt="" 
+              {fotoPerfil && !fotoFallo ? (
+                <img
+                  src={fotoPerfil}
+                  alt=""
                   className="foto-perfil-imagen"
-                  onError={() => setFotoPerfil(null)} // Si la URL falla, cae al icono por defecto
+                  onError={() => setFotoFallo(true)}
                 />
               ) : (
                 <div className="place-holder-foto">
@@ -202,9 +229,9 @@ function PerfilUsuario({ volver }) {
             </label>
 
             {archivoFoto && (
-              <button 
-                type="button" 
-                className="btn-eliminar-foto" 
+              <button
+                type="button"
+                className="btn-eliminar-foto"
                 onClick={eliminarFotoNueva}
                 title="Quitar imagen seleccionada"
               >
@@ -369,8 +396,8 @@ function PerfilUsuario({ volver }) {
         </section>
 
         <div className="acciones-finales">
-          <button type="submit" className="btn-actualizar">
-            Actualizar
+          <button type="submit" className="btn-actualizar" disabled={guardando}>
+            {guardando ? "Actualizando..." : "Actualizar"}
           </button>
           <p className="Editar-volver">
             ¿Deseas regresar?{" "}

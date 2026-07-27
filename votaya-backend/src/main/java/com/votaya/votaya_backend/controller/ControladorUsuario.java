@@ -30,43 +30,43 @@ public class ControladorUsuario {
                 servicioUsuario.obtenerPerfil());
     }
 
-    @PutMapping(value = "/perfil", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
-    public ResponseEntity<UsuarioDTO.Respuesta> actualizarPerfil(
-            @Valid @RequestPart("datos") UsuarioDTO.SolicitudActualizar solicitud,
-            @RequestPart(value = "foto", required = false) MultipartFile foto) {
+   @PutMapping(value = "/perfil", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+public ResponseEntity<UsuarioDTO.Respuesta> actualizarPerfil(
+        @Valid @RequestPart("datos") UsuarioDTO.SolicitudActualizar solicitud,
+        @RequestPart(value = "foto", required = false) MultipartFile foto) {
 
-        String urlFoto = solicitud.fotoUrl(); 
+    String urlFoto = solicitud.fotoUrl();
 
+    if (foto != null && !foto.isEmpty()) {
+        try {
+            String nombreArchivo = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
+            Path rutaDirectorio = Paths.get("src/main/resources/static/imagenes/");
 
-        if (foto != null && !foto.isEmpty()) {
-            try {
-                String nombreArchivo = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
-                Path rutaDirectorio = Paths.get("src/main/resources/static/imagenes/");
-
-                if (!Files.exists(rutaDirectorio)) {
-                    Files.createDirectories(rutaDirectorio);
-                }
-
-                Path rutaCompleta = rutaDirectorio.resolve(nombreArchivo);
-                Files.copy(foto.getInputStream(), rutaCompleta, StandardCopyOption.REPLACE_EXISTING);
-
-                urlFoto = "/imagenes/" + nombreArchivo;
-
-            } catch (IOException e) {
-                throw new RuntimeException("Error al guardar la nueva foto de perfil", e);
+            if (!Files.exists(rutaDirectorio)) {
+                Files.createDirectories(rutaDirectorio);
             }
+
+            Path rutaCompleta = rutaDirectorio.resolve(nombreArchivo);
+            Files.copy(foto.getInputStream(), rutaCompleta, StandardCopyOption.REPLACE_EXISTING);
+
+            urlFoto = "/imagenes/" + nombreArchivo;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error al guardar la nueva foto de perfil", e);
         }
-
-        UsuarioDTO.SolicitudActualizar solicitudFinal = new UsuarioDTO.SolicitudActualizar(
-                solicitud.nombres(),
-                solicitud.apellidoPaterno(),
-                solicitud.apellidoMaterno(),
-                solicitud.fechaNacimiento(),
-                urlFoto
-        );
-
-        return ResponseEntity.ok(
-                servicioUsuario.actualizarPerfil(solicitudFinal)
-        );
     }
-}
+
+    UsuarioDTO.SolicitudActualizar solicitudFinal = new UsuarioDTO.SolicitudActualizar(
+            solicitud.nombres(),
+            solicitud.apellidoPaterno(),
+            solicitud.apellidoMaterno(),
+            solicitud.fechaNacimiento(),
+            solicitud.correo(),
+            urlFoto,
+            solicitud.nuevaContrasena()
+    );
+
+    return ResponseEntity.ok(
+            servicioUsuario.actualizarPerfil(solicitudFinal)
+    );
+}}

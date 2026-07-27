@@ -218,6 +218,7 @@ function Inicio({ alCerrarSesion }) {
               setVistaActiva("INICIO");
               cargarDatos(); 
             }} 
+            onActualizado={cargarDatos}
           />
         ) : (
           <>

@@ -1,5 +1,6 @@
 package com.votaya.votaya_backend.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
@@ -24,7 +25,11 @@ public final class UsuarioDTO {
 
             @Past LocalDate fechaNacimiento,
 
-            @Size(max = 500) String fotoUrl) {
+            @NotBlank @Email @Size(max = 150) String correo,
+
+            @Size(max = 500) String fotoUrl,
+
+            @Size(min = 8, max = 100) String nuevaContrasena) {
     }
 
     public record Respuesta(
@@ -40,4 +45,5 @@ public final class UsuarioDTO {
             Boolean correoVerificado,
             LocalDateTime fechaRegistro) {
     }
+
 }
