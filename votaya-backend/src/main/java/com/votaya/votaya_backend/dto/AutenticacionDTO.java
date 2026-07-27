@@ -1,10 +1,14 @@
 package com.votaya.votaya_backend.dto;
 
-import jakarta.validation.constraints.*;
-
 import java.time.LocalDate;
 
 import com.votaya.votaya_backend.enumeraciones.RolUsuario;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 
 public final class AutenticacionDTO {
 
@@ -30,7 +34,10 @@ public final class AutenticacionDTO {
 
                         @NotBlank @Email @Size(max = 150) String correo,
 
-                        @NotBlank @Size(min = 6, max = 72) String contrasena) {
+                        @NotBlank @Size(min = 6, max = 72) String contrasena,
+                        
+                        String fotoUrl)
+        {
         }
 
         public record SolicitudLogin(

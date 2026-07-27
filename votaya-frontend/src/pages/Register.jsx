@@ -15,9 +15,28 @@ function Register({ irALogin }) {
   const [contraseña, setContraseña] = useState("");
   const [confContraseña, setConfContraseña] = useState("");
 
+  const [fotoPerfil, setFotoPerfil] = useState(null);
+  const [archivoFoto, setArchivoFoto] = useState(null);
+
   const [error, setError] = useState("");
   const [erroresCampos, setErroresCampos] = useState({});
   const [cargando, setCargando] = useState(false);
+
+  const cambiarFoto = (e) => {
+    const archivo = e.target.files[0];
+    if (archivo) {
+      setFotoPerfil(URL.createObjectURL(archivo));
+      setArchivoFoto(archivo);
+    }
+  };
+
+  const eliminarFoto = (e) => {
+    e.stopPropagation(); 
+    setFotoPerfil(null);
+    setArchivoFoto(null);
+    const inputElement = document.getElementById("fotoPerfilInput");
+    if (inputElement) inputElement.value = "";
+  };
 
   function validarCampos() {
     const formato = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -68,19 +87,28 @@ function Register({ irALogin }) {
     setCargando(true);
 
     try {
+      const formData = new FormData();
+
+      const usuarioData = {
+        nombres: nombre,
+        apellidoPaterno: apellidoP,
+        apellidoMaterno: apellidoM,
+        fechaNacimiento: fNacimiento,
+        correo: correo,
+        contrasena: contraseña,
+      };
+
+      // Adjuntamos los datos JSON
+      formData.append("datos", new Blob([JSON.stringify(usuarioData)], { type: "application/json" }));
+
+      // Si seleccionó foto, la enviamos
+      if (archivoFoto) {
+        formData.append("foto", archivoFoto);
+      }
+
       const respuesta = await fetch("http://localhost:8080/api/auth/registro", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nombres: nombre,
-          apellidoPaterno: apellidoP,
-          apellidoMaterno: apellidoM,
-          fechaNacimiento: fNacimiento,
-          correo: correo,
-          contrasena: contraseña,
-        }),
+        body: formData,
       });
 
       const data = await respuesta.json();
@@ -134,6 +162,47 @@ function Register({ irALogin }) {
         <hr className="linea-divisora" />
 
         <form onSubmit={enviar}>
+          
+          {/* FOTO DE PERFIL DECORADA */}
+          <div className="contenedor-foto-perfil">
+            <div className="wrapper-foto">
+              <label htmlFor="fotoPerfilInput" className="marco-foto-perfil">
+                {fotoPerfil ? (
+                  <img src={fotoPerfil} alt="Foto de perfil" className="foto-perfil-imagen" />
+                ) : (
+                  <div className="place-holder-foto">
+                    <svg className="icono-avatar-svg" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    <span className="icono-agregar-foto">+</span>
+                  </div>
+                )}
+              </label>
+
+              {fotoPerfil && (
+                <button 
+                  type="button" 
+                  className="btn-eliminar-foto" 
+                  onClick={eliminarFoto}
+                  title="Quitar foto"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <input
+              type="file"
+              id="fotoPerfilInput"
+              accept="image/*"
+              hidden
+              onChange={cambiarFoto}
+            />
+            <p className="texto-subir-foto">
+              {fotoPerfil ? "Cambiar fotografía" : "Subir fotografía"}
+            </p>
+          </div>
+
           <div className="formulario-campo">
             <label htmlFor="nombre">Nombre(s)</label>
             <div className={`campo-con-icono ${erroresCampos.nombre ? "campo-error" : ""}`}>

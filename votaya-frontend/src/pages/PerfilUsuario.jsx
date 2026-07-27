@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from "../assets/icons/icon-logo-offletters.png";
 import user from "../assets/icons/icon-username.svg";
 import email from "../assets/icons/icon-email.svg";
 import password from "../assets/icons/icon-password.svg";
 import "./PerfilUsuario.css";
 
-function PerfilUsuario() {
+function PerfilUsuario({ volver }) {
   const [nombre, setNombre] = useState("");
   const [apellidoP, setApellidoP] = useState("");
   const [apellidoM, setApellidoM] = useState("");
@@ -13,7 +13,6 @@ function PerfilUsuario() {
   const [correo, setCorreo] = useState("");
   const [fotoPerfil, setFotoPerfil] = useState(null);
 
-  // para contraseñas
   const [contraseñaActual, setContraseñaActual] = useState("");
   const [contraseñaNueva, setContraseñaNueva] = useState("");
   const [confirmarContraseña, setConfirmarContraseña] = useState("");
@@ -21,10 +20,43 @@ function PerfilUsuario() {
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
 
+  const token = localStorage.getItem("token"); 
+//Cargamos los datos de el perfil
+  useEffect(() => {
+    const obtenerPerfil = async () => {
+      try {
+        const respuesta = await fetch("http://localhost:8080/api/usuario/perfil", {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!respuesta.ok) throw new Error("No se pudieron obtener los datos.");
+
+        const data = await respuesta.json();
+        
+        setNombre(data.nombres || "");
+        setApellidoP(data.apellidoPaterno || "");
+        setApellidoM(data.apellidoMaterno || "");
+        setFechaN(data.fechaNacimiento || "");
+        setCorreo(data.correo || "");
+        if (data.fotoUrl) setFotoPerfil(data.fotoUrl);
+
+      } catch (error) {
+        setMensaje({ tipo: "error", texto: "Error al cargar la información del perfil." });
+      }
+    };
+
+    if (token) obtenerPerfil();
+  }, [token]);
+
   const cambiarFoto = (e) => {
     const archivo = e.target.files[0];
     if (archivo) {
       setFotoPerfil(URL.createObjectURL(archivo));
+      
     }
   };
 
@@ -39,9 +71,27 @@ function PerfilUsuario() {
     setMensaje({ tipo: "", texto: "" });
 
     try {
+      const respuesta = await fetch("http://localhost:8080/api/usuario/verificar-password", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ passwordActual: contraseñaActual }),
+      });
+
+      const data = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(data.mensaje || "La contraseña ingresada no es correcta.");
+      }
+
+      setIsVerificada(true);
+      setMensaje({ tipo: "exito", texto: "Contraseña verificada. Puedes ingresar la nueva." });
 
     } catch (error) {
-      setMensaje({ tipo: "error", texto: "Error al conectar con el servidor." });
+      setIsVerificada(false);
+      setMensaje({ tipo: "error", texto: error.message || "Error al verificar la contraseña." });
     } finally {
       setCargando(false);
     }
@@ -55,17 +105,45 @@ function PerfilUsuario() {
         setMensaje({ tipo: "error", texto: "Las nuevas contraseñas no coinciden." });
         return;
       }
-      if (contraseñaNueva.length < 6) {
-        setMensaje({ tipo: "error", texto: "La nueva contraseña debe tener al menos 6 caracteres." });
+      if (contraseñaNueva.length < 8) {
+        setMensaje({ tipo: "error", texto: "La nueva contraseña debe tener al menos 8 caracteres." });
         return;
       }
     }
 
     try {
-      /* BACKEND */
+      const datosActualizados = {
+        nombres: nombre,
+        apellidoPaterno: apellidoP,
+        apellidoMaterno: apellidoM,
+        fechaNacimiento: fechaN,
+        correo: correo,
+        ...(isVerificada && contraseñaNueva ? { nuevaContrasena: contraseñaNueva } : {}),
+      };
+
+      const respuesta = await fetch("http://localhost:8080/api/usuario/actualizar", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(datosActualizados),
+      });
+
+      const data = await respuesta.json();
+
+      if (!respuesta.ok) {
+        throw new Error(data.mensaje || "Ocurrió un error al actualizar los datos.");
+      }
+
       setMensaje({ tipo: "exito", texto: "Perfil actualizado correctamente." });
+      setContraseñaActual("");
+      setContraseñaNueva("");
+      setConfirmarContraseña("");
+      setIsVerificada(false);
+
     } catch (error) {
-      setMensaje({ tipo: "error", texto: "Error al actualizar los datos." });
+      setMensaje({ tipo: "error", texto: error.message || "Error al actualizar los datos." });
     }
   };
 
@@ -244,7 +322,10 @@ function PerfilUsuario() {
             Actualizar
           </button>
           <p className="Editar-volver">
-            ¿Deseas regresar? <span className="Editar-volver-click">Volver</span>
+            ¿Deseas regresar?{" "}
+            <span className="Editar-volver-click" onClick={volver}>
+              Volver
+            </span>
           </p>
         </div>
       </form>
