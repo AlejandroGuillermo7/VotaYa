@@ -232,6 +232,7 @@ public class ServicioVoto {
                 resultados);
     }
 
+    @Transactional(readOnly = true)
     public List<VotoDTO.RespuestaParticipacion> listarMisParticipaciones() {
 
         Usuario usuario = servicioUsuarioActual.obtener();

@@ -5,6 +5,7 @@ function BarraLateral({
   alCerrarSesion,
   abierta = false,
   alCerrar,
+  seccionActiva = "mis-elecciones",
 }) {
   function navegar(ruta) {
     alCerrar?.();
@@ -14,6 +15,17 @@ function BarraLateral({
   function cerrarSesion() {
     alCerrar?.();
     alCerrarSesion();
+  }
+
+  function obtenerClase(seccion) {
+    return [
+      "menu-lateral__boton",
+      seccionActiva === seccion
+        ? "menu-lateral__boton--activo"
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
   }
 
   return (
@@ -45,23 +57,23 @@ function BarraLateral({
       <nav className="menu-lateral">
         <button
           type="button"
-          className="menu-lateral__boton menu-lateral__boton--activo"
-          onClick={alCerrar}
+          className={obtenerClase("mis-elecciones")}
+          onClick={() => navegar("/mis-elecciones")}
         >
           Mis elecciones
         </button>
 
         <button
           type="button"
-          className="menu-lateral__boton"
-          onClick={() => navegar("/mis-elecciones")}
+          className={obtenerClase("elecciones")}
+          onClick={() => navegar("/elecciones")}
         >
           Elecciones
         </button>
 
         <button
           type="button"
-          className="menu-lateral__boton"
+          className={obtenerClase("mis-votos")}
           onClick={() => navegar("/mis-votos")}
         >
           Mis votos

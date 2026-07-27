@@ -12,7 +12,11 @@ function obtenerIniciales(perfil) {
   return `${primeraInicial}${segundaInicial}`.toUpperCase();
 }
 
-function EncabezadoUsuario({ perfil, alAbrirMenu }) {
+function EncabezadoUsuario({
+  perfil,
+  alAbrirMenu,
+  titulo,
+}) {
   const foto = resolverUrlArchivo(perfil?.fotoUrl);
 
   return (
@@ -28,7 +32,7 @@ function EncabezadoUsuario({ perfil, alAbrirMenu }) {
         </button>
 
         <h1 className="encabezado-usuario__bienvenida">
-          Bienvenido {perfil?.nombres || "Usuario"}
+          {titulo || `Bienvenido ${perfil?.nombres || "Usuario"}`}
         </h1>
       </div>
 
@@ -50,7 +54,6 @@ function EncabezadoUsuario({ perfil, alAbrirMenu }) {
             ? `${perfil.nombres} ${perfil.apellidoPaterno}`
             : "Usuario"}
         </span>
-
       </div>
     </header>
   );

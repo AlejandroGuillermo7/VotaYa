@@ -184,6 +184,7 @@ function Inicio({ alCerrarSesion }) {
         alCerrarSesion={alCerrarSesion}
         abierta={menuLateralAbierto}
         alCerrar={() => setMenuLateralAbierto(false)}
+        seccionActiva="mis-elecciones"
       />
 
       {menuLateralAbierto && (
