@@ -33,8 +33,8 @@ public class ControladorAutenticacion {
 
         if (foto != null && !foto.isEmpty()) {
             try {
-                /*UUID.randomUUID().toString() + "_" +  se puede agregar para evitar coliciones */
-                String nombreArchivo =foto.getOriginalFilename();
+                /*para evitar coliciones */
+                String nombreArchivo = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
                 Path rutaDirectorio = Paths.get("src/main/resources/static/imagenes/");
                 
                 if (!Files.exists(rutaDirectorio)) {
