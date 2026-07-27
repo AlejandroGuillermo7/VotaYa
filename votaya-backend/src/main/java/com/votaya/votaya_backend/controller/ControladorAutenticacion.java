@@ -33,7 +33,8 @@ public class ControladorAutenticacion {
 
         if (foto != null && !foto.isEmpty()) {
             try {
-                String nombreArchivo = UUID.randomUUID().toString() + "_" + foto.getOriginalFilename();
+                /*UUID.randomUUID().toString() + "_" +  se puede agregar para evitar coliciones */
+                String nombreArchivo =foto.getOriginalFilename();
                 Path rutaDirectorio = Paths.get("src/main/resources/static/imagenes/");
                 
                 if (!Files.exists(rutaDirectorio)) {
@@ -43,7 +44,7 @@ public class ControladorAutenticacion {
                 Path rutaCompleta = rutaDirectorio.resolve(nombreArchivo);
                 Files.copy(foto.getInputStream(), rutaCompleta, StandardCopyOption.REPLACE_EXISTING);
 
-                urlFoto = "http://localhost:8080/imagenes/" + nombreArchivo;
+                urlFoto = "/imagenes/" + nombreArchivo;
 
             } catch (IOException e) {
                 throw new RuntimeException("Error al guardar la foto de perfil en el servidor", e);
