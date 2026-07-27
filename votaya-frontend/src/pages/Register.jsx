@@ -4,6 +4,7 @@ import iconEmail from "../assets/icons/icon-email.svg";
 import iconPassword from "../assets/icons/icon-password.svg";
 import iconUser from "../assets/icons/icon-username.svg";
 import Swal from "sweetalert2";
+import { FiUser, FiPlus, FiX } from "react-icons/fi";
 import "./Register.css";
 
 function Register({ irALogin }) {
@@ -98,10 +99,8 @@ function Register({ irALogin }) {
         contrasena: contraseña,
       };
 
-      // Adjuntamos los datos JSON
       formData.append("datos", new Blob([JSON.stringify(usuarioData)], { type: "application/json" }));
 
-      // Si seleccionó foto, la enviamos
       if (archivoFoto) {
         formData.append("foto", archivoFoto);
       }
@@ -163,45 +162,45 @@ function Register({ irALogin }) {
 
         <form onSubmit={enviar}>
           
-          {/* FOTO DE PERFIL DECORADA */}
           <div className="contenedor-foto-perfil">
-            <div className="wrapper-foto">
-              <label htmlFor="fotoPerfilInput" className="marco-foto-perfil">
-                {fotoPerfil ? (
-                  <img src={fotoPerfil} alt="Foto de perfil" className="foto-perfil-imagen" />
-                ) : (
-                  <div className="place-holder-foto">
-                    <svg className="icono-avatar-svg" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                    <span className="icono-agregar-foto">+</span>
-                  </div>
-                )}
-              </label>
-
-              {fotoPerfil && (
-                <button 
-                  type="button" 
-                  className="btn-eliminar-foto" 
-                  onClick={eliminarFoto}
-                  title="Quitar foto"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-
-            <input
-              type="file"
-              id="fotoPerfilInput"
-              accept="image/*"
-              hidden
-              onChange={cambiarFoto}
-            />
-            <p className="texto-subir-foto">
-              {fotoPerfil ? "Cambiar fotografía" : "Subir fotografía"}
-            </p>
+              <div className="wrapper-foto">
+    <label htmlFor="fotoPerfilInput" className="marco-foto-perfil">
+      {fotoPerfil ? (
+        <img src={fotoPerfil} alt="Foto de perfil" className="foto-perfil-imagen" />
+      ) : (
+        <div className="place-holder-foto">
+          <FiUser className="icono-avatar-svg" />
+          <div className="icono-agregar-foto">
+            <FiPlus size={14} />
           </div>
+        </div>
+      )}
+    </label>
+
+    {fotoPerfil && (
+      <button 
+        type="button" 
+        className="btn-eliminar-foto" 
+        onClick={eliminarFoto}
+        title="Quitar foto"
+      >
+        <FiX size={14} />
+      </button>
+    )}
+  </div>
+
+              <input
+                type="file"
+                id="fotoPerfilInput"
+                accept="image/*"
+                hidden
+                onChange={cambiarFoto}
+              />
+              
+              <p className="texto-subir-foto">
+                {fotoPerfil ? "Cambiar fotografía" : "Subir fotografía"}
+              </p>
+            </div>
 
           <div className="formulario-campo">
             <label htmlFor="nombre">Nombre(s)</label>
