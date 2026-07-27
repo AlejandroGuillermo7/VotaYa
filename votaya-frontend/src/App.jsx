@@ -3,6 +3,7 @@ import { useState } from "react";
 import Login from "./pages/Login";
 import Inicio from "./pages/Inicio";
 import Elecciones from "./pages/Elecciones";
+import MisVotos from "./pages/MisVotos";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -18,7 +19,11 @@ function App() {
   function iniciarSesion() {
     setSesionActiva(true);
 
-    window.history.replaceState({}, "", "/mis-elecciones");
+    window.history.replaceState(
+      {},
+      "",
+      "/mis-elecciones",
+    );
   }
 
   function cerrarSesion() {
@@ -34,30 +39,60 @@ function App() {
     const rutaActual = window.location.pathname;
 
     if (rutaActual === "/elecciones") {
-      return <Elecciones alCerrarSesion={cerrarSesion} />;
+      return (
+        <Elecciones
+          alCerrarSesion={cerrarSesion}
+        />
+      );
     }
 
-    return <Inicio alCerrarSesion={cerrarSesion} />;
+    if (rutaActual === "/mis-votos") {
+      return (
+        <MisVotos
+          alCerrarSesion={cerrarSesion}
+        />
+      );
+    }
+
+    return (
+      <Inicio
+        alCerrarSesion={cerrarSesion}
+      />
+    );
   }
 
   if (pantalla === "registro") {
     return (
       <Register
-        alRegistrar={() => setPantalla("login")}
-        irALogin={() => setPantalla("login")}
+        alRegistrar={() =>
+          setPantalla("login")
+        }
+        irALogin={() =>
+          setPantalla("login")
+        }
       />
     );
   }
 
   if (pantalla === "recuperar") {
-    return <ResetPassword irALogin={() => setPantalla("login")} />;
+    return (
+      <ResetPassword
+        irALogin={() =>
+          setPantalla("login")
+        }
+      />
+    );
   }
 
   return (
     <Login
       alIniciarSesion={iniciarSesion}
-      irARegistro={() => setPantalla("registro")}
-      irARecuperar={() => setPantalla("recuperar")}
+      irARegistro={() =>
+        setPantalla("registro")
+      }
+      irARecuperar={() =>
+        setPantalla("recuperar")
+      }
     />
   );
 }

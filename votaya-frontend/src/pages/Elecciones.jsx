@@ -18,6 +18,20 @@ const COLORES_GRAFICA = [
   "#ffb84d",
 ];
 
+function obtenerClaveOpcionSeleccionada(idUsuario, idVotacion) {
+  return `opcionSeleccionada_${idUsuario}_${idVotacion}`;
+}
+
+function obtenerClaveTokenCambio(idUsuario, idVotacion) {
+  return `tokenCambioVoto_${idUsuario}_${idVotacion}`;
+}
+
+function formatearVotos(cantidad) {
+  const total = Number(cantidad || 0);
+
+  return `${formateadorNumero.format(total)} ${total === 1 ? "voto" : "votos"}`;
+}
+
 function obtenerOpcionesConResultados(votacion) {
   const resultados = votacion.resultados?.opciones || [];
 
@@ -44,6 +58,16 @@ function obtenerImagenVotacion(votacion) {
   return resolverUrlArchivo(opcionConImagen?.imagenUrl);
 }
 
+function obtenerNombreCategoria(votacion) {
+  if (typeof votacion.categoria === "string") {
+    return votacion.categoria;
+  }
+
+  return (
+    votacion.nombreCategoria || votacion.categoria?.nombre || "Sin categoría"
+  );
+}
+
 function GraficaVertical({
   opciones,
   alSeleccionar,
@@ -61,20 +85,28 @@ function GraficaVertical({
         const estaSeleccionada =
           Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
-        const altura =
+        let altura =
           opcion.totalVotos === 0
             ? 55
             : 65 + (opcion.totalVotos / mayorCantidad) * 80;
 
+        if (estaSeleccionada) {
+          altura = Math.max(altura, 78);
+        }
+
         return (
           <button
             type="button"
-            className="grafica-disponible-vertical__elemento grafica-opcion"
             key={opcion.idOpcion}
+            className="grafica-disponible-vertical__elemento grafica-opcion"
             disabled={deshabilitado}
             onClick={() => alSeleccionar(opcion)}
             title={`Votar por ${opcion.nombre}`}
           >
+            <span className="grafica-disponible-vertical__cantidad">
+              {formatearVotos(opcion.totalVotos)}
+            </span>
+
             <div
               className={[
                 "grafica-disponible-vertical__barra",
@@ -84,7 +116,9 @@ function GraficaVertical({
               ]
                 .filter(Boolean)
                 .join(" ")}
-              style={{ height: `${altura}px` }}
+              style={{
+                height: `${altura}px`,
+              }}
             />
 
             <span className="grafica-disponible-vertical__nombre">
@@ -96,6 +130,7 @@ function GraficaVertical({
     </div>
   );
 }
+
 function GraficaHorizontal({
   opciones,
   alSeleccionar,
@@ -113,18 +148,22 @@ function GraficaHorizontal({
         const estaSeleccionada =
           Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
-        const anchura =
+        let anchura =
           opcion.totalVotos === 0
             ? 0
             : Math.max(7, (opcion.totalVotos / mayorCantidad) * 100);
+
+        if (estaSeleccionada) {
+          anchura = Math.max(anchura, 12);
+        }
 
         const imagen = resolverUrlArchivo(opcion.imagenUrl);
 
         return (
           <button
             type="button"
-            className="grafica-disponible-horizontal__fila grafica-opcion-horizontal"
             key={opcion.idOpcion}
+            className="grafica-disponible-horizontal__fila grafica-opcion-horizontal"
             disabled={deshabilitado}
             onClick={() => alSeleccionar(opcion)}
             title={`Votar por ${opcion.nombre}`}
@@ -143,21 +182,25 @@ function GraficaHorizontal({
                 ]
                   .filter(Boolean)
                   .join(" ")}
-                style={{ width: `${anchura}%` }}
+                style={{
+                  width: `${anchura}%`,
+                }}
               />
             </div>
 
-            {imagen ? (
-              <img
-                src={imagen}
-                alt={opcion.nombre}
-                className="grafica-disponible-horizontal__imagen"
-              />
-            ) : (
+            <div className="grafica-disponible-horizontal__detalle">
+              {imagen && (
+                <img
+                  src={imagen}
+                  alt={opcion.nombre}
+                  className="grafica-disponible-horizontal__imagen"
+                />
+              )}
+
               <span className="grafica-disponible-horizontal__cantidad">
-                {opcion.totalVotos}
+                {formatearVotos(opcion.totalVotos)}
               </span>
-            )}
+            </div>
           </button>
         );
       })}
@@ -165,7 +208,12 @@ function GraficaHorizontal({
   );
 }
 
-function GraficaPastel({ opciones, alSeleccionar, deshabilitado }) {
+function GraficaPastel({
+  opciones,
+  alSeleccionar,
+  deshabilitado,
+  idOpcionSeleccionada,
+}) {
   const totalVotos = opciones.reduce(
     (total, opcion) => total + opcion.totalVotos,
     0,
@@ -220,38 +268,57 @@ function GraficaPastel({ opciones, alSeleccionar, deshabilitado }) {
       </div>
 
       <div className="grafica-disponible-pastel__opciones">
-        {opciones.map((opcion, indice) => (
-          <button
-            type="button"
-            key={opcion.idOpcion}
-            disabled={deshabilitado}
-            onClick={() => alSeleccionar(opcion)}
-            className="grafica-disponible-pastel__opcion"
-            title={`Votar por ${opcion.nombre}`}
-          >
-            <span
-              className="grafica-disponible-pastel__color"
-              style={{
-                background: COLORES_GRAFICA[indice % COLORES_GRAFICA.length],
-              }}
-            />
+        {opciones.map((opcion, indice) => {
+          const estaSeleccionada =
+            Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
-            <span>{opcion.nombre}</span>
-          </button>
-        ))}
+          return (
+            <button
+              type="button"
+              key={opcion.idOpcion}
+              disabled={deshabilitado}
+              onClick={() => alSeleccionar(opcion)}
+              className={[
+                "grafica-disponible-pastel__opcion",
+                estaSeleccionada
+                  ? "grafica-disponible-pastel__opcion--seleccionada"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              title={`Votar por ${opcion.nombre}`}
+            >
+              <span
+                className="grafica-disponible-pastel__color"
+                style={{
+                  background: COLORES_GRAFICA[indice % COLORES_GRAFICA.length],
+                }}
+              />
+
+              <span className="grafica-disponible-pastel__texto">
+                <span>{opcion.nombre}</span>
+
+                <small>{formatearVotos(opcion.totalVotos)}</small>
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
+
 
 function TarjetaEleccionDisponible({
   votacion,
   yaVoto,
   votando,
   bloqueado,
+  idOpcionSeleccionada,
   alSeleccionarOpcion,
 }) {
   const opciones = obtenerOpcionesConResultados(votacion);
+
   const imagen = obtenerImagenVotacion(votacion);
 
   const totalVotos =
@@ -283,6 +350,7 @@ function TarjetaEleccionDisponible({
           opciones={opciones}
           alSeleccionar={seleccionarOpcion}
           deshabilitado={!puedeSeleccionar}
+          idOpcionSeleccionada={idOpcionSeleccionada}
         />
       );
     }
@@ -293,6 +361,7 @@ function TarjetaEleccionDisponible({
           opciones={opciones}
           alSeleccionar={seleccionarOpcion}
           deshabilitado={!puedeSeleccionar}
+          idOpcionSeleccionada={idOpcionSeleccionada}
         />
       );
     }
@@ -302,6 +371,7 @@ function TarjetaEleccionDisponible({
         opciones={opciones}
         alSeleccionar={seleccionarOpcion}
         deshabilitado={!puedeSeleccionar}
+        idOpcionSeleccionada={idOpcionSeleccionada}
       />
     );
   }
@@ -309,6 +379,14 @@ function TarjetaEleccionDisponible({
   function obtenerTextoEstado() {
     if (votando) {
       return "Guardando voto...";
+    }
+
+    const opcionSeleccionada = opciones.find(
+      (opcion) => Number(opcion.idOpcion) === Number(idOpcionSeleccionada),
+    );
+
+    if (opcionSeleccionada) {
+      return `Tu voto: ${opcionSeleccionada.nombre}`;
     }
 
     if (yaVoto && votacion.permiteCambioVoto) {
@@ -340,7 +418,7 @@ function TarjetaEleccionDisponible({
           )}
 
           <span className="tarjeta-eleccion__categoria">
-            {votacion.categoria || "Sin categoría"}
+            {obtenerNombreCategoria(votacion)}
           </span>
         </div>
       </header>
@@ -349,7 +427,7 @@ function TarjetaEleccionDisponible({
 
       <footer className="tarjeta-eleccion__pie">
         <span className="tarjeta-eleccion__total">
-          {formateadorNumero.format(totalVotos)} votos
+          Total: {formatearVotos(totalVotos)}
         </span>
 
         <span
@@ -369,9 +447,14 @@ function TarjetaEleccionDisponible({
 
 function Elecciones({ alCerrarSesion }) {
   const [perfil, setPerfil] = useState(null);
+
   const [votaciones, setVotaciones] = useState([]);
+
   const [categorias, setCategorias] = useState([]);
+
   const [participaciones, setParticipaciones] = useState([]);
+
+  const [opcionesSeleccionadas, setOpcionesSeleccionadas] = useState({});
 
   const [orden, setOrden] = useState("MAS_VOTADAS");
 
@@ -382,36 +465,35 @@ function Elecciones({ alCerrarSesion }) {
   const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
 
   const [cargando, setCargando] = useState(true);
+
   const [error, setError] = useState("");
+
   const [mensaje, setMensaje] = useState("");
-
-  const [opcionesSeleccionadas, setOpcionesSeleccionadas] = useState({});
-
-  function obtenerClaveOpcionSeleccionada(idUsuario, idVotacion) {
-    return `opcionSeleccionada_${idUsuario}_${idVotacion}`;
-  }
 
   const [idVotacionGuardando, setIdVotacionGuardando] = useState(null);
 
-  const cargarDatos = useCallback(async (mostrarPantallaCarga = true) => {
+  const cargarDatos = useCallback(async () => {
     try {
-      if (mostrarPantallaCarga) {
-        setCargando(true);
-      }
-
+      setCargando(true);
       setError("");
 
-      const [
-        datosPerfil,
-        votacionesDisponibles,
-        datosCategorias,
-        misParticipaciones,
-      ] = await Promise.all([
-        peticionApi("/usuarios/perfil"),
-        peticionApi("/votaciones/disponibles"),
-        peticionApi("/categorias"),
-        peticionApi("/votos/mios"),
-      ]);
+      const [datosPerfil, votacionesDisponibles, datosCategorias] =
+        await Promise.all([
+          peticionApi("/usuarios/perfil"),
+          peticionApi("/votaciones/disponibles"),
+          peticionApi("/categorias"),
+        ]);
+
+      let misParticipaciones = [];
+
+      try {
+        misParticipaciones = await peticionApi("/votos/mios");
+      } catch (excepcion) {
+        console.warn(
+          "No se pudieron cargar los votos del usuario:",
+          excepcion.message,
+        );
+      }
 
       const votacionesConResultados = await Promise.all(
         (votacionesDisponibles || []).map(async (votacion) => {
@@ -424,7 +506,12 @@ function Elecciones({ alCerrarSesion }) {
               ...votacion,
               resultados,
             };
-          } catch {
+          } catch (excepcion) {
+            console.warn(
+              `No se pudieron cargar los resultados de la votación ${votacion.idVotacion}:`,
+              excepcion.message,
+            );
+
             return {
               ...votacion,
               resultados: {
@@ -435,11 +522,6 @@ function Elecciones({ alCerrarSesion }) {
           }
         }),
       );
-
-      setPerfil(datosPerfil);
-      setVotaciones(votacionesConResultados);
-      setCategorias(datosCategorias || []);
-      setParticipaciones(misParticipaciones || []);
 
       const seleccionesGuardadas = {};
 
@@ -457,13 +539,17 @@ function Elecciones({ alCerrarSesion }) {
         }
       });
 
+      setPerfil(datosPerfil);
+      setVotaciones(votacionesConResultados);
+      setCategorias(datosCategorias || []);
+
+      setParticipaciones(misParticipaciones || []);
+
       setOpcionesSeleccionadas(seleccionesGuardadas);
     } catch (excepcion) {
       setError(excepcion.message);
     } finally {
-      if (mostrarPantallaCarga) {
-        setCargando(false);
-      }
+      setCargando(false);
     }
   }, []);
 
@@ -554,14 +640,41 @@ function Elecciones({ alCerrarSesion }) {
     setFechaSeleccionada("TODAS");
   }
 
-  function obtenerClaveTokenCambio(idUsuario, idVotacion) {
-    return `tokenCambioVoto_${idUsuario}_${idVotacion}`;
+  async function actualizarResultados(idVotacion) {
+    try {
+      const resultadosActualizados = await peticionApi(
+        `/votaciones/${idVotacion}/resultados`,
+      );
+
+      setVotaciones((anteriores) =>
+        anteriores.map((votacion) =>
+          Number(votacion.idVotacion) === Number(idVotacion)
+            ? {
+                ...votacion,
+                resultados: resultadosActualizados,
+              }
+            : votacion,
+        ),
+      );
+    } catch (excepcion) {
+      console.warn(
+        "El voto se guardó, pero no se pudieron actualizar los resultados:",
+        excepcion.message,
+      );
+    }
   }
 
   async function registrarVoto(votacion, opcion) {
     const idVotacion = Number(votacion.idVotacion);
 
-    const yaVoto = idsVotacionesParticipadas.has(idVotacion);
+    const idOpcion = Number(opcion.idOpcion);
+
+    const tieneSeleccionLocal =
+      opcionesSeleccionadas[idVotacion] !== undefined &&
+      opcionesSeleccionadas[idVotacion] !== null;
+
+    const yaVoto =
+      idsVotacionesParticipadas.has(idVotacion) || tieneSeleccionLocal;
 
     if (idVotacionGuardando !== null) {
       return;
@@ -569,9 +682,19 @@ function Elecciones({ alCerrarSesion }) {
 
     if (yaVoto && !votacion.permiteCambioVoto) {
       setMensaje("");
+
       setError("Ya participaste y esta elección no permite cambiar el voto.");
+
       return;
     }
+
+    const opcionAnterior = opcionesSeleccionadas[idVotacion] ?? null;
+
+    
+    setOpcionesSeleccionadas((anteriores) => ({
+      ...anteriores,
+      [idVotacion]: idOpcion,
+    }));
 
     try {
       setError("");
@@ -579,7 +702,7 @@ function Elecciones({ alCerrarSesion }) {
       setIdVotacionGuardando(idVotacion);
 
       const cuerpo = {
-        idsOpciones: [Number(opcion.idOpcion)],
+        idsOpciones: [idOpcion],
       };
 
       if (yaVoto) {
@@ -593,7 +716,7 @@ function Elecciones({ alCerrarSesion }) {
 
           if (!tokenCambio) {
             throw new Error(
-              "No se encontró el token necesario para cambiar este voto anónimo. El cambio debe realizarse desde el navegador donde emitiste el voto.",
+              "No se encontró el token necesario para cambiar este voto anónimo.",
             );
           }
 
@@ -621,13 +744,67 @@ function Elecciones({ alCerrarSesion }) {
           localStorage.setItem(claveToken, respuesta.tokenCambio);
         }
 
+        setParticipaciones((anteriores) => {
+          const yaExiste = anteriores.some(
+            (participacion) => Number(participacion.idVotacion) === idVotacion,
+          );
+
+          if (yaExiste) {
+            return anteriores;
+          }
+
+          return [
+            ...anteriores,
+            {
+              idVotacion,
+              tipoVoto: votacion.tipoVoto,
+            },
+          ];
+        });
+
         setMensaje(
           `Tu voto por "${opcion.nombre}" fue registrado correctamente.`,
         );
       }
 
-      await cargarDatos(false);
+      const claveOpcion = obtenerClaveOpcionSeleccionada(
+        perfil.idUsuario,
+        idVotacion,
+      );
+
+      localStorage.setItem(claveOpcion, String(idOpcion));
+
+      await actualizarResultados(idVotacion);
     } catch (excepcion) {
+      /*
+       * Si el backend rechaza el voto,
+       * se restaura la selección anterior.
+       */
+      setOpcionesSeleccionadas((anteriores) => {
+        const nuevasSelecciones = {
+          ...anteriores,
+        };
+
+        if (opcionAnterior === null) {
+          delete nuevasSelecciones[idVotacion];
+        } else {
+          nuevasSelecciones[idVotacion] = opcionAnterior;
+        }
+
+        return nuevasSelecciones;
+      });
+
+      const claveOpcion = obtenerClaveOpcionSeleccionada(
+        perfil.idUsuario,
+        idVotacion,
+      );
+
+      if (opcionAnterior === null) {
+        localStorage.removeItem(claveOpcion);
+      } else {
+        localStorage.setItem(claveOpcion, String(opcionAnterior));
+      }
+
       setMensaje("");
       setError(excepcion.message);
     } finally {
@@ -743,13 +920,21 @@ function Elecciones({ alCerrarSesion }) {
           {votacionesFiltradas.map((votacion) => {
             const idVotacion = Number(votacion.idVotacion);
 
+            const tieneSeleccionLocal =
+              opcionesSeleccionadas[idVotacion] !== undefined &&
+              opcionesSeleccionadas[idVotacion] !== null;
+
+            const yaVoto =
+              idsVotacionesParticipadas.has(idVotacion) || tieneSeleccionLocal;
+
             return (
               <TarjetaEleccionDisponible
                 key={idVotacion}
                 votacion={votacion}
-                yaVoto={idsVotacionesParticipadas.has(idVotacion)}
+                yaVoto={yaVoto}
                 votando={idVotacionGuardando === idVotacion}
                 bloqueado={idVotacionGuardando !== null}
+                idOpcionSeleccionada={opcionesSeleccionadas[idVotacion] ?? null}
                 alSeleccionarOpcion={registrarVoto}
               />
             );
