@@ -1,6 +1,3 @@
-
-/* Contenido */
-
 .encabezado-usuario {
   display: flex;
   align-items: center;
@@ -10,9 +7,12 @@
 
 .encabezado-usuario__bienvenida {
   margin: 0;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
   color: #000000;
+  letter-spacing: 0.3px;
+  word-spacing: 2px;
+  line-height: 1.2;
 }
 
 .encabezado-usuario__perfil {

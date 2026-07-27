@@ -49,7 +49,8 @@ public class ConfiguracionSeguridad {
                         autorizacion
                                 .requestMatchers(
                                         "/api/auth/**",
-                                        "/api/recuperacion/**"
+                                        "/api/recuperacion/**",
+                                        "/imagenes/**"
                                 )
                                 .permitAll()
 
