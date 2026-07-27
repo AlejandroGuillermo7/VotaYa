@@ -48,7 +48,7 @@ function BarraLateral({
           className="menu-lateral__boton menu-lateral__boton--activo"
           onClick={alCerrar}
         >
-          Inicio
+          Mis elecciones
         </button>
 
         <button
@@ -56,7 +56,7 @@ function BarraLateral({
           className="menu-lateral__boton"
           onClick={() => navegar("/mis-elecciones")}
         >
-          Mis elecciones
+          Elecciones
         </button>
 
         <button

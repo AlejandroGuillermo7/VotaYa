@@ -51,7 +51,6 @@ function EncabezadoUsuario({ perfil, alAbrirMenu }) {
             : "Usuario"}
         </span>
 
-        <span className="encabezado-usuario__flecha">⌄</span>
       </div>
     </header>
   );
