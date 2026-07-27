@@ -24,6 +24,9 @@ button {
   display: flex;
   width: 100%;
   min-height: 100vh;
+  background-color: #f0f5ff;
+  margin: 0;
+  padding: 0;
 }
 
 .contenido-inicio {
