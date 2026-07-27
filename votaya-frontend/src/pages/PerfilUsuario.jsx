@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FiUser, FiPlus, FiX } from "react-icons/fi";
 import logo from "../assets/icons/icon-logo-offletters.png";
 import user from "../assets/icons/icon-username.svg";
 import email from "../assets/icons/icon-email.svg";
@@ -11,7 +12,9 @@ function PerfilUsuario({ volver }) {
   const [apellidoM, setApellidoM] = useState("");
   const [fechaN, setFechaN] = useState("");
   const [correo, setCorreo] = useState("");
+  
   const [fotoPerfil, setFotoPerfil] = useState(null);
+  const [archivoFoto, setArchivoFoto] = useState(null);
 
   const [contraseñaActual, setContraseñaActual] = useState("");
   const [contraseñaNueva, setContraseñaNueva] = useState("");
@@ -21,11 +24,11 @@ function PerfilUsuario({ volver }) {
   const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
 
   const token = localStorage.getItem("token"); 
-//Cargamos los datos de el perfil
+
   useEffect(() => {
     const obtenerPerfil = async () => {
       try {
-        const respuesta = await fetch("http://localhost:8080/api/usuario/perfil", {
+        const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
           method: "GET",
           headers: {
             "Authorization": `Bearer ${token}`,
@@ -55,9 +58,14 @@ function PerfilUsuario({ volver }) {
   const cambiarFoto = (e) => {
     const archivo = e.target.files[0];
     if (archivo) {
-      setFotoPerfil(URL.createObjectURL(archivo));
-      
+      setFotoPerfil(URL.createObjectURL(archivo)); 
+      setArchivoFoto(archivo); 
     }
+  };
+
+  const eliminarFotoNueva = () => {
+    setFotoPerfil(null);
+    setArchivoFoto(null);
   };
 
   const handleVerificar = async (e) => {
@@ -112,6 +120,8 @@ function PerfilUsuario({ volver }) {
     }
 
     try {
+      const formData = new FormData();
+
       const datosActualizados = {
         nombres: nombre,
         apellidoPaterno: apellidoP,
@@ -121,13 +131,18 @@ function PerfilUsuario({ volver }) {
         ...(isVerificada && contraseñaNueva ? { nuevaContrasena: contraseñaNueva } : {}),
       };
 
-      const respuesta = await fetch("http://localhost:8080/api/usuario/actualizar", {
+      formData.append("datos", new Blob([JSON.stringify(datosActualizados)], { type: "application/json" }));
+
+      if (archivoFoto) {
+        formData.append("foto", archivoFoto);
+      }
+
+      const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
         method: "PUT",
         headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(datosActualizados),
+        body: formData,
       });
 
       const data = await respuesta.json();
@@ -154,16 +169,32 @@ function PerfilUsuario({ volver }) {
         <h1>Perfil de Usuario</h1>
 
         <div className="contenedor-foto-perfil">
-          <label htmlFor="fotoPerfilInput" className="marco-foto-perfil">
-            {fotoPerfil ? (
-              <img src={fotoPerfil} alt="Foto de perfil" className="foto-perfil-imagen" />
-            ) : (
-              <>
-                <span className="icono-usuario-base">👤</span>
-                <span className="icono-agregar-foto">+</span>
-              </>
+          <div className="wrapper-foto">
+            <label htmlFor="fotoPerfilInput" className="marco-foto-perfil">
+              {fotoPerfil ? (
+                <img src={fotoPerfil} alt="Foto de perfil" className="foto-perfil-imagen" />
+              ) : (
+                <div className="place-holder-foto">
+                  <FiUser className="icono-avatar-svg" />
+                  <div className="icono-agregar-foto">
+                    <FiPlus size={12} />
+                  </div>
+                </div>
+              )}
+            </label>
+
+            {archivoFoto && (
+              <button 
+                type="button" 
+                className="btn-eliminar-foto" 
+                onClick={eliminarFotoNueva}
+                title="Quitar imagen seleccionada"
+              >
+                <FiX size={14} />
+              </button>
             )}
-          </label>
+          </div>
+
           <input
             type="file"
             id="fotoPerfilInput"
@@ -171,7 +202,9 @@ function PerfilUsuario({ volver }) {
             hidden
             onChange={cambiarFoto}
           />
-          <p className="texto-subir-foto">Subir fotografía</p>
+          <p className="texto-subir-foto">
+            {fotoPerfil ? "Cambiar fotografía" : "Subir fotografía"}
+          </p>
         </div>
       </header>
 
