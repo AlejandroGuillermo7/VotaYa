@@ -445,7 +445,7 @@ function TarjetaEleccionDisponible({
   );
 }
 
-function Elecciones({ alCerrarSesion }) {
+function Elecciones({ alCerrarSesion, alCrearVotacion }) {
   const [perfil, setPerfil] = useState(null);
 
   const [votaciones, setVotaciones] = useState([]);
@@ -908,9 +908,7 @@ function Elecciones({ alCerrarSesion }) {
           <button
             type="button"
             className="barra-filtros-elecciones__crear"
-            onClick={() => {
-              window.location.href = "/crear-votacion";
-            }}
+            onClick={alCrearVotacion}
           >
             Crear mi elección
           </button>

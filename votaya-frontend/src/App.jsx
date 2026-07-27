@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Inicio from "./pages/Inicio";
 import Elecciones from "./pages/Elecciones";
 import MisVotos from "./pages/MisVotos";
+import CrearVotacion from "./pages/CrearVotacion";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -16,6 +17,13 @@ function App() {
     Boolean(localStorage.getItem("token")),
   );
 
+  const [ruta, setRuta] = useState(window.location.pathname);
+
+  function navegarA(nuevaRuta) {
+    window.history.pushState({}, "", nuevaRuta);
+    setRuta(nuevaRuta);
+  }
+
   function iniciarSesion() {
     setSesionActiva(true);
 
@@ -24,6 +32,8 @@ function App() {
       "",
       "/mis-elecciones",
     );
+
+    setRuta("/mis-elecciones");
   }
 
   function cerrarSesion() {
@@ -33,23 +43,32 @@ function App() {
     setPantalla("login");
 
     window.history.replaceState({}, "", "/");
+    setRuta("/");
   }
 
   if (sesionActiva) {
-    const rutaActual = window.location.pathname;
-
-    if (rutaActual === "/elecciones") {
+    if (ruta === "/elecciones") {
       return (
         <Elecciones
+          alCerrarSesion={cerrarSesion}
+          alCrearVotacion={() => navegarA("/crear-votacion")}
+        />
+      );
+    }
+
+    if (ruta === "/mis-votos") {
+      return (
+        <MisVotos
           alCerrarSesion={cerrarSesion}
         />
       );
     }
 
-    if (rutaActual === "/mis-votos") {
+    if (ruta === "/crear-votacion") {
       return (
-        <MisVotos
-          alCerrarSesion={cerrarSesion}
+        <CrearVotacion
+          alVolver={() => navegarA("/elecciones")}
+          alCrearExitosa={() => navegarA("/elecciones")}
         />
       );
     }

@@ -2,12 +2,16 @@ import { useState, useEffect } from "react";
 import logo from "../assets/icons/icon-logo-offletters.png";
 import imgBarras from "../assets/icons/icon-grafico-barras.webp";
 import imgPastel from "../assets/icons/icon-grafico-pastel.webp";
+import { peticionApi } from "../api/clienteApi"; 
 import "./EditarVotacion.css";
 
-function CrearVotacion() {
+function CrearVotacion({ alVolver, alCrearExitosa }) {
   const [titulo, setTitulo] = useState("");
   const [idCategoria, setIdCategoria] = useState("");
   const [categoriasLista, setCategoriasLista] = useState([]);
+  
+  const [estado, setEstado] = useState("ACTIVA"); 
+
   const [fechaC, setFechaC] = useState("");
   const [horaC, setHoraC] = useState("");
   const [fechaF, setFechaF] = useState("");
@@ -19,6 +23,7 @@ function CrearVotacion() {
     { id: 2, nombre: "", imagen_url: "", orden_visual: 2 },
   ]);
 
+  // Reglas
   const [privacidad, setPrivacidad] = useState("PUBLICA"); 
   const [tipoVoto, setTipoVoto] = useState("ANONIMO"); 
   const [tipoSeleccion, setTipoSeleccion] = useState("UNICA"); 
@@ -31,13 +36,22 @@ function CrearVotacion() {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
+  // Cargar categorías reales directamente desde la BD
   useEffect(() => {
-    setCategoriasLista([
-      { id_categoria: 1, nombre: "Escolar / Académico" },
-      { id_categoria: 2, nombre: "Política y Elecciones" },
-      { id_categoria: 3, nombre: "Deportes" },
-      { id_categoria: 4, nombre: "Entretenimiento" },
-    ]);
+    const cargarCategorias = async () => {
+      try {
+        const respuesta = await peticionApi("/categorias", { method: "GET" });
+        if (Array.isArray(respuesta)) {
+          setCategoriasLista(respuesta);
+        } else if (respuesta.datos && Array.isArray(respuesta.datos)) {
+          setCategoriasLista(respuesta.datos);
+        }
+      } catch (err) {
+        console.error("Error al cargar categorías desde la BD:", err);
+      }
+    };
+
+    cargarCategorias();
   }, []);
 
   const agregarOpcion = () => {
@@ -76,7 +90,7 @@ function CrearVotacion() {
     }
   };
 
-  const enviar = (e) => {
+  const enviar = async (e) => {
     e.preventDefault();
     setError("");
 
@@ -92,29 +106,42 @@ function CrearVotacion() {
 
     setCargando(true);
 
+    // PAYLOAD CORREGIDO: Propiedades en camelCase exactas para el Backend Spring/Node
     const payload = {
-      id_categoria: Number(idCategoria),
-      titulo,
-      descripcion: descripcion || null,
-      fecha_inicio: `${fechaC} ${horaC}:00`,
-      fecha_fin: `${fechaF} ${horaF}:00`,
-      privacidad,
-      tipo_voto: tipoVoto,
-      tipo_seleccion: tipoSeleccion,
-      max_selecciones: tipoSeleccion === "MULTIPLE" ? Number(maxSelecciones) : 1,
-      permite_cambio_voto: permiteCambioVoto,
-      tipo_grafica: tipoGrafica,
-      edad_minima: restriccionEdad === "18" ? 18 : null,
-      comentarios_permitidos: comentariosPermitidos,
+      idCategoria: Number(idCategoria),
+      titulo: titulo.trim(),
+      descripcion: descripcion.trim() || null,
+      fechaInicio: `${fechaC}T${horaC}:00`, // Formato ISO completo estándar
+      fechaFin: `${fechaF}T${horaF}:00`,
+      estado: estado,
+      privacidad: privacidad,
+      tipoVoto: tipoVoto,
+      tipoSeleccion: tipoSeleccion,
+      maxSelecciones: tipoSeleccion === "MULTIPLE" ? Number(maxSelecciones) : 1,
+      permiteCambioVoto: Boolean(permiteCambioVoto),
+      tipoGrafica: tipoGrafica,
+      edadMinima: restriccionEdad === "18" ? 18 : null,
+      comentariosPermitidos: Boolean(comentariosPermitidos),
       opciones: opciones.map((op) => ({
-        nombre: op.nombre,
-        imagen_url: op.imagen_url || null,
-        orden_visual: op.orden_visual,
+        nombre: op.nombre.trim(),
+        imagenUrl: op.imagen_url?.startsWith("blob:") ? null : op.imagen_url || null,
+        ordenVisual: op.orden_visual,
       })),
     };
 
-    console.log("Payload para el MySQL:", payload);
-    setCargando(false);
+    try {
+      await peticionApi("/votaciones", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (alCrearExitosa) alCrearExitosa();
+    } catch (err) {
+      console.error("Error al crear votación:", err);
+      setError(err.message || "Error al conectar con el servidor.");
+    } finally {
+      setCargando(false);
+    }
   };
 
   return (
@@ -141,7 +168,7 @@ function CrearVotacion() {
               />
             </div>
 
-            <div className="campo-formulario columna-doble">
+            <div className="campo-formulario">
               <label htmlFor="categoria">Categoría *</label>
               <select
                 id="categoria"
@@ -150,10 +177,25 @@ function CrearVotacion() {
               >
                 <option value="">-- Selecciona una categoría --</option>
                 {categoriasLista.map((cat) => (
-                  <option key={cat.id_categoria} value={cat.id_categoria}>
+                  <option key={cat.idCategoria || cat.id_categoria || cat.id} value={cat.idCategoria || cat.id_categoria || cat.id}>
                     {cat.nombre}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div className="campo-formulario">
+              <label htmlFor="estado">Estado de la Votación *</label>
+              <select
+                id="estado"
+                value={estado}
+                onChange={(e) => setEstado(e.target.value)}
+              >
+                <option value="BORRADOR">Borrador</option>
+                <option value="ACTIVA">Activa</option>
+                <option value="PROGRAMADA">Programada</option>
+                <option value="FINALIZADA">Finalizada</option>
+                <option value="CANCELADA">Cancelada</option>
               </select>
             </div>
 
@@ -266,7 +308,7 @@ function CrearVotacion() {
         <section className="bloque-formulario">
           <h2>Reglas de Votación</h2>
           <div className="cuadrícula-reglas">
-            
+
             <div className="grupo-regla">
               <label>Privacidad</label>
               <div className="grupo-conmutador">
@@ -401,10 +443,9 @@ function CrearVotacion() {
               </div>
             </div>
 
-            <div className="grupo-regla">
+            <div className="grupo-regla columna-completa">
               <label>Tipo de gráfica</label>
               <div className="cuadrícula-seleccion-grafica">
-                
                 <div 
                   className={`tarjeta-grafica-opcion ${tipoGrafica === 'BARRAS' ? 'seleccionada' : ''}`}
                   onClick={() => setTipoGrafica('BARRAS')}
@@ -426,10 +467,8 @@ function CrearVotacion() {
                     <small>Porcentajes y proporciones</small>
                   </div>
                 </div>
-
               </div>
             </div>
-
           </div>
         </section>
 
@@ -441,7 +480,9 @@ function CrearVotacion() {
           </button>
           <div className="contenedor-regresar">
             <span>¿Deseas regresar? </span>
-            <span className="enlace-regresar">Volver</span>
+            <span className="enlace-regresar" onClick={alVolver}>
+              Volver
+            </span>
           </div>
         </div>
       </form>
