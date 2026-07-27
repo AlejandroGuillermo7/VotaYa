@@ -21,11 +21,11 @@ function PerfilUsuario({ volver, onActualizado }) {
   const [fechaN, setFechaN] = useState("");
   const [correo, setCorreo] = useState("");
 
-  // Foto que se MUESTRA en pantalla (puede ser del servidor o un blob local temporal)
+
   const [fotoPerfil, setFotoPerfil] = useState(null);
-  // Archivo nuevo seleccionado, pendiente de subir
+
   const [archivoFoto, setArchivoFoto] = useState(null);
-  // Bandera para no pisar la vista previa local con onError mientras aún no se ha guardado
+
   const [fotoFallo, setFotoFallo] = useState(false);
 
   const [contraseñaActual, setContraseñaActual] = useState("");
@@ -67,7 +67,7 @@ function PerfilUsuario({ volver, onActualizado }) {
 
   useEffect(() => {
     if (token) obtenerPerfil();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [token]);
 
   const cambiarFoto = (e) => {
@@ -80,8 +80,8 @@ function PerfilUsuario({ volver, onActualizado }) {
   };
 
   const eliminarFotoNueva = () => {
-    // Solo cancela la selección local; no borra la foto ya guardada en el servidor.
-    // Si no hay foto previa guardada, vuelve al placeholder.
+  
+    
     setArchivoFoto(null);
     obtenerPerfil();
   };
@@ -174,7 +174,7 @@ function PerfilUsuario({ volver, onActualizado }) {
         throw new Error(data.mensaje || "Ocurrió un error al actualizar los datos.");
       }
 
-      // IMPORTANTE: usar la respuesta real del servidor, no el blob local.
+
       setNombre(data.nombres || "");
       setApellidoP(data.apellidoPaterno || "");
       setApellidoM(data.apellidoMaterno || "");
@@ -191,7 +191,7 @@ function PerfilUsuario({ volver, onActualizado }) {
 
       setMensaje({ tipo: "exito", texto: "Perfil actualizado correctamente." });
 
-      // Avisar al padre (Inicio.jsx) para refrescar encabezado/tabla
+
       if (typeof onActualizado === "function") {
         onActualizado();
       }

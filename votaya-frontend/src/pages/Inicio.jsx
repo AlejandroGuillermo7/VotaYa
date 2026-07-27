@@ -3,6 +3,7 @@ import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
 import TarjetaVotacion from "../Components/TarjetaVotacion";
 import PerfilUsuario from "./PerfilUsuario";
+import EditarVotacion from "./EditarVotacion"; 
 import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
 import "./Inicio.css";
@@ -52,6 +53,8 @@ function obtenerImagenEleccion(votacion) {
 }
 
 function Inicio({ alCerrarSesion }) {
+
+  const [idVotacionEditar, setIdVotacionEditar] = useState(null);
   const [perfil, setPerfil] = useState(null);
   const [votacionesDestacadas, setVotacionesDestacadas] = useState([]);
   const [misElecciones, setMisElecciones] = useState([]);
@@ -63,7 +66,6 @@ function Inicio({ alCerrarSesion }) {
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
-
 
   const [vistaActiva, setVistaActiva] = useState("INICIO");
 
@@ -168,9 +170,8 @@ function Inicio({ alCerrarSesion }) {
   }
 
   function editarVotacion(idVotacion) {
-    sessionStorage.setItem("idVotacionEditar", String(idVotacion));
-
-    window.location.href = `/editar-votacion?id=${idVotacion}`;
+    setIdVotacionEditar(idVotacion);
+    setVistaActiva("EDITAR");
   }
 
   if (cargando) {
@@ -212,15 +213,29 @@ function Inicio({ alCerrarSesion }) {
 
         {mensaje && <div className="mensaje mensaje--correcto">{mensaje}</div>}
 
-        {vistaActiva === "PERFIL" ? (
-          <PerfilUsuario 
+        {/* 🟢 RENDERIZADO CONDICIONAL DE LAS 3 VISTAS */}
+        {vistaActiva === "PERFIL" && (
+          <PerfilUsuario
             volver={() => {
               setVistaActiva("INICIO");
-              cargarDatos(); 
-            }} 
+              cargarDatos();
+            }}
             onActualizado={cargarDatos}
           />
-        ) : (
+        )}
+
+        {vistaActiva === "EDITAR" && (
+          <EditarVotacion
+            idVotacion={idVotacionEditar}
+            alVolver={() => {
+              setVistaActiva("INICIO");
+              setIdVotacionEditar(null);
+              cargarDatos(); 
+            }}
+          />
+        )}
+
+        {vistaActiva === "INICIO" && (
           <>
             <section className="bienvenida-panel">
               <p>Aquí puedes consultar tus votaciones activas.</p>
@@ -229,7 +244,10 @@ function Inicio({ alCerrarSesion }) {
             <section className="votaciones-destacadas">
               {votacionesDestacadas.length > 0 ? (
                 votacionesDestacadas.map((votacion) => (
-                  <TarjetaVotacion key={votacion.idVotacion} votacion={votacion} />
+                  <TarjetaVotacion
+                    key={votacion.idVotacion}
+                    votacion={votacion}
+                  />
                 ))
               ) : (
                 <div className="estado-vacio estado-vacio--grande">
@@ -302,7 +320,9 @@ function Inicio({ alCerrarSesion }) {
                               )}
 
                               <div>
-                                <strong>{traducirEstado(votacion.estado)}</strong>
+                                <strong>
+                                  {traducirEstado(votacion.estado)}
+                                </strong>
 
                                 <span>{votacion.titulo}</span>
                               </div>
@@ -310,7 +330,9 @@ function Inicio({ alCerrarSesion }) {
                           </td>
 
                           <td>
-                            {formateadorNumero.format(votacion.totalVotos || 0)}
+                            {formateadorNumero.format(
+                              votacion.totalVotos || 0,
+                            )}
                           </td>
 
                           <td>{formatearFecha(votacion.fechaInicio)}</td>
@@ -328,7 +350,7 @@ function Inicio({ alCerrarSesion }) {
                               <button
                                 type="button"
                                 className="boton-accion boton-accion--editar"
-                                onClick={() => editarVotacion(votacion.idVotacion)}
+                                onClick={() => editarVotacion(votacion.idVotacion || votacion.id)}
                               >
                                 Editar
                               </button>

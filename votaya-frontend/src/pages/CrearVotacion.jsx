@@ -23,7 +23,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
     { id: 2, nombre: "", imagen_url: "", orden_visual: 2 },
   ]);
 
-  // Reglas
+
   const [privacidad, setPrivacidad] = useState("PUBLICA"); 
   const [tipoVoto, setTipoVoto] = useState("ANONIMO"); 
   const [tipoSeleccion, setTipoSeleccion] = useState("UNICA"); 
@@ -36,7 +36,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
-  // Cargar categorías reales directamente desde la BD
+
   useEffect(() => {
     const cargarCategorias = async () => {
       try {
@@ -106,12 +106,11 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
 
     setCargando(true);
 
-    // PAYLOAD CORREGIDO: Propiedades en camelCase exactas para el Backend Spring/Node
     const payload = {
       idCategoria: Number(idCategoria),
       titulo: titulo.trim(),
       descripcion: descripcion.trim() || null,
-      fechaInicio: `${fechaC}T${horaC}:00`, // Formato ISO completo estándar
+      fechaInicio: `${fechaC}T${horaC}:00`,
       fechaFin: `${fechaF}T${horaF}:00`,
       estado: estado,
       privacidad: privacidad,
