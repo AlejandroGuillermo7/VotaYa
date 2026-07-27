@@ -308,7 +308,6 @@ function GraficaPastel({
   );
 }
 
-
 function TarjetaEleccionDisponible({
   votacion,
   yaVoto,
@@ -690,7 +689,6 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
     const opcionAnterior = opcionesSeleccionadas[idVotacion] ?? null;
 
-    
     setOpcionesSeleccionadas((anteriores) => ({
       ...anteriores,
       [idVotacion]: idOpcion,
@@ -825,10 +823,11 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
   return (
     <div className="pagina-elecciones">
       <BarraLateral
-        alCerrarSesion={alCerrarSesion}
+        perfil={perfil}
+        seccionActiva="elecciones"
         abierta={menuLateralAbierto}
         alCerrar={() => setMenuLateralAbierto(false)}
-        seccionActiva="elecciones"
+        alCerrarSesion={alCerrarSesion}
       />
 
       {menuLateralAbierto && (

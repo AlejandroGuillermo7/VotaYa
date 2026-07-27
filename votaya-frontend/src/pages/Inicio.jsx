@@ -3,7 +3,7 @@ import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
 import TarjetaVotacion from "../Components/TarjetaVotacion";
 import PerfilUsuario from "./PerfilUsuario";
-import EditarVotacion from "./EditarVotacion"; 
+import EditarVotacion from "./EditarVotacion";
 import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
 import "./Inicio.css";
@@ -53,7 +53,6 @@ function obtenerImagenEleccion(votacion) {
 }
 
 function Inicio({ alCerrarSesion }) {
-
   const [idVotacionEditar, setIdVotacionEditar] = useState(null);
   const [perfil, setPerfil] = useState(null);
   const [votacionesDestacadas, setVotacionesDestacadas] = useState([]);
@@ -186,10 +185,11 @@ function Inicio({ alCerrarSesion }) {
   return (
     <div className="pagina-inicio">
       <BarraLateral
-        alCerrarSesion={alCerrarSesion}
+        perfil={perfil}
+        seccionActiva="mis-elecciones"
         abierta={menuLateralAbierto}
         alCerrar={() => setMenuLateralAbierto(false)}
-        seccionActiva={vistaActiva === "PERFIL" ? "perfil" : "mis-elecciones"}
+        alCerrarSesion={alCerrarSesion}
       />
 
       {menuLateralAbierto && (
@@ -230,7 +230,7 @@ function Inicio({ alCerrarSesion }) {
             alVolver={() => {
               setVistaActiva("INICIO");
               setIdVotacionEditar(null);
-              cargarDatos(); 
+              cargarDatos();
             }}
           />
         )}
@@ -330,9 +330,7 @@ function Inicio({ alCerrarSesion }) {
                           </td>
 
                           <td>
-                            {formateadorNumero.format(
-                              votacion.totalVotos || 0,
-                            )}
+                            {formateadorNumero.format(votacion.totalVotos || 0)}
                           </td>
 
                           <td>{formatearFecha(votacion.fechaInicio)}</td>
@@ -350,7 +348,11 @@ function Inicio({ alCerrarSesion }) {
                               <button
                                 type="button"
                                 className="boton-accion boton-accion--editar"
-                                onClick={() => editarVotacion(votacion.idVotacion || votacion.id)}
+                                onClick={() =>
+                                  editarVotacion(
+                                    votacion.idVotacion || votacion.id,
+                                  )
+                                }
                               >
                                 Editar
                               </button>

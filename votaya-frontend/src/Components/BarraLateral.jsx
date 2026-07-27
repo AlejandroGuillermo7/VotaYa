@@ -1,56 +1,45 @@
-import logoVotaYa from "../assets/icons/icon-logo-offletters.png";
+import logoVotaya from "../assets/icons/icon-votante.svg";
+
 import "./BarraLateral.css";
 
 function BarraLateral({
-  alCerrarSesion,
-  abierta = false,
+  perfil,
+  seccionActiva,
+  abierta,
   alCerrar,
-  seccionActiva = "mis-elecciones",
+  alCerrarSesion,
 }) {
+  const esAdministrador = perfil?.rol === "ADMINISTRADOR";
+
   function navegar(ruta) {
-    alCerrar?.();
     window.location.href = ruta;
   }
 
-  function cerrarSesion() {
-    alCerrar?.();
-    alCerrarSesion();
-  }
-
   function obtenerClase(seccion) {
-    return [
-      "menu-lateral__boton",
-      seccionActiva === seccion
-        ? "menu-lateral__boton--activo"
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
+    const clases = ["menu-lateral__boton"];
+
+    if (seccionActiva === seccion) {
+      clases.push("menu-lateral__boton--activo");
+    }
+
+    return clases.join(" ");
   }
 
   return (
     <aside
-      className={`barra-lateral ${
-        abierta ? "barra-lateral--abierta" : ""
-      }`}
+      className={["barra-lateral", abierta ? "barra-lateral--abierta" : ""]
+        .filter(Boolean)
+        .join(" ")}
     >
-      <button
-        type="button"
-        className="barra-lateral__cerrar"
-        aria-label="Cerrar menú"
-        onClick={alCerrar}
-      >
-        ×
-      </button>
-
       <div className="marca-votaya">
         <img
-          src={logoVotaYa}
-          alt="Logotipo de VotaYa"
+          src={logoVotaya}
+          alt="Logo de VotaYa"
           className="marca-votaya__imagen"
         />
 
         <span className="marca-votaya__nombre">VotaYa</span>
+
         <span className="marca-votaya__version">v0.1</span>
       </div>
 
@@ -79,14 +68,51 @@ function BarraLateral({
           Mis votos
         </button>
 
+        {esAdministrador && (
+          <>
+            <div className="barra-lateral__separador" />
+
+            <span className="barra-lateral__titulo-seccion">
+              Administración
+            </span>
+
+            <button
+              type="button"
+              className={obtenerClase("usuarios")}
+              onClick={() => navegar("/administrador/usuarios")}
+            >
+              Usuarios
+            </button>
+
+            <button
+              type="button"
+              className={obtenerClase("todas-las-elecciones")}
+              onClick={() => navegar("/administrador/elecciones")}
+            >
+              Todas las elecciones
+            </button>
+          </>
+        )}
+
         <button
           type="button"
           className="menu-lateral__boton"
-          onClick={cerrarSesion}
+          onClick={alCerrarSesion}
         >
           Salir
         </button>
       </nav>
+
+      {abierta && (
+        <button
+          type="button"
+          className="barra-lateral__cerrar"
+          onClick={alCerrar}
+          aria-label="Cerrar menú lateral"
+        >
+          ×
+        </button>
+      )}
     </aside>
   );
 }

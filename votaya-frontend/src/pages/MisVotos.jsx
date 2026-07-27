@@ -1,30 +1,19 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
 
-import {
-  peticionApi,
-  resolverUrlArchivo,
-} from "../api/clienteApi";
+import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
 import "./MisVotos.css";
 
-const formateadorFecha = new Intl.DateTimeFormat(
-  "es-MX",
-  {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  },
-);
+const formateadorFecha = new Intl.DateTimeFormat("es-MX", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
 
 function formatearFecha(fecha) {
   if (!fecha) {
@@ -62,9 +51,7 @@ function traducirEstado(estado) {
 }
 
 function traducirPrivacidad(privacidad) {
-  return privacidad === "PRIVADA"
-    ? "Privada"
-    : "Pública";
+  return privacidad === "PRIVADA" ? "Privada" : "Pública";
 }
 
 function obtenerNombreCategoria(votacion) {
@@ -73,27 +60,18 @@ function obtenerNombreCategoria(votacion) {
   }
 
   return (
-    votacion.nombreCategoria ||
-    votacion.categoria?.nombre ||
-    "Sin categoría"
+    votacion.nombreCategoria || votacion.categoria?.nombre || "Sin categoría"
   );
 }
 
 function obtenerImagenVotacion(votacion) {
   if (votacion.imagenPortadaUrl) {
-    return resolverUrlArchivo(
-      votacion.imagenPortadaUrl,
-    );
+    return resolverUrlArchivo(votacion.imagenPortadaUrl);
   }
 
-  const opcionConImagen =
-    votacion.opciones?.find(
-      (opcion) => opcion.imagenUrl,
-    );
+  const opcionConImagen = votacion.opciones?.find((opcion) => opcion.imagenUrl);
 
-  return resolverUrlArchivo(
-    opcionConImagen?.imagenUrl,
-  );
+  return resolverUrlArchivo(opcionConImagen?.imagenUrl);
 }
 
 function normalizarParticipaciones(respuesta) {
@@ -117,13 +95,9 @@ function MisVotos({ alCerrarSesion }) {
   const [votos, setVotos] = useState([]);
 
   const [busqueda, setBusqueda] = useState("");
-  const [tipoSeleccionado, setTipoSeleccionado] =
-    useState("TODOS");
+  const [tipoSeleccionado, setTipoSeleccionado] = useState("TODOS");
 
-  const [
-    menuLateralAbierto,
-    setMenuLateralAbierto,
-  ] = useState(false);
+  const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
 
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
@@ -133,58 +107,46 @@ function MisVotos({ alCerrarSesion }) {
       setCargando(true);
       setError("");
 
-      const [datosPerfil, respuestaVotos] =
-        await Promise.all([
-          peticionApi("/usuarios/perfil"),
-          peticionApi("/votos/mios"),
-        ]);
+      const [datosPerfil, respuestaVotos] = await Promise.all([
+        peticionApi("/usuarios/perfil"),
+        peticionApi("/votos/mios"),
+      ]);
 
-      const participaciones =
-        normalizarParticipaciones(respuestaVotos);
+      const participaciones = normalizarParticipaciones(respuestaVotos);
 
       /*
        * Consultamos los datos completos de cada
        * elección en la que participó el usuario.
        */
       const votosConDetalles = await Promise.all(
-        participaciones.map(
-          async (participacion) => {
-            try {
-              const detalleVotacion =
-                await peticionApi(
-                  `/votaciones/${participacion.idVotacion}`,
-                );
+        participaciones.map(async (participacion) => {
+          try {
+            const detalleVotacion = await peticionApi(
+              `/votaciones/${participacion.idVotacion}`,
+            );
 
-              return {
-                ...participacion,
-                ...detalleVotacion,
+            return {
+              ...participacion,
+              ...detalleVotacion,
 
-                idParticipacion:
-                  participacion.idParticipacion,
+              idParticipacion: participacion.idParticipacion,
 
-                idVotacion:
-                  participacion.idVotacion,
+              idVotacion: participacion.idVotacion,
 
-                fechaVoto:
-                  participacion.fechaVoto,
+              fechaVoto: participacion.fechaVoto,
 
-                tipoVoto:
-                  participacion.tipoVoto ||
-                  detalleVotacion.tipoVoto,
+              tipoVoto: participacion.tipoVoto || detalleVotacion.tipoVoto,
 
-                titulo:
-                  detalleVotacion.titulo ||
-                  participacion.titulo,
-              };
-            } catch {
-              /*
-               * Si no se puede consultar el detalle,
-               * conservamos lo que regresó /votos/mios.
-               */
-              return participacion;
-            }
-          },
-        ),
+              titulo: detalleVotacion.titulo || participacion.titulo,
+            };
+          } catch {
+            /*
+             * Si no se puede consultar el detalle,
+             * conservamos lo que regresó /votos/mios.
+             */
+            return participacion;
+          }
+        }),
       );
 
       /*
@@ -210,26 +172,18 @@ function MisVotos({ alCerrarSesion }) {
   }, [cargarDatos]);
 
   const votosFiltrados = useMemo(() => {
-    const texto = busqueda
-      .trim()
-      .toLowerCase();
+    const texto = busqueda.trim().toLowerCase();
 
     return votos.filter((voto) => {
-      const titulo =
-        voto.titulo?.toLowerCase() || "";
+      const titulo = voto.titulo?.toLowerCase() || "";
 
-      const categoria =
-        obtenerNombreCategoria(voto)
-          .toLowerCase();
+      const categoria = obtenerNombreCategoria(voto).toLowerCase();
 
       const coincideBusqueda =
-        !texto ||
-        titulo.includes(texto) ||
-        categoria.includes(texto);
+        !texto || titulo.includes(texto) || categoria.includes(texto);
 
       const coincideTipo =
-        tipoSeleccionado === "TODOS" ||
-        voto.tipoVoto === tipoSeleccionado;
+        tipoSeleccionado === "TODOS" || voto.tipoVoto === tipoSeleccionado;
 
       return coincideBusqueda && coincideTipo;
     });
@@ -248,12 +202,11 @@ function MisVotos({ alCerrarSesion }) {
   return (
     <div className="pagina-mis-votos">
       <BarraLateral
-        alCerrarSesion={alCerrarSesion}
-        abierta={menuLateralAbierto}
-        alCerrar={() =>
-          setMenuLateralAbierto(false)
-        }
+        perfil={perfil}
         seccionActiva="mis-votos"
+        abierta={menuLateralAbierto}
+        alCerrar={() => setMenuLateralAbierto(false)}
+        alCerrarSesion={alCerrarSesion}
       />
 
       {menuLateralAbierto && (
@@ -261,9 +214,7 @@ function MisVotos({ alCerrarSesion }) {
           type="button"
           className="fondo-sidebar-mis-votos"
           aria-label="Cerrar menú lateral"
-          onClick={() =>
-            setMenuLateralAbierto(false)
-          }
+          onClick={() => setMenuLateralAbierto(false)}
         />
       )}
 
@@ -271,16 +222,10 @@ function MisVotos({ alCerrarSesion }) {
         <EncabezadoUsuario
           perfil={perfil}
           titulo="MIS VOTOS."
-          alAbrirMenu={() =>
-            setMenuLateralAbierto(true)
-          }
+          alAbrirMenu={() => setMenuLateralAbierto(true)}
         />
 
-        {error && (
-          <div className="mensaje-mis-votos-error">
-            {error}
-          </div>
-        )}
+        {error && <div className="mensaje-mis-votos-error">{error}</div>}
 
         <section className="panel-mis-votos">
           <div className="panel-mis-votos__superior">
@@ -288,12 +233,8 @@ function MisVotos({ alCerrarSesion }) {
               <h2>Historial de votos.</h2>
 
               <p>
-                Has participado en{" "}
-                <strong>{votos.length}</strong>{" "}
-                {votos.length === 1
-                  ? "elección"
-                  : "elecciones"}
-                .
+                Has participado en <strong>{votos.length}</strong>{" "}
+                {votos.length === 1 ? "elección" : "elecciones"}.
               </p>
             </div>
 
@@ -305,34 +246,20 @@ function MisVotos({ alCerrarSesion }) {
                   type="search"
                   placeholder="Buscar elección"
                   value={busqueda}
-                  onChange={(evento) =>
-                    setBusqueda(
-                      evento.target.value,
-                    )
-                  }
+                  onChange={(evento) => setBusqueda(evento.target.value)}
                 />
               </label>
 
               <select
                 className="selector-tipo-voto"
                 value={tipoSeleccionado}
-                onChange={(evento) =>
-                  setTipoSeleccionado(
-                    evento.target.value,
-                  )
-                }
+                onChange={(evento) => setTipoSeleccionado(evento.target.value)}
               >
-                <option value="TODOS">
-                  Todos
-                </option>
+                <option value="TODOS">Todos</option>
 
-                <option value="ANONIMO">
-                  Anónimos
-                </option>
+                <option value="ANONIMO">Anónimos</option>
 
-                <option value="IDENTIFICADO">
-                  Identificados
-                </option>
+                <option value="IDENTIFICADO">Identificados</option>
               </select>
             </div>
           </div>
@@ -351,16 +278,10 @@ function MisVotos({ alCerrarSesion }) {
 
               <tbody>
                 {votosFiltrados.map((voto) => {
-                  const imagen =
-                    obtenerImagenVotacion(voto);
+                  const imagen = obtenerImagenVotacion(voto);
 
                   return (
-                    <tr
-                      key={
-                        voto.idParticipacion ||
-                        voto.idVotacion
-                      }
-                    >
+                    <tr key={voto.idParticipacion || voto.idVotacion}>
                       <td>
                         <div className="informacion-voto">
                           {imagen ? (
@@ -370,45 +291,29 @@ function MisVotos({ alCerrarSesion }) {
                               className="informacion-voto__imagen"
                             />
                           ) : (
-                            <div className="informacion-voto__icono">
-                              🗳️
-                            </div>
+                            <div className="informacion-voto__icono">🗳️</div>
                           )}
 
                           <div className="informacion-voto__texto">
-                            <strong>
-                              {voto.titulo ||
-                                "Elección"}
-                            </strong>
+                            <strong>{voto.titulo || "Elección"}</strong>
 
-                            <span>
-                              {obtenerNombreCategoria(
-                                voto,
-                              )}
-                            </span>
+                            <span>{obtenerNombreCategoria(voto)}</span>
                           </div>
                         </div>
                       </td>
 
-                      <td>
-                        {formatearFecha(
-                          voto.fechaVoto,
-                        )}
-                      </td>
+                      <td>{formatearFecha(voto.fechaVoto)}</td>
 
                       <td>
                         <span
                           className={[
                             "etiqueta-tipo-voto",
-                            voto.tipoVoto ===
-                            "ANONIMO"
+                            voto.tipoVoto === "ANONIMO"
                               ? "etiqueta-tipo-voto--anonimo"
                               : "etiqueta-tipo-voto--identificado",
                           ].join(" ")}
                         >
-                          {traducirTipoVoto(
-                            voto.tipoVoto,
-                          )}
+                          {traducirTipoVoto(voto.tipoVoto)}
                         </span>
                       </td>
 
@@ -417,22 +322,15 @@ function MisVotos({ alCerrarSesion }) {
                           className={[
                             "estado-votacion",
                             `estado-votacion--${(
-                              voto.estado ||
-                              "activa"
+                              voto.estado || "activa"
                             ).toLowerCase()}`,
                           ].join(" ")}
                         >
-                          {traducirEstado(
-                            voto.estado,
-                          )}
+                          {traducirEstado(voto.estado)}
                         </span>
                       </td>
 
-                      <td>
-                        {traducirPrivacidad(
-                          voto.privacidad,
-                        )}
-                      </td>
+                      <td>{traducirPrivacidad(voto.privacidad)}</td>
                     </tr>
                   );
                 })}
@@ -443,14 +341,9 @@ function MisVotos({ alCerrarSesion }) {
                       <div className="tabla-mis-votos__vacia">
                         <span>🗳️</span>
 
-                        <strong>
-                          No se encontraron votos
-                        </strong>
+                        <strong>No se encontraron votos</strong>
 
-                        <p>
-                          Las elecciones donde
-                          participes aparecerán aquí.
-                        </p>
+                        <p>Las elecciones donde participes aparecerán aquí.</p>
                       </div>
                     </td>
                   </tr>
