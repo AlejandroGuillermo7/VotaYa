@@ -55,6 +55,7 @@ public class ServicioAutenticacion {
                                 solicitud.contrasena()
                         )
                 )
+                .fotoUrl(solicitud.fotoUrl())
                 .rol(RolUsuario.USUARIO)
                 .estado(EstadoUsuario.ACTIVO)
                 .correoVerificado(false)

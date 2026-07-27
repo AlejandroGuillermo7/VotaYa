@@ -50,7 +50,7 @@ public class ControladorUsuario {
                 Path rutaCompleta = rutaDirectorio.resolve(nombreArchivo);
                 Files.copy(foto.getInputStream(), rutaCompleta, StandardCopyOption.REPLACE_EXISTING);
 
-                urlFoto = "http://localhost:8080/imagenes/" + nombreArchivo;
+                urlFoto = "/imagenes/" + nombreArchivo;
 
             } catch (IOException e) {
                 throw new RuntimeException("Error al guardar la nueva foto de perfil", e);
