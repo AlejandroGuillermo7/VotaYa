@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
@@ -11,23 +6,19 @@ import TarjetaVotacion from "../Components/TarjetaVotacion";
 
 import PerfilUsuario from "./PerfilUsuario";
 import EditarVotacion from "./EditarVotacion";
+import logovotar from "../assets/icons/votar.png";
 
-import {
-  peticionApi,
-  resolverUrlArchivo,
-} from "../api/clienteApi";
+import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
 import "./Inicio.css";
 
-const formateadorNumero =
-  new Intl.NumberFormat("es-MX");
+const formateadorNumero = new Intl.NumberFormat("es-MX");
 
-const formateadorFecha =
-  new Intl.DateTimeFormat("es-MX", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+const formateadorFecha = new Intl.DateTimeFormat("es-MX", {
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+});
 
 function normalizarVotaciones(respuesta) {
   if (Array.isArray(respuesta)) {
@@ -64,15 +55,11 @@ function formatearFecha(fecha) {
 
   const fechaConvertida = new Date(fecha);
 
-  if (
-    Number.isNaN(fechaConvertida.getTime())
-  ) {
+  if (Number.isNaN(fechaConvertida.getTime())) {
     return "—";
   }
 
-  return formateadorFecha.format(
-    fechaConvertida,
-  );
+  return formateadorFecha.format(fechaConvertida);
 }
 
 function traducirEstado(estado) {
@@ -101,201 +88,132 @@ function traducirPrivacidad(privacidad) {
 
 function obtenerImagenEleccion(votacion) {
   if (votacion.imagenPortadaUrl) {
-    return resolverUrlArchivo(
-      votacion.imagenPortadaUrl,
-    );
+    return resolverUrlArchivo(votacion.imagenPortadaUrl);
   }
 
-  const primeraOpcionConImagen =
-    votacion.opciones?.find(
-      (opcion) => opcion.imagenUrl,
-    );
-
-  return resolverUrlArchivo(
-    primeraOpcionConImagen?.imagenUrl,
+  const primeraOpcionConImagen = votacion.opciones?.find(
+    (opcion) => opcion.imagenUrl,
   );
+
+  return resolverUrlArchivo(primeraOpcionConImagen?.imagenUrl);
 }
 
 function Inicio({ alCerrarSesion }) {
-  const [
-    idVotacionEditar,
-    setIdVotacionEditar,
-  ] = useState(null);
+  const [idVotacionEditar, setIdVotacionEditar] = useState(null);
 
-  const [perfil, setPerfil] =
-    useState(null);
+  const [perfil, setPerfil] = useState(null);
 
-  const [
-    votacionesDestacadas,
-    setVotacionesDestacadas,
-  ] = useState([]);
+  const [votacionesDestacadas, setVotacionesDestacadas] = useState([]);
 
-  const [
-    misElecciones,
-    setMisElecciones,
-  ] = useState([]);
+  const [misElecciones, setMisElecciones] = useState([]);
 
-  const [busqueda, setBusqueda] =
-    useState("");
+  const [busqueda, setBusqueda] = useState("");
 
-  const [periodo, setPeriodo] =
-    useState("TODAS");
+  const [periodo, setPeriodo] = useState("TODAS");
 
-  const [cargando, setCargando] =
-    useState(true);
+  const [cargando, setCargando] = useState(true);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
-  const [mensaje, setMensaje] =
-    useState("");
+  const [mensaje, setMensaje] = useState("");
 
-  const [
-    menuLateralAbierto,
-    setMenuLateralAbierto,
-  ] = useState(false);
+  const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
 
-  const [vistaActiva, setVistaActiva] =
-    useState("INICIO");
+  const [vistaActiva, setVistaActiva] = useState("INICIO");
 
-  const cargarDatos =
-    useCallback(async () => {
-      try {
-        setCargando(true);
-        setError("");
+  const cargarDatos = useCallback(async () => {
+    try {
+      setCargando(true);
+      setError("");
 
-        const [
-          datosPerfil,
-          respuestaElecciones,
-        ] = await Promise.all([
-          peticionApi("/usuarios/perfil"),
-          peticionApi("/votaciones/mias"),
-        ]);
+      const [datosPerfil, respuestaElecciones] = await Promise.all([
+        peticionApi("/usuarios/perfil"),
+        peticionApi("/votaciones/mias"),
+      ]);
 
-        const elecciones =
-          normalizarVotaciones(
-            respuestaElecciones,
-          );
+      const elecciones = normalizarVotaciones(respuestaElecciones);
 
-        setPerfil(datosPerfil);
-        setMisElecciones(elecciones);
+      setPerfil(datosPerfil);
+      setMisElecciones(elecciones);
 
-        const eleccionesActivasPropias =
-          elecciones
-            .filter(
-              (votacion) =>
-                votacion.estado === "ACTIVA",
-            )
-            .slice(0, 2);
+      const eleccionesActivasPropias = elecciones
+        .filter((votacion) => votacion.estado === "ACTIVA")
+        .slice(0, 2);
 
-        const destacadasConResultados =
-          await Promise.all(
-            eleccionesActivasPropias.map(
-              async (votacion) => {
-                try {
-                  const resultados =
-                    await peticionApi(
-                      `/votaciones/${votacion.idVotacion}/resultados`,
-                    );
+      const destacadasConResultados = await Promise.all(
+        eleccionesActivasPropias.map(async (votacion) => {
+          try {
+            const resultados = await peticionApi(
+              `/votaciones/${votacion.idVotacion}/resultados`,
+            );
 
-                  return {
-                    ...votacion,
-                    resultados,
-                  };
-                } catch (excepcion) {
-                  console.warn(
-                    `No se pudieron cargar los resultados de la votación ${votacion.idVotacion}:`,
-                    excepcion.message,
-                  );
+            return {
+              ...votacion,
+              resultados,
+            };
+          } catch (excepcion) {
+            console.warn(
+              `No se pudieron cargar los resultados de la votación ${votacion.idVotacion}:`,
+              excepcion.message,
+            );
 
-                  return {
-                    ...votacion,
-                    resultados: null,
-                  };
-                }
-              },
-            ),
-          );
+            return {
+              ...votacion,
+              resultados: null,
+            };
+          }
+        }),
+      );
 
-        setVotacionesDestacadas(
-          destacadasConResultados,
-        );
-      } catch (excepcion) {
-        setMisElecciones([]);
-        setVotacionesDestacadas([]);
-        setError(excepcion.message);
-      } finally {
-        setCargando(false);
-      }
-    }, []);
+      setVotacionesDestacadas(destacadasConResultados);
+    } catch (excepcion) {
+      setMisElecciones([]);
+      setVotacionesDestacadas([]);
+      setError(excepcion.message);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
 
   useEffect(() => {
     cargarDatos();
   }, [cargarDatos]);
 
-  const eleccionesFiltradas =
-    useMemo(() => {
-      const texto = busqueda
-        .trim()
-        .toLowerCase();
+  const eleccionesFiltradas = useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
 
-      const listaElecciones =
-        Array.isArray(misElecciones)
-          ? misElecciones
-          : [];
+    const listaElecciones = Array.isArray(misElecciones) ? misElecciones : [];
 
-      return listaElecciones.filter(
-        (votacion) => {
-          const titulo = String(
-            votacion.titulo || "",
-          ).toLowerCase();
+    return listaElecciones.filter((votacion) => {
+      const titulo = String(votacion.titulo || "").toLowerCase();
 
-          const coincideTexto =
-            texto === "" ||
-            titulo.includes(texto);
+      const coincideTexto = texto === "" || titulo.includes(texto);
 
-          if (!coincideTexto) {
-            return false;
-          }
+      if (!coincideTexto) {
+        return false;
+      }
 
-          if (periodo === "TODAS") {
-            return true;
-          }
+      if (periodo === "TODAS") {
+        return true;
+      }
 
-          const dias = Number(periodo);
+      const dias = Number(periodo);
 
-          const fechaInicio = new Date(
-            votacion.fechaInicio,
-          );
+      const fechaInicio = new Date(votacion.fechaInicio);
 
-          if (
-            Number.isNaN(
-              fechaInicio.getTime(),
-            )
-          ) {
-            return false;
-          }
+      if (Number.isNaN(fechaInicio.getTime())) {
+        return false;
+      }
 
-          const fechaLimite = new Date();
+      const fechaLimite = new Date();
 
-          fechaLimite.setDate(
-            fechaLimite.getDate() - dias,
-          );
+      fechaLimite.setDate(fechaLimite.getDate() - dias);
 
-          return (
-            fechaInicio >= fechaLimite
-          );
-        },
-      );
-    }, [
-      misElecciones,
-      busqueda,
-      periodo,
-    ]);
+      return fechaInicio >= fechaLimite;
+    });
+  }, [misElecciones, busqueda, periodo]);
 
-  async function eliminarVotacion(
-    idVotacion,
-  ) {
+  async function eliminarVotacion(idVotacion) {
     const confirmado = window.confirm(
       "¿Seguro que deseas eliminar esta elección?",
     );
@@ -308,52 +226,31 @@ function Inicio({ alCerrarSesion }) {
       setError("");
       setMensaje("");
 
-      await peticionApi(
-        `/votaciones/${idVotacion}`,
-        {
-          method: "DELETE",
-        },
-      );
+      await peticionApi(`/votaciones/${idVotacion}`, {
+        method: "DELETE",
+      });
 
-      setMisElecciones(
-        (eleccionesAnteriores) => {
-          const lista =
-            Array.isArray(
-              eleccionesAnteriores,
-            )
-              ? eleccionesAnteriores
-              : [];
+      setMisElecciones((eleccionesAnteriores) => {
+        const lista = Array.isArray(eleccionesAnteriores)
+          ? eleccionesAnteriores
+          : [];
 
-          return lista.filter(
-            (votacion) =>
-              Number(
-                votacion.idVotacion,
-              ) !== Number(idVotacion),
-          );
-        },
-      );
+        return lista.filter(
+          (votacion) => Number(votacion.idVotacion) !== Number(idVotacion),
+        );
+      });
 
-      setVotacionesDestacadas(
-        (eleccionesAnteriores) => {
-          const lista =
-            Array.isArray(
-              eleccionesAnteriores,
-            )
-              ? eleccionesAnteriores
-              : [];
+      setVotacionesDestacadas((eleccionesAnteriores) => {
+        const lista = Array.isArray(eleccionesAnteriores)
+          ? eleccionesAnteriores
+          : [];
 
-          return lista.filter(
-            (votacion) =>
-              Number(
-                votacion.idVotacion,
-              ) !== Number(idVotacion),
-          );
-        },
-      );
+        return lista.filter(
+          (votacion) => Number(votacion.idVotacion) !== Number(idVotacion),
+        );
+      });
 
-      setMensaje(
-        "La elección fue eliminada correctamente.",
-      );
+      setMensaje("La elección fue eliminada correctamente.");
     } catch (excepcion) {
       setError(excepcion.message);
     }
@@ -375,9 +272,7 @@ function Inicio({ alCerrarSesion }) {
       <div className="pantalla-carga">
         <div className="pantalla-carga__circulo" />
 
-        <p>
-          Cargando panel de VotaYa...
-        </p>
+        <p>Cargando panel de VotaYa...</p>
       </div>
     );
   }
@@ -388,9 +283,7 @@ function Inicio({ alCerrarSesion }) {
         perfil={perfil}
         seccionActiva="mis-elecciones"
         abierta={menuLateralAbierto}
-        alCerrar={() =>
-          setMenuLateralAbierto(false)
-        }
+        alCerrar={() => setMenuLateralAbierto(false)}
         alCerrarSesion={alCerrarSesion}
       />
 
@@ -399,41 +292,24 @@ function Inicio({ alCerrarSesion }) {
           type="button"
           className="fondo-sidebar-movil"
           aria-label="Cerrar menú lateral"
-          onClick={() =>
-            setMenuLateralAbierto(false)
-          }
+          onClick={() => setMenuLateralAbierto(false)}
         />
       )}
 
       <main className="contenido-inicio">
         <EncabezadoUsuario
           perfil={perfil}
-          alAbrirMenu={() =>
-            setMenuLateralAbierto(true)
-          }
-          alIrAPerfil={() =>
-            setVistaActiva("PERFIL")
-          }
+          alAbrirMenu={() => setMenuLateralAbierto(true)}
+          alIrAPerfil={() => setVistaActiva("PERFIL")}
           alCerrarSesion={alCerrarSesion}
         />
 
-        {error && (
-          <div className="mensaje mensaje--error">
-            {error}
-          </div>
-        )}
+        {error && <div className="mensaje mensaje--error">{error}</div>}
 
-        {mensaje && (
-          <div className="mensaje mensaje--correcto">
-            {mensaje}
-          </div>
-        )}
+        {mensaje && <div className="mensaje mensaje--correcto">{mensaje}</div>}
 
         {vistaActiva === "PERFIL" && (
-          <PerfilUsuario
-            volver={volverAlInicio}
-            onActualizado={cargarDatos}
-          />
+          <PerfilUsuario volver={volverAlInicio} onActualizado={cargarDatos} />
         )}
 
         {vistaActiva === "EDITAR" && (
@@ -446,44 +322,29 @@ function Inicio({ alCerrarSesion }) {
         {vistaActiva === "INICIO" && (
           <>
             <section className="bienvenida-panel">
-              <p>
-                Aquí puedes consultar tus
-                votaciones activas.
-              </p>
+              <p>Aquí puedes consultar tus votaciones activas.</p>
             </section>
 
             <section className="votaciones-destacadas">
-              {votacionesDestacadas.length >
-              0 ? (
-                votacionesDestacadas.map(
-                  (votacion) => (
-                    <TarjetaVotacion
-                      key={
-                        votacion.idVotacion
-                      }
-                      votacion={votacion}
-                    />
-                  ),
-                )
+              {votacionesDestacadas.length > 0 ? (
+                votacionesDestacadas.map((votacion) => (
+                  <TarjetaVotacion
+                    key={votacion.idVotacion}
+                    votacion={votacion}
+                  />
+                ))
               ) : (
                 <div className="estado-vacio estado-vacio--grande">
-                  <h2>
-                    No hay elecciones activas
-                  </h2>
+                  <h2>No hay elecciones activas</h2>
 
-                  <p>
-                    Las votaciones activas
-                    aparecerán en esta sección.
-                  </p>
+                  <p>Las votaciones activas aparecerán en esta sección.</p>
                 </div>
               )}
             </section>
 
             <section className="seccion-elecciones">
               <div className="seccion-elecciones__superior">
-                <h2>
-                  Todas tus elecciones.
-                </h2>
+                <h2>Todas tus elecciones.</h2>
 
                 <div className="seccion-elecciones__filtros">
                   <label className="campo-busqueda">
@@ -493,38 +354,22 @@ function Inicio({ alCerrarSesion }) {
                       type="search"
                       placeholder="Buscar"
                       value={busqueda}
-                      onChange={(evento) =>
-                        setBusqueda(
-                          evento.target.value,
-                        )
-                      }
+                      onChange={(evento) => setBusqueda(evento.target.value)}
                     />
                   </label>
 
                   <select
                     className="selector-periodo"
                     value={periodo}
-                    onChange={(evento) =>
-                      setPeriodo(
-                        evento.target.value,
-                      )
-                    }
+                    onChange={(evento) => setPeriodo(evento.target.value)}
                   >
-                    <option value="TODAS">
-                      Todas
-                    </option>
+                    <option value="TODAS">Todas</option>
 
-                    <option value="30">
-                      Últimos 30 días
-                    </option>
+                    <option value="30">Últimos 30 días</option>
 
-                    <option value="90">
-                      Últimos 90 días
-                    </option>
+                    <option value="90">Últimos 90 días</option>
 
-                    <option value="365">
-                      Último año
-                    </option>
+                    <option value="365">Último año</option>
                   </select>
                 </div>
               </div>
@@ -533,17 +378,13 @@ function Inicio({ alCerrarSesion }) {
                 <table className="tabla-elecciones">
                   <thead>
                     <tr>
-                      <th>
-                        Nombre elección
-                      </th>
+                      <th>Nombre elección</th>
 
                       <th>Total votos</th>
 
                       <th>Fecha inicio</th>
 
-                      <th>
-                        Fecha de cierre
-                      </th>
+                      <th>Fecha de cierre</th>
 
                       <th>Privacidad</th>
 
@@ -552,124 +393,84 @@ function Inicio({ alCerrarSesion }) {
                   </thead>
 
                   <tbody>
-                    {eleccionesFiltradas.map(
-                      (votacion) => {
-                        const imagen =
-                          obtenerImagenEleccion(
-                            votacion,
-                          );
+                    {eleccionesFiltradas.map((votacion) => {
+                      const imagen = obtenerImagenEleccion(votacion);
 
-                        const idVotacion =
-                          votacion.idVotacion ??
-                          votacion.id;
+                      const idVotacion = votacion.idVotacion ?? votacion.id;
 
-                        return (
-                          <tr
-                            key={idVotacion}
-                          >
-                            <td>
-                              <div className="informacion-eleccion">
-                                {imagen ? (
-                                  <img
-                                    src={imagen}
-                                    alt=""
-                                    className="informacion-eleccion__imagen"
-                                    onError={(
-                                      evento,
-                                    ) => {
-                                      evento.currentTarget.style.display =
-                                        "none";
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="informacion-eleccion__icono">
-                                    🗳️
-                                  </div>
-                                )}
-
-                                <div>
-                                  <strong>
-                                    {traducirEstado(
-                                      votacion.estado,
-                                    )}
-                                  </strong>
-
-                                  <span>
-                                    {votacion.titulo}
-                                  </span>
+                      return (
+                        <tr key={idVotacion}>
+                          <td>
+                            <div className="informacion-eleccion">
+                              {imagen ? (
+                                <img
+                                  src={imagen}
+                                  alt=""
+                                  className="informacion-eleccion__imagen"
+                                  onError={(evento) => {
+                                    evento.currentTarget.style.display = "none";
+                                  }}
+                                />
+                              ) : (
+                                <div className="informacion-eleccion__icono">
+                                  <img width="20" src={logovotar}></img>
                                 </div>
+                              )}
+
+                              <div>
+                                <strong>
+                                  {traducirEstado(votacion.estado)}
+                                </strong>
+
+                                <span>{votacion.titulo}</span>
                               </div>
-                            </td>
+                            </div>
+                          </td>
 
-                            <td>
-                              {formateadorNumero.format(
-                                Number(
-                                  votacion.totalVotos ??
-                                    0,
-                                ),
-                              )}
-                            </td>
+                          <td>
+                            {formateadorNumero.format(
+                              Number(votacion.totalVotos ?? 0),
+                            )}
+                          </td>
 
-                            <td>
-                              {formatearFecha(
-                                votacion.fechaInicio,
-                              )}
-                            </td>
+                          <td>{formatearFecha(votacion.fechaInicio)}</td>
 
-                            <td>
-                              {votacion.estado ===
-                              "ACTIVA"
-                                ? "Aún activa"
-                                : formatearFecha(
-                                    votacion.fechaFin,
-                                  )}
-                            </td>
+                          <td>
+                            {votacion.estado === "ACTIVA"
+                              ? "Aún activa"
+                              : formatearFecha(votacion.fechaFin)}
+                          </td>
 
-                            <td>
-                              {traducirPrivacidad(
-                                votacion.privacidad,
-                              )}
-                            </td>
+                          <td>{traducirPrivacidad(votacion.privacidad)}</td>
 
-                            <td>
-                              <div className="acciones-eleccion">
-                                <button
-                                  type="button"
-                                  className="boton-accion boton-accion--editar"
-                                  onClick={() =>
-                                    editarVotacion(
-                                      idVotacion,
-                                    )
-                                  }
-                                >
-                                  Editar
-                                </button>
+                          <td>
+                            <div className="acciones-eleccion">
+                              <button
+                                type="button"
+                                className="boton-accion boton-accion--editar"
+                                onClick={() => editarVotacion(idVotacion)}
+                              >
+                                Editar
+                              </button>
 
-                                <button
-                                  type="button"
-                                  className="boton-accion boton-accion--eliminar"
-                                  onClick={() =>
-                                    eliminarVotacion(
-                                      idVotacion,
-                                    )
-                                  }
-                                >
-                                  Eliminar
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      },
-                    )}
+                              <button
+                                type="button"
+                                className="boton-accion boton-accion--eliminar"
+                                onClick={() => eliminarVotacion(idVotacion)}
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
 
-                    {eleccionesFiltradas.length ===
-                      0 && (
+                    {eleccionesFiltradas.length === 0 && (
                       <tr>
                         <td colSpan="6">
                           <div className="tabla-elecciones__vacia">
-                            No se encontraron
-                            elecciones.
+                            No se encontraron elecciones.
                           </div>
                         </td>
                       </tr>
