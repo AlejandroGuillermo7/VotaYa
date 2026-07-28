@@ -2,6 +2,7 @@ package com.votaya.votaya_backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -466,5 +467,35 @@ public class ServicioVotacion {
                 return valor == null || valor.isBlank()
                                 ? null
                                 : valor.trim();
+        }
+
+        @Transactional(readOnly = true)
+        @PreAuthorize("hasRole('ADMINISTRADOR')")
+        public List<VotacionDTO.Respuesta> listarTodasAdministrador() {
+
+                return votacionRepositorio
+                                .findAllByOrderByFechaCreacionDesc()
+                                .stream()
+                                .map(this::convertir)
+                                .toList();
+        }
+
+        @Transactional
+        @PreAuthorize("hasRole('ADMINISTRADOR')")
+        public void eliminarComoAdministrador(
+                        Long idVotacion) {
+                Votacion votacion = votacionRepositorio
+                                .findById(idVotacion)
+                                .orElseThrow(() -> new RecursoNoEncontradoExcepcion(
+                                                "Votación no encontrada"));
+
+                /*
+                 * La dejamos cancelada en vez de eliminarla
+                 * físicamente para conservar votos e historial.
+                 */
+                votacion.setEstado(
+                                EstadoVotacion.CANCELADA);
+
+                votacionRepositorio.save(votacion);
         }
 }

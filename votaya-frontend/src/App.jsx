@@ -6,6 +6,7 @@ import Elecciones from "./pages/Elecciones";
 import MisVotos from "./pages/MisVotos";
 import CrearVotacion from "./pages/CrearVotacion";
 import Usuarios from "./pages/Usuarios";
+import TodasElecciones from "./pages/TodasElecciones";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -61,6 +62,11 @@ function App() {
     if (ruta === "/administrador/usuarios") {
       return <Usuarios alCerrarSesion={cerrarSesion} />;
     }
+
+    if (ruta === "/administrador/elecciones") {
+      return <TodasElecciones alCerrarSesion={cerrarSesion} />;
+    }
+
 
     if (ruta === "/elecciones") {
       return (

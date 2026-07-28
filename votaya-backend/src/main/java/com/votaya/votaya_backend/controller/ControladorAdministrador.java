@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.votaya.votaya_backend.dto.UsuarioDTO;
+import com.votaya.votaya_backend.dto.VotacionDTO;
 import com.votaya.votaya_backend.service.ServicioUsuario;
+import com.votaya.votaya_backend.service.ServicioVotacion;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,21 +24,40 @@ import lombok.RequiredArgsConstructor;
 public class ControladorAdministrador {
 
     private final ServicioUsuario servicioUsuario;
+    private final ServicioVotacion servicioVotacion;
 
     @GetMapping("/usuarios")
-    public ResponseEntity<List<UsuarioDTO.Respuesta>>
-    listarUsuarios() {
+    public ResponseEntity<List<UsuarioDTO.Respuesta>> listarUsuarios() {
 
         return ResponseEntity.ok(
-                servicioUsuario.listarTodos()
-        );
+                servicioUsuario.listarTodos());
     }
 
     @DeleteMapping("/usuarios/{idUsuario}")
     public ResponseEntity<Void> eliminarUsuario(
-            @PathVariable Long idUsuario
-    ) {
-        servicioUsuario.eliminarLogicamente(idUsuario);
+            @PathVariable Long idUsuario) {
+        servicioUsuario.eliminarLogicamente(
+                idUsuario);
+
+        return ResponseEntity
+                .noContent()
+                .build();
+    }
+
+    @GetMapping("/votaciones")
+    public ResponseEntity<List<VotacionDTO.Respuesta>> listarVotaciones() {
+
+        return ResponseEntity.ok(
+                servicioVotacion
+                        .listarTodasAdministrador());
+    }
+
+    @DeleteMapping("/votaciones/{idVotacion}")
+    public ResponseEntity<Void> eliminarVotacion(
+            @PathVariable Long idVotacion) {
+        servicioVotacion
+                .eliminarComoAdministrador(
+                        idVotacion);
 
         return ResponseEntity
                 .noContent()

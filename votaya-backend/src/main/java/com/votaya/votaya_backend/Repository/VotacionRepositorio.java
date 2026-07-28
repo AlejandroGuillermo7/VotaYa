@@ -11,18 +11,16 @@ import java.util.Collection;
 import java.util.List;
 
 public interface VotacionRepositorio
-        extends JpaRepository<Votacion, Long> {
+                extends JpaRepository<Votacion, Long> {
 
-    List<Votacion>
-    findByCreadorIdUsuarioOrderByFechaCreacionDesc(
-            Long idUsuario
-    );
+        List<Votacion> findByCreadorIdUsuarioOrderByFechaCreacionDesc(
+                        Long idUsuario);
 
-    List<Votacion>
-    findByPrivacidadAndEstadoNotInAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqualOrderByFechaCreacionDesc(
-            PrivacidadVotacion privacidad,
-            Collection<EstadoVotacion> estadosExcluidos,
-            LocalDateTime fechaInicio,
-            LocalDateTime fechaFin
-    );
+        List<Votacion> findByPrivacidadAndEstadoNotInAndFechaInicioLessThanEqualAndFechaFinGreaterThanEqualOrderByFechaCreacionDesc(
+                        PrivacidadVotacion privacidad,
+                        Collection<EstadoVotacion> estadosExcluidos,
+                        LocalDateTime fechaInicio,
+                        LocalDateTime fechaFin);
+
+        List<Votacion> findAllByOrderByFechaCreacionDesc();
 }
