@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.votaya.votaya_backend.dto.VotacionDTO;
+import com.votaya.votaya_backend.dto.VotacionDTO.Respuesta;
+import com.votaya.votaya_backend.dto.VotacionDTO.SolicitudGuardar;
 import com.votaya.votaya_backend.enumeraciones.EstadoInvitacion;
 import com.votaya.votaya_backend.enumeraciones.EstadoVotacion;
 import com.votaya.votaya_backend.enumeraciones.PrivacidadVotacion;
@@ -489,10 +491,7 @@ public class ServicioVotacion {
                                 .orElseThrow(() -> new RecursoNoEncontradoExcepcion(
                                                 "Votación no encontrada"));
 
-                /*
-                 * La dejamos cancelada en vez de eliminarla
-                 * físicamente para conservar votos e historial.
-                 */
+                
                 votacion.setEstado(
                                 EstadoVotacion.CANCELADA);
 
