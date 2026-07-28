@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class ServicioArchivos {
 
     private static final Set<String> EXTENSIONES_PERMITIDAS =
-            Set.of(".jpg", ".jpeg", ".png", ".webp");
+            Set.of(".jpg", ".jpeg", ".png", ".webp", ".jfif", ".pjpeg", ".avif");
 
     private final Path carpetaImagenes =
             Paths.get("uploads", "imagenes")
@@ -58,7 +58,7 @@ public class ServicioArchivos {
 
         if (!EXTENSIONES_PERMITIDAS.contains(extension)) {
             throw new IllegalArgumentException(
-                    "Solo se permiten imágenes JPG, JPEG, PNG o WEBP."
+                    "Solo se permiten imágenes JPG, JPEG, PNG, WEBP o JFIF."
             );
         }
 

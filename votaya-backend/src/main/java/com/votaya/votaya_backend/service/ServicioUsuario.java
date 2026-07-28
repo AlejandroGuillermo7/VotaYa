@@ -52,24 +52,14 @@ public class ServicioUsuario {
                 usuario.setFechaNacimiento(
                                 solicitud.fechaNacimiento());
 
-                /*
-                 * Solo cambia fotoUrl cuando el usuario
-                 * realmente envía una fotografía nueva.
-                 *
-                 * Si no manda foto, conserva la anterior.
-                 */
+              
                 if (foto != null && !foto.isEmpty()) {
                         String nuevaFotoUrl = servicioArchivos.guardarImagen(foto);
 
                         usuario.setFotoUrl(nuevaFotoUrl);
                 }
 
-                /*
-                 * Solo cambia la contraseña si el usuario
-                 * mandó una nueva contraseña no vacía.
-                 * La verificación de la contraseña actual
-                 * ya se hizo antes en un endpoint separado.
-                 */
+               
                 if (solicitud.nuevaContrasena() != null
                                 && !solicitud.nuevaContrasena().isBlank()) {
 

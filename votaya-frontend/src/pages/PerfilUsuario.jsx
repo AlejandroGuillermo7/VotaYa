@@ -93,7 +93,7 @@ function PerfilUsuario({ volver, onActualizado }) {
     setMensaje({ tipo: "", texto: "" });
 
     try {
-      const respuesta = await fetch("http://localhost:8080/api/usuario/verificar-password", {
+      const respuesta = await fetch("http://localhost:8080/api/usuarios/verificar-password", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -120,25 +120,26 @@ function PerfilUsuario({ volver, onActualizado }) {
 
   const handleActualizar = async (e) => {
     e.preventDefault();
-  setMensaje({ tipo: "", texto: "" });
+    setMensaje({ tipo: "", texto: "" });
 
-  if (isVerificada && contraseñaNueva && contraseñaNueva !== confirmarContraseña) {
-    setMensaje({ tipo: "error", texto: "La confirmación de la nueva contraseña no coincide." });
-    return;
-  }
+    if (isVerificada && contraseñaNueva && contraseñaNueva !== confirmarContraseña) {
+      setMensaje({ tipo: "error", texto: "La confirmación de la nueva contraseña no coincide." });
+      return;
+    }
+
+    setGuardando(true);
 
     try {
       const formData = new FormData();
 
-      // DTO estructurado correctamente usando las variables de estado individuales
       const datosUsuario = {
-  nombres: nombre,
-  apellidoPaterno: apellidoP,
-  apellidoMaterno: apellidoM,
-  fechaNacimiento: fechaN,
-  correo: correo,
-  nuevaContrasena: isVerificada && contraseñaNueva ? contraseñaNueva : null,
-};
+        nombres: nombre,
+        apellidoPaterno: apellidoP,
+        apellidoMaterno: apellidoM || null,
+        fechaNacimiento: fechaN,
+        correo: correo,
+        nuevaContrasena: isVerificada && contraseñaNueva ? contraseñaNueva : null,
+      };
 
       formData.append(
         "datos",
@@ -151,7 +152,7 @@ function PerfilUsuario({ volver, onActualizado }) {
         formData.append("foto", archivoFoto);
       }
 
-      const respuesta = await fetch("http://localhost:8080/api/usuarios/verificar-password", {
+      const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -173,7 +174,6 @@ function PerfilUsuario({ volver, onActualizado }) {
         setFotoPerfil(resolverUrlArchivo(dataActualizada.fotoUrl));
       }
 
-      // Notificar al padre (App / Dashboard) para que recargue el perfil global y actualice EncabezadoUsuario
       if (onActualizado) {
         onActualizado();
       }
