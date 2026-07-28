@@ -15,6 +15,7 @@ body {
   box-sizing: border-box;
 }
 
+/* ENCABEZADO Y FOTO */
 .encabezado {
   display: flex;
   flex-direction: column;
@@ -39,7 +40,11 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  cursor: pointer;
+}
+
+.wrapper-foto {
+  position: relative;
+  display: inline-block;
 }
 
 .marco-foto-perfil {
@@ -62,15 +67,24 @@ body {
   border-radius: 50%;
 }
 
-.icono-usuario-base {
-  font-size: 55px;
+.icono-avatar-svg {
+  font-size: 50px;
+  color: #94a3b8;
+}
+
+.place-holder-foto {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: #f8fafc;
 }
 
 .icono-agregar-foto {
   position: absolute;
   bottom: 10px;
   right: 15px;
-  font-size: 20px;
   background: #2563eb;
   color: white;
   width: 28px;
@@ -81,12 +95,31 @@ body {
   align-items: center;
 }
 
+.btn-eliminar-foto {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
 .texto-subir-foto {
   font-size: 0.85rem;
   color: #64748b;
   margin-top: 6px;
 }
 
+/* SECCIONES Y FORMULARIOS */
 .seccion-form {
   margin-bottom: 30px;
 }
@@ -99,7 +132,7 @@ body {
   font-weight: 700;
 }
 
-/* Filas / Estructuras */
+/* GRIDS Y FILAS */
 .fila-datos-cuatro {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -115,9 +148,9 @@ body {
 
 .fila-cambio-clave {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr 1.2fr 1.2fr;
+  grid-template-columns: 1fr 1fr;
   gap: 16px;
-  align-items: end;
+  align-items: flex-end;
 }
 
 .formulario-campo {
@@ -125,11 +158,7 @@ body {
   flex-direction: column;
   gap: 6px;
   text-align: left;
-}
-
-.seccion-participacion-ancho {
   width: 100%;
-  margin-top: 24px;
 }
 
 .formulario-campo label {
@@ -138,19 +167,12 @@ body {
   color: #334155;
 }
 
-.seccion-participacion-ancho .label-participar {
-  text-align: center;
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #1e3a8a;
-  margin-bottom: 12px;
-}
-
+/* INPUTS */
 .campo-con-icono {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .campo-con-icono img {
@@ -167,7 +189,8 @@ body {
 
 .formulario-campo input {
   width: 100%;
-  padding: 10px 14px;
+  height: 40px;
+  padding: 0 14px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background-color: #e2e8f0;
@@ -184,78 +207,55 @@ body {
   border-color: #bfdbfe !important;
 }
 
-.contenedor-tarjetas-rol {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+/* INPUT + BOTÓN DENTRO DE LA MISMA COLUMNA */
+.campo-con-boton {
+  display: flex;
+  gap: 10px;
+  align-items: center;
   width: 100%;
 }
 
-.tarjeta-rol {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 12px;
-  background-color: #ffffff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tarjeta-rol.seleccionada {
-  border-color: #2563eb;
-  background-color: #ffffff;
-}
-
-.icono-tarjeta-rol {
-  width: 26px;
-  height: 26px;
-  object-fit: contain;
-}
-
-.tarjeta-rol strong {
-  display: block;
-  font-size: 0.85rem;
-  color: #1e293b;
-}
-
-.tarjeta-rol small {
-  display: block;
-  font-size: 0.72rem;
-  color: #64748b;
-}
-
-/* Botones y acciones */
-.contenedor-boton-verificar {
-  display: flex;
-  align-items: flex-end;
+.campo-con-boton .campo-con-icono {
+  flex: 1;
 }
 
 .btn-verificar {
-  width: 100%;
-  padding: 11px;
+  height: 40px;
+  padding: 0 18px;
   background-color: #2563eb;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
 }
 
+.btn-verificar:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-verificar:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* ACCIONES FINALES */
 .acciones-finales {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  margin-top: 30px;
+  margin-top: 35px;
 }
 
 .btn-actualizar {
   width: 100%;
-  max-width: 260px;
-  padding: 12px;
+  max-width: 280px;
+  height: 44px;
   background-color: #2563eb;
   color: white;
   border: none;
@@ -263,10 +263,10 @@ body {
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.btn-actualizar:hover,
-.btn-verificar:hover {
+.btn-actualizar:hover {
   background-color: #1d4ed8;
 }
 
@@ -289,11 +289,7 @@ input:disabled {
   opacity: 0.6;
 }
 
-.btn-verificar:disabled {
-  background-color: #94a3b8;
-  cursor: not-allowed;
-}
-
+/* ALERTAS */
 .mensaje-alerta {
   padding: 10px 14px;
   border-radius: 8px;
@@ -312,4 +308,13 @@ input:disabled {
   background-color: #f0fdf4;
   color: #166534;
   border: 1px solid #bbf7d0;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px) {
+  .fila-datos-cuatro,
+  .fila-correo-unico,
+  .fila-cambio-clave {
+    grid-template-columns: 1fr;
+  }
 }

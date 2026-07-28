@@ -317,35 +317,41 @@ function PerfilUsuario({ volver, onActualizado }) {
             </div>
           )}
 
+          {/* FILA 1: Input + Botón en la Columna 1 */}
           <div className="fila-cambio-clave">
             <div className="formulario-campo">
               <label htmlFor="pass-verificar">Contraseña Actual</label>
-              <div className="campo-con-icono">
-                <img src={password} alt="Icono contraseña" />
-                <input
-                  type="password"
-                  id="pass-verificar"
-                  value={contraseñaActual}
-                  onChange={(e) => {
-                    setContraseñaActual(e.target.value);
-                    setIsVerificada(false);
-                  }}
-                  placeholder="********"
-                />
+              <div className="campo-con-boton">
+                <div className="campo-con-icono">
+                  <img src={password} alt="Icono contraseña" />
+                  <input
+                    type="password"
+                    id="pass-verificar"
+                    value={contraseñaActual}
+                    onChange={(e) => {
+                      setContraseñaActual(e.target.value);
+                      setIsVerificada(false);
+                    }}
+                    placeholder="********"
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="btn-verificar"
+                  onClick={handleVerificar}
+                  disabled={cargando || isVerificada}
+                >
+                  {cargando ? "Verificando..." : isVerificada ? "Verificada ✓" : "Verificar"}
+                </button>
               </div>
             </div>
 
-            <div className="contenedor-boton-verificar">
-              <button
-                type="button"
-                className="btn-verificar"
-                onClick={handleVerificar}
-                disabled={cargando || isVerificada}
-              >
-                {cargando ? "Verificando..." : isVerificada ? "Verificada ✓" : "Verificar"}
-              </button>
-            </div>
+            {/* Columna 2 vacía para mantener la simetría del Grid */}
+            <div></div>
+          </div>
 
+          {/* FILA 2: Nueva Contraseña + Confirmación */}
+          <div className="fila-cambio-clave" style={{ marginTop: "16px" }}>
             <div className="formulario-campo">
               <label htmlFor="contraseñaN">Nueva Contraseña</label>
               <div className="campo-con-icono">

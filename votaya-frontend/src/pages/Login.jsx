@@ -51,7 +51,6 @@ async function enviar(e) {
     setCargando(true);
 
     try {
-      // 1. Petición de autenticación
       const respuesta = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: {
@@ -69,12 +68,10 @@ async function enviar(e) {
         throw new Error(data.mensaje || "Correo o contraseña incorrectos.");
       }
 
-      // Guardamos token de autenticación
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
 
-      // 2. ⚡ PETICIÓN EXTRA: Obtener el perfil completo (incluyendo la foto de la BD)
       let usuarioCompleto = { ...data };
 
       try {
@@ -86,14 +83,12 @@ async function enviar(e) {
 
         if (resPerfil.ok) {
           const perfilBD = await resPerfil.json();
-          // Unimos los datos del perfil con los del login
           usuarioCompleto = { ...data, ...perfilBD };
         }
       } catch (errPerfil) {
         console.warn("No se pudo cargar la foto en el login, se usarán datos básicos:", errPerfil);
       }
 
-      // 3. Notificamos al componente padre con la foto lista
       if (alIniciarSesion) alIniciarSesion(usuarioCompleto);
 
     } catch (err) {
