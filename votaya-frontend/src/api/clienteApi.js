@@ -1,72 +1,101 @@
-const URL_API = (
-  import.meta.env.VITE_API_URL || "http://localhost:8080/api"
-).replace(/\/$/, "");
+const URL_API =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:8080/api";
 
-const URL_SERVIDOR = URL_API.replace(/\/api$/, "");
+export async function peticionApi(
+  ruta,
+  opciones = {},
+) {
+  const token =
+    localStorage.getItem("token");
 
-export function obtenerToken() {
-  return localStorage.getItem("token");
-}
+  const headers = new Headers(
+    opciones.headers || {},
+  );
 
-export function resolverUrlArchivo(ruta) {
-  if (!ruta) return null;
-
-  if (
-    ruta.startsWith("http://") ||
-    ruta.startsWith("https://") ||
-    ruta.startsWith("data:")
-  ) {
-    return ruta;
-  }
-
-  return `${URL_SERVIDOR}${ruta.startsWith("/") ? "" : "/"}${ruta}`;
-}
-
-export async function peticionApi(ruta, opciones = {}) {
-  const token = obtenerToken();
-  const encabezados = new Headers(opciones.headers || {});
-
-  if (token) {
-    encabezados.set("Authorization", `Bearer ${token}`);
-  }
+  const esFormData =
+    opciones.body instanceof FormData;
 
   if (
     opciones.body &&
-    !(opciones.body instanceof FormData) &&
-    !encabezados.has("Content-Type")
+    !esFormData &&
+    !headers.has("Content-Type")
   ) {
-    encabezados.set("Content-Type", "application/json");
+    headers.set(
+      "Content-Type",
+      "application/json",
+    );
   }
 
-  const respuesta = await fetch(`${URL_API}${ruta}`, {
-    ...opciones,
-    headers: encabezados,
-  });
+  if (token) {
+    headers.set(
+      "Authorization",
+      `Bearer ${token}`,
+    );
+  }
+
+  const respuesta = await fetch(
+    `${URL_API}${ruta}`,
+    {
+      ...opciones,
+      headers,
+    },
+  );
+
+  /*
+   * DELETE normalmente responde 204
+   * y no contiene JSON.
+   */
+  if (respuesta.status === 204) {
+    return null;
+  }
+
+  const tipoContenido =
+    respuesta.headers.get(
+      "content-type",
+    ) || "";
 
   let datos = null;
 
-  if (respuesta.status !== 204) {
-    const tipoContenido = respuesta.headers.get("content-type");
+  if (
+    tipoContenido.includes(
+      "application/json",
+    )
+  ) {
+    datos = await respuesta.json();
+  } else {
+    const texto = await respuesta.text();
 
-    datos = tipoContenido?.includes("application/json")
-      ? await respuesta.json()
-      : await respuesta.text();
+    datos = texto || null;
   }
 
   if (!respuesta.ok) {
-    if (respuesta.status === 401) {
-      localStorage.removeItem("token");
-    }
-
     const mensaje =
-      typeof datos === "string"
-        ? datos
-        : datos?.mensaje ||
-          datos?.error ||
-          `Error HTTP ${respuesta.status}`;
+      datos?.mensaje ||
+      datos?.message ||
+      datos ||
+      "Ocurrió un error en la solicitud.";
 
     throw new Error(mensaje);
   }
 
   return datos;
+}
+
+export function resolverUrlArchivo(ruta) {
+  if (!ruta) {
+    return null;
+  }
+
+  if (
+    ruta.startsWith("http://") ||
+    ruta.startsWith("https://") ||
+    ruta.startsWith("blob:")
+  ) {
+    return ruta;
+  }
+
+  return `http://localhost:8080${
+    ruta.startsWith("/") ? "" : "/"
+  }${ruta}`;
 }

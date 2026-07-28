@@ -74,11 +74,12 @@ public class ServicioUsuario {
                 return convertir(usuarioGuardado);
         }
 
-        @PreAuthorize("hasRole('ADMINISTRADOR')")
         @Transactional(readOnly = true)
+        @PreAuthorize("hasRole('ADMINISTRADOR')")
         public List<UsuarioDTO.Respuesta> listarTodos() {
                 return usuarioRepositorio
-                                .findAllByOrderByFechaRegistroDesc()
+                                .findAllByEstadoOrderByFechaRegistroDesc(
+                                                EstadoUsuario.ACTIVO)
                                 .stream()
                                 .map(this::convertir)
                                 .toList();
