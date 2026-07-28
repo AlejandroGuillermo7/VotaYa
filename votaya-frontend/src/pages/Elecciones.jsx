@@ -1,14 +1,23 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
 import filtrar from "../assets/icons/filtrar.svg";
 
-import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
+import {
+  peticionApi,
+  resolverUrlArchivo,
+} from "../api/clienteApi";
 
 import "./Elecciones.css";
 
-const formateadorNumero = new Intl.NumberFormat("es-MX");
+const formateadorNumero =
+  new Intl.NumberFormat("es-MX");
 
 const COLORES_GRAFICA = [
   "#2675e5",
@@ -19,55 +28,127 @@ const COLORES_GRAFICA = [
   "#ffb84d",
 ];
 
-function obtenerClaveOpcionSeleccionada(idUsuario, idVotacion) {
+function normalizarLista(respuesta) {
+  if (Array.isArray(respuesta)) {
+    return respuesta;
+  }
+
+  const posiblesListas = [
+    respuesta?.content,
+    respuesta?.contenido,
+    respuesta?.data,
+    respuesta?.data?.content,
+    respuesta?.data?.contenido,
+    respuesta?.votaciones,
+    respuesta?.categorias,
+    respuesta?.participaciones,
+    respuesta?.items,
+    respuesta?.lista,
+    respuesta?.resultados,
+  ];
+
+  const listaEncontrada =
+    posiblesListas.find(Array.isArray);
+
+  return listaEncontrada || [];
+}
+
+function obtenerClaveOpcionSeleccionada(
+  idUsuario,
+  idVotacion,
+) {
   return `opcionSeleccionada_${idUsuario}_${idVotacion}`;
 }
 
-function obtenerClaveTokenCambio(idUsuario, idVotacion) {
+function obtenerClaveTokenCambio(
+  idUsuario,
+  idVotacion,
+) {
   return `tokenCambioVoto_${idUsuario}_${idVotacion}`;
 }
 
 function formatearVotos(cantidad) {
   const total = Number(cantidad || 0);
 
-  return `${formateadorNumero.format(total)} ${total === 1 ? "voto" : "votos"}`;
+  return `${formateadorNumero.format(total)} ${
+    total === 1 ? "voto" : "votos"
+  }`;
 }
 
-function obtenerOpcionesConResultados(votacion) {
-  const resultados = votacion.resultados?.opciones || [];
+function obtenerOpcionesConResultados(
+  votacion,
+) {
+  const opciones = Array.isArray(
+    votacion?.opciones,
+  )
+    ? votacion.opciones
+    : [];
 
-  return (votacion.opciones || []).map((opcion) => {
+  const resultados = Array.isArray(
+    votacion?.resultados?.opciones,
+  )
+    ? votacion.resultados.opciones
+    : [];
+
+  return opciones.map((opcion) => {
     const resultado = resultados.find(
-      (elemento) => Number(elemento.idOpcion) === Number(opcion.idOpcion),
+      (elemento) =>
+        Number(elemento.idOpcion) ===
+        Number(opcion.idOpcion),
     );
 
     return {
       ...opcion,
-      totalVotos: Number(resultado?.totalVotos || 0),
-      porcentaje: Number(resultado?.porcentaje || 0),
+      totalVotos: Number(
+        resultado?.totalVotos || 0,
+      ),
+      porcentaje: Number(
+        resultado?.porcentaje || 0,
+      ),
     };
   });
 }
 
 function obtenerImagenVotacion(votacion) {
-  if (votacion.imagenPortadaUrl) {
-    return resolverUrlArchivo(votacion.imagenPortadaUrl);
+  if (votacion?.imagenPortadaUrl) {
+    return resolverUrlArchivo(
+      votacion.imagenPortadaUrl,
+    );
   }
 
-  const opcionConImagen = votacion.opciones?.find((opcion) => opcion.imagenUrl);
+  const opciones = Array.isArray(
+    votacion?.opciones,
+  )
+    ? votacion.opciones
+    : [];
 
-  return resolverUrlArchivo(opcionConImagen?.imagenUrl || "imagenes/votar.png");
+  const opcionConImagen = opciones.find(
+    (opcion) => opcion.imagenUrl,
+  );
+
+  return resolverUrlArchivo(
+    opcionConImagen?.imagenUrl ||
+      "/imagenes/votar.png",
+  );
 }
 
 function obtenerNombreCategoria(votacion) {
-  if (typeof votacion.categoria === "string") {
+  if (
+    typeof votacion?.categoria === "string"
+  ) {
     return votacion.categoria;
   }
 
   return (
-    votacion.nombreCategoria || votacion.categoria?.nombre || "Sin categoría"
+    votacion?.nombreCategoria ||
+    votacion?.categoria?.nombre ||
+    "Sin categoría"
   );
 }
+
+/* =========================================================
+   GRÁFICA VERTICAL
+========================================================= */
 
 function GraficaVertical({
   opciones,
@@ -75,8 +156,16 @@ function GraficaVertical({
   deshabilitado,
   idOpcionSeleccionada,
 }) {
+  const listaOpciones = Array.isArray(
+    opciones,
+  )
+    ? opciones
+    : [];
+
   const mayorCantidad = Math.max(
-    ...opciones.map((opcion) => Number(opcion.totalVotos || 0)),
+    ...listaOpciones.map((opcion) =>
+      Number(opcion.totalVotos || 0),
+    ),
     0,
   );
 
@@ -84,16 +173,21 @@ function GraficaVertical({
 
   return (
     <div className="grafica-disponible-vertical">
-      {opciones.map((opcion) => {
-        const totalVotos = Number(opcion.totalVotos || 0);
+      {listaOpciones.map((opcion) => {
+        const totalVotos = Number(
+          opcion.totalVotos || 0,
+        );
 
         const estaSeleccionada =
-          Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
+          Number(opcion.idOpcion) ===
+          Number(idOpcionSeleccionada);
 
         const altura =
           mayorCantidad === 0
             ? 0
-            : (totalVotos / mayorCantidad) * ALTURA_MAXIMA;
+            : (totalVotos /
+                mayorCantidad) *
+              ALTURA_MAXIMA;
 
         return (
           <button
@@ -101,7 +195,9 @@ function GraficaVertical({
             key={opcion.idOpcion}
             className="grafica-disponible-vertical__elemento grafica-opcion"
             disabled={deshabilitado}
-            onClick={() => alSeleccionar(opcion)}
+            onClick={() =>
+              alSeleccionar(opcion)
+            }
             title={`Votar por ${opcion.nombre}`}
           >
             <span className="grafica-disponible-vertical__cantidad">
@@ -132,30 +228,53 @@ function GraficaVertical({
   );
 }
 
+/* =========================================================
+   GRÁFICA HORIZONTAL
+========================================================= */
+
 function GraficaHorizontal({
   opciones,
   alSeleccionar,
   deshabilitado,
   idOpcionSeleccionada,
 }) {
-  const votosNormalizados = opciones.map((opcion) =>
-    Number(opcion.totalVotos ?? 0),
-  );
+  const listaOpciones = Array.isArray(
+    opciones,
+  )
+    ? opciones
+    : [];
 
-  const mayorCantidad = Math.max(...votosNormalizados, 0);
+  const votosNormalizados =
+    listaOpciones.map((opcion) =>
+      Number(opcion.totalVotos ?? 0),
+    );
+
+  const mayorCantidad = Math.max(
+    ...votosNormalizados,
+    0,
+  );
 
   return (
     <div className="grafica-disponible-horizontal">
-      {opciones.map((opcion) => {
-        const totalVotos = Number(opcion.totalVotos ?? 0);
+      {listaOpciones.map((opcion) => {
+        const totalVotos = Number(
+          opcion.totalVotos ?? 0,
+        );
 
         const estaSeleccionada =
-          Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
+          Number(opcion.idOpcion) ===
+          Number(idOpcionSeleccionada);
 
         const anchura =
-          mayorCantidad === 0 ? 0 : (totalVotos / mayorCantidad) * 100;
+          mayorCantidad === 0
+            ? 0
+            : (totalVotos /
+                mayorCantidad) *
+              100;
 
-        const imagen = resolverUrlArchivo(opcion.imagenUrl);
+        const imagen = resolverUrlArchivo(
+          opcion.imagenUrl,
+        );
 
         return (
           <button
@@ -171,7 +290,9 @@ function GraficaHorizontal({
               .filter(Boolean)
               .join(" ")}
             disabled={deshabilitado}
-            onClick={() => alSeleccionar(opcion)}
+            onClick={() =>
+              alSeleccionar(opcion)
+            }
             title={`Votar por ${opcion.nombre}`}
           >
             <span className="grafica-disponible-horizontal__nombre">
@@ -200,6 +321,10 @@ function GraficaHorizontal({
                   src={imagen}
                   alt={opcion.nombre}
                   className="grafica-disponible-horizontal__imagen"
+                  onError={(evento) => {
+                    evento.currentTarget.style.display =
+                      "none";
+                  }}
                 />
               )}
 
@@ -213,46 +338,91 @@ function GraficaHorizontal({
     </div>
   );
 }
+
+/* =========================================================
+   GRÁFICA DE PASTEL
+========================================================= */
+
 function GraficaPastel({
   opciones,
   alSeleccionar,
   deshabilitado,
   idOpcionSeleccionada,
 }) {
-  const totalVotos = opciones.reduce(
-    (total, opcion) => total + opcion.totalVotos,
+  const listaOpciones = Array.isArray(
+    opciones,
+  )
+    ? opciones
+    : [];
+
+  const totalVotos = listaOpciones.reduce(
+    (total, opcion) =>
+      total +
+      Number(opcion.totalVotos || 0),
     0,
   );
 
   let porcentajeAcumulado = 0;
 
-  const segmentos = opciones.map((opcion, indice) => {
-    const porcentaje =
-      totalVotos === 0 ? 0 : (opcion.totalVotos / totalVotos) * 100;
+  const segmentos = listaOpciones.map(
+    (opcion, indice) => {
+      const votosOpcion = Number(
+        opcion.totalVotos || 0,
+      );
 
-    const inicio = porcentajeAcumulado;
-    const final = porcentajeAcumulado + porcentaje;
+      const porcentaje =
+        totalVotos === 0
+          ? 0
+          : (votosOpcion /
+              totalVotos) *
+            100;
 
-    porcentajeAcumulado = final;
+      const inicio =
+        porcentajeAcumulado;
 
-    const color = COLORES_GRAFICA[indice % COLORES_GRAFICA.length];
+      const final =
+        porcentajeAcumulado +
+        porcentaje;
 
-    return `${color} ${inicio}% ${final}%`;
-  });
+      porcentajeAcumulado = final;
+
+      const color =
+        COLORES_GRAFICA[
+          indice %
+            COLORES_GRAFICA.length
+        ];
+
+      return `${color} ${inicio}% ${final}%`;
+    },
+  );
 
   const opcionGanadora =
-    totalVotos === 0
+    totalVotos === 0 ||
+    listaOpciones.length === 0
       ? null
-      : opciones.reduce(
+      : listaOpciones.reduce(
           (ganadora, opcion) =>
-            opcion.totalVotos > ganadora.totalVotos ? opcion : ganadora,
-          opciones[0],
+            Number(opcion.totalVotos || 0) >
+            Number(
+              ganadora.totalVotos || 0,
+            )
+              ? opcion
+              : ganadora,
+          listaOpciones[0],
         );
 
   const porcentajeGanador =
+    !opcionGanadora ||
     totalVotos === 0
       ? 0
-      : Math.round((opcionGanadora.totalVotos * 100) / totalVotos);
+      : Math.round(
+          (Number(
+            opcionGanadora.totalVotos ||
+              0,
+          ) *
+            100) /
+            totalVotos,
+        );
 
   return (
     <div className="grafica-disponible-pastel">
@@ -262,56 +432,85 @@ function GraficaPastel({
           background:
             totalVotos === 0
               ? "#edf3ff"
-              : `conic-gradient(${segmentos.join(", ")})`,
+              : `conic-gradient(${segmentos.join(
+                  ", ",
+                )})`,
         }}
       >
         <div className="grafica-disponible-pastel__centro">
-          <strong>{porcentajeGanador}%</strong>
+          <strong>
+            {porcentajeGanador}%
+          </strong>
 
-          <span>{opcionGanadora ? opcionGanadora.nombre : "Sin votos"}</span>
+          <span>
+            {opcionGanadora
+              ? opcionGanadora.nombre
+              : "Sin votos"}
+          </span>
         </div>
       </div>
 
       <div className="grafica-disponible-pastel__opciones">
-        {opciones.map((opcion, indice) => {
-          const estaSeleccionada =
-            Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
+        {listaOpciones.map(
+          (opcion, indice) => {
+            const estaSeleccionada =
+              Number(opcion.idOpcion) ===
+              Number(
+                idOpcionSeleccionada,
+              );
 
-          return (
-            <button
-              type="button"
-              key={opcion.idOpcion}
-              disabled={deshabilitado}
-              onClick={() => alSeleccionar(opcion)}
-              className={[
-                "grafica-disponible-pastel__opcion",
-                estaSeleccionada
-                  ? "grafica-disponible-pastel__opcion--seleccionada"
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              title={`Votar por ${opcion.nombre}`}
-            >
-              <span
-                className="grafica-disponible-pastel__color"
-                style={{
-                  background: COLORES_GRAFICA[indice % COLORES_GRAFICA.length],
-                }}
-              />
+            return (
+              <button
+                type="button"
+                key={opcion.idOpcion}
+                disabled={deshabilitado}
+                onClick={() =>
+                  alSeleccionar(opcion)
+                }
+                className={[
+                  "grafica-disponible-pastel__opcion",
+                  estaSeleccionada
+                    ? "grafica-disponible-pastel__opcion--seleccionada"
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                title={`Votar por ${opcion.nombre}`}
+              >
+                <span
+                  className="grafica-disponible-pastel__color"
+                  style={{
+                    background:
+                      COLORES_GRAFICA[
+                        indice %
+                          COLORES_GRAFICA.length
+                      ],
+                  }}
+                />
 
-              <span className="grafica-disponible-pastel__texto">
-                <span>{opcion.nombre}</span>
+                <span className="grafica-disponible-pastel__texto">
+                  <span>
+                    {opcion.nombre}
+                  </span>
 
-                <small>{formatearVotos(opcion.totalVotos)}</small>
-              </span>
-            </button>
-          );
-        })}
+                  <small>
+                    {formatearVotos(
+                      opcion.totalVotos,
+                    )}
+                  </small>
+                </span>
+              </button>
+            );
+          },
+        )}
       </div>
     </div>
   );
 }
+
+/* =========================================================
+   TARJETA DE ELECCIÓN
+========================================================= */
 
 function TarjetaEleccionDisponible({
   votacion,
@@ -321,40 +520,61 @@ function TarjetaEleccionDisponible({
   idOpcionSeleccionada,
   alSeleccionarOpcion,
 }) {
-  const opciones = obtenerOpcionesConResultados(votacion);
+  const opciones =
+    obtenerOpcionesConResultados(
+      votacion,
+    );
 
-  const imagen = obtenerImagenVotacion(votacion);
+  const imagen =
+    obtenerImagenVotacion(votacion);
 
   const totalVotos =
-    votacion.resultados?.totalVotantes ?? votacion.totalVotos ?? 0;
+    votacion?.resultados
+      ?.totalVotantes ??
+    votacion?.totalVotos ??
+    0;
 
   const puedeSeleccionar =
-    !bloqueado && (!yaVoto || votacion.permiteCambioVoto);
+    !bloqueado &&
+    (!yaVoto ||
+      votacion.permiteCambioVoto);
 
   function seleccionarOpcion(opcion) {
     if (!puedeSeleccionar) {
       return;
     }
 
-    alSeleccionarOpcion(votacion, opcion);
+    alSeleccionarOpcion(
+      votacion,
+      opcion,
+    );
   }
 
   function mostrarGrafica() {
     if (opciones.length === 0) {
       return (
         <div className="tarjeta-eleccion__sin-opciones">
-          Esta elección no tiene opciones disponibles.
+          Esta elección no tiene opciones
+          disponibles.
         </div>
       );
     }
 
-    if (votacion.tipoGrafica === "PASTEL") {
+    if (
+      votacion.tipoGrafica === "PASTEL"
+    ) {
       return (
         <GraficaPastel
           opciones={opciones}
-          alSeleccionar={seleccionarOpcion}
-          deshabilitado={!puedeSeleccionar}
-          idOpcionSeleccionada={idOpcionSeleccionada}
+          alSeleccionar={
+            seleccionarOpcion
+          }
+          deshabilitado={
+            !puedeSeleccionar
+          }
+          idOpcionSeleccionada={
+            idOpcionSeleccionada
+          }
         />
       );
     }
@@ -363,9 +583,15 @@ function TarjetaEleccionDisponible({
       return (
         <GraficaHorizontal
           opciones={opciones}
-          alSeleccionar={seleccionarOpcion}
-          deshabilitado={!puedeSeleccionar}
-          idOpcionSeleccionada={idOpcionSeleccionada}
+          alSeleccionar={
+            seleccionarOpcion
+          }
+          deshabilitado={
+            !puedeSeleccionar
+          }
+          idOpcionSeleccionada={
+            idOpcionSeleccionada
+          }
         />
       );
     }
@@ -373,9 +599,15 @@ function TarjetaEleccionDisponible({
     return (
       <GraficaVertical
         opciones={opciones}
-        alSeleccionar={seleccionarOpcion}
-        deshabilitado={!puedeSeleccionar}
-        idOpcionSeleccionada={idOpcionSeleccionada}
+        alSeleccionar={
+          seleccionarOpcion
+        }
+        deshabilitado={
+          !puedeSeleccionar
+        }
+        idOpcionSeleccionada={
+          idOpcionSeleccionada
+        }
       />
     );
   }
@@ -385,15 +617,23 @@ function TarjetaEleccionDisponible({
       return "Guardando voto...";
     }
 
-    const opcionSeleccionada = opciones.find(
-      (opcion) => Number(opcion.idOpcion) === Number(idOpcionSeleccionada),
-    );
+    const opcionSeleccionada =
+      opciones.find(
+        (opcion) =>
+          Number(opcion.idOpcion) ===
+          Number(
+            idOpcionSeleccionada,
+          ),
+      );
 
     if (opcionSeleccionada) {
       return `Tu voto: ${opcionSeleccionada.nombre}`;
     }
 
-    if (yaVoto && votacion.permiteCambioVoto) {
+    if (
+      yaVoto &&
+      votacion.permiteCambioVoto
+    ) {
       return "Haz clic en otra opción para cambiar tu voto";
     }
 
@@ -418,26 +658,41 @@ function TarjetaEleccionDisponible({
 
         <div className="tarjeta-eleccion__datos-superiores">
           {imagen && (
-            <img src={imagen} alt="" className="tarjeta-eleccion__imagen" />
+            <img
+              src={imagen}
+              alt=""
+              className="tarjeta-eleccion__imagen"
+              onError={(evento) => {
+                evento.currentTarget.style.display =
+                  "none";
+              }}
+            />
           )}
 
           <span className="tarjeta-eleccion__categoria">
-            {obtenerNombreCategoria(votacion)}
+            {obtenerNombreCategoria(
+              votacion,
+            )}
           </span>
         </div>
       </header>
 
-      <div className="tarjeta-eleccion__grafica">{mostrarGrafica()}</div>
+      <div className="tarjeta-eleccion__grafica">
+        {mostrarGrafica()}
+      </div>
 
       <footer className="tarjeta-eleccion__pie">
         <span className="tarjeta-eleccion__total">
-          Total: {formatearVotos(totalVotos)}
+          Total:{" "}
+          {formatearVotos(totalVotos)}
         </span>
 
         <span
           className={[
             "tarjeta-eleccion__estado",
-            yaVoto ? "tarjeta-eleccion__estado--participado" : "",
+            yaVoto
+              ? "tarjeta-eleccion__estado--participado"
+              : "",
           ]
             .filter(Boolean)
             .join(" ")}
@@ -449,216 +704,434 @@ function TarjetaEleccionDisponible({
   );
 }
 
-function Elecciones({ alCerrarSesion, alCrearVotacion }) {
-  const [perfil, setPerfil] = useState(null);
+/* =========================================================
+   PÁGINA PRINCIPAL
+========================================================= */
 
-  const [votaciones, setVotaciones] = useState([]);
+function Elecciones({
+  alCerrarSesion,
+  alCrearVotacion,
+}) {
+  const [perfil, setPerfil] =
+    useState(null);
 
-  const [categorias, setCategorias] = useState([]);
+  const [votaciones, setVotaciones] =
+    useState([]);
 
-  const [participaciones, setParticipaciones] = useState([]);
+  const [categorias, setCategorias] =
+    useState([]);
 
-  const [opcionesSeleccionadas, setOpcionesSeleccionadas] = useState({});
+  const [
+    participaciones,
+    setParticipaciones,
+  ] = useState([]);
 
-  const [orden, setOrden] = useState("MAS_VOTADAS");
+  const [
+    opcionesSeleccionadas,
+    setOpcionesSeleccionadas,
+  ] = useState({});
 
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("TODAS");
+  const [orden, setOrden] =
+    useState("MAS_VOTADAS");
 
-  const [fechaSeleccionada, setFechaSeleccionada] = useState("TODAS");
+  const [
+    categoriaSeleccionada,
+    setCategoriaSeleccionada,
+  ] = useState("TODAS");
 
-  const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
+  const [
+    fechaSeleccionada,
+    setFechaSeleccionada,
+  ] = useState("TODAS");
 
-  const [cargando, setCargando] = useState(true);
+  const [
+    menuLateralAbierto,
+    setMenuLateralAbierto,
+  ] = useState(false);
 
-  const [error, setError] = useState("");
+  const [cargando, setCargando] =
+    useState(true);
 
-  const [mensaje, setMensaje] = useState("");
+  const [error, setError] =
+    useState("");
 
-  const [idVotacionGuardando, setIdVotacionGuardando] = useState(null);
+  const [mensaje, setMensaje] =
+    useState("");
 
-  const cargarDatos = useCallback(async () => {
-    try {
-      setCargando(true);
-      setError("");
+  const [
+    idVotacionGuardando,
+    setIdVotacionGuardando,
+  ] = useState(null);
 
-      const [datosPerfil, votacionesDisponibles, datosCategorias] =
-        await Promise.all([
-          peticionApi("/usuarios/perfil"),
-          peticionApi("/votaciones/disponibles"),
+  const cargarDatos =
+    useCallback(async () => {
+      try {
+        setCargando(true);
+        setError("");
+
+        const [
+          datosPerfil,
+          respuestaVotaciones,
+          respuestaCategorias,
+        ] = await Promise.all([
+          peticionApi(
+            "/usuarios/perfil",
+          ),
+          peticionApi(
+            "/votaciones/disponibles",
+          ),
           peticionApi("/categorias"),
         ]);
 
-      let misParticipaciones = [];
+        const listaVotaciones =
+          normalizarLista(
+            respuestaVotaciones,
+          );
 
-      try {
-        misParticipaciones = await peticionApi("/votos/mios");
-      } catch (excepcion) {
-        console.warn(
-          "No se pudieron cargar los votos del usuario:",
-          excepcion.message,
-        );
-      }
+        const listaCategorias =
+          normalizarLista(
+            respuestaCategorias,
+          );
 
-      const votacionesConResultados = await Promise.all(
-        (votacionesDisponibles || []).map(async (votacion) => {
-          try {
-            const resultados = await peticionApi(
-              `/votaciones/${votacion.idVotacion}/resultados`,
+        let listaParticipaciones = [];
+
+        try {
+          const respuestaParticipaciones =
+            await peticionApi(
+              "/votos/mios",
             );
 
-            return {
-              ...votacion,
-              resultados,
-            };
-          } catch (excepcion) {
-            console.warn(
-              `No se pudieron cargar los resultados de la votación ${votacion.idVotacion}:`,
-              excepcion.message,
+          listaParticipaciones =
+            normalizarLista(
+              respuestaParticipaciones,
             );
+        } catch (excepcion) {
+          console.warn(
+            "No se pudieron cargar los votos del usuario:",
+            excepcion.message,
+          );
 
-            return {
-              ...votacion,
-              resultados: {
-                totalVotantes: votacion.totalVotos || 0,
-                opciones: [],
-              },
-            };
-          }
-        }),
-      );
-
-      const seleccionesGuardadas = {};
-
-      votacionesConResultados.forEach((votacion) => {
-        const clave = obtenerClaveOpcionSeleccionada(
-          datosPerfil.idUsuario,
-          votacion.idVotacion,
-        );
-
-        const idOpcionGuardada = localStorage.getItem(clave);
-
-        if (idOpcionGuardada) {
-          seleccionesGuardadas[Number(votacion.idVotacion)] =
-            Number(idOpcionGuardada);
+          listaParticipaciones = [];
         }
-      });
 
-      setPerfil(datosPerfil);
-      setVotaciones(votacionesConResultados);
-      setCategorias(datosCategorias || []);
+        const votacionesConResultados =
+          await Promise.all(
+            listaVotaciones.map(
+              async (votacion) => {
+                try {
+                  const resultados =
+                    await peticionApi(
+                      `/votaciones/${votacion.idVotacion}/resultados`,
+                    );
 
-      setParticipaciones(misParticipaciones || []);
+                  return {
+                    ...votacion,
+                    resultados,
+                  };
+                } catch (excepcion) {
+                  console.warn(
+                    `No se pudieron cargar los resultados de la votación ${votacion.idVotacion}:`,
+                    excepcion.message,
+                  );
 
-      setOpcionesSeleccionadas(seleccionesGuardadas);
-    } catch (excepcion) {
-      setError(excepcion.message);
-    } finally {
-      setCargando(false);
-    }
-  }, []);
+                  return {
+                    ...votacion,
+                    resultados: {
+                      totalVotantes:
+                        votacion.totalVotos ||
+                        0,
+                      opciones: [],
+                    },
+                  };
+                }
+              },
+            ),
+          );
+
+        const seleccionesGuardadas =
+          {};
+
+        votacionesConResultados.forEach(
+          (votacion) => {
+            const clave =
+              obtenerClaveOpcionSeleccionada(
+                datosPerfil.idUsuario,
+                votacion.idVotacion,
+              );
+
+            const idOpcionGuardada =
+              localStorage.getItem(clave);
+
+            if (idOpcionGuardada) {
+              seleccionesGuardadas[
+                Number(
+                  votacion.idVotacion,
+                )
+              ] = Number(
+                idOpcionGuardada,
+              );
+            }
+          },
+        );
+
+        setPerfil(datosPerfil);
+
+        setVotaciones(
+          votacionesConResultados,
+        );
+
+        setCategorias(
+          listaCategorias,
+        );
+
+        setParticipaciones(
+          listaParticipaciones,
+        );
+
+        setOpcionesSeleccionadas(
+          seleccionesGuardadas,
+        );
+      } catch (excepcion) {
+        setVotaciones([]);
+        setCategorias([]);
+        setParticipaciones([]);
+        setOpcionesSeleccionadas(
+          {},
+        );
+
+        setError(excepcion.message);
+      } finally {
+        setCargando(false);
+      }
+    }, []);
 
   useEffect(() => {
     cargarDatos();
   }, [cargarDatos]);
 
-  const idsVotacionesParticipadas = useMemo(() => {
-    return new Set(
-      participaciones.map((participacion) => Number(participacion.idVotacion)),
-    );
-  }, [participaciones]);
+  const idsVotacionesParticipadas =
+    useMemo(() => {
+      const listaParticipaciones =
+        Array.isArray(participaciones)
+          ? participaciones
+          : [];
 
-  const votacionesFiltradas = useMemo(() => {
-    const ahora = new Date();
+      return new Set(
+        listaParticipaciones.map(
+          (participacion) =>
+            Number(
+              participacion.idVotacion,
+            ),
+        ),
+      );
+    }, [participaciones]);
 
-    const resultado = votaciones.filter((votacion) => {
-      const coincideCategoria =
-        categoriaSeleccionada === "TODAS" ||
-        String(votacion.idCategoria) === String(categoriaSeleccionada);
+  const votacionesFiltradas =
+    useMemo(() => {
+      const ahora = new Date();
 
-      if (!coincideCategoria) {
-        return false;
-      }
+      const listaVotaciones =
+        Array.isArray(votaciones)
+          ? votaciones
+          : [];
 
-      if (fechaSeleccionada === "TODAS") {
-        return true;
-      }
+      const resultado =
+        listaVotaciones.filter(
+          (votacion) => {
+            const coincideCategoria =
+              categoriaSeleccionada ===
+                "TODAS" ||
+              String(
+                votacion.idCategoria ??
+                  votacion.categoria
+                    ?.idCategoria,
+              ) ===
+                String(
+                  categoriaSeleccionada,
+                );
 
-      const fechaFin = new Date(votacion.fechaFin);
+            if (!coincideCategoria) {
+              return false;
+            }
 
-      const diferenciaMilisegundos = fechaFin.getTime() - ahora.getTime();
+            if (
+              fechaSeleccionada ===
+              "TODAS"
+            ) {
+              return true;
+            }
 
-      const diferenciaDias = diferenciaMilisegundos / (1000 * 60 * 60 * 24);
+            const fechaFin = new Date(
+              votacion.fechaFin,
+            );
 
-      if (fechaSeleccionada === "HOY") {
-        return diferenciaDias >= 0 && diferenciaDias <= 1;
-      }
+            if (
+              Number.isNaN(
+                fechaFin.getTime(),
+              )
+            ) {
+              return false;
+            }
 
-      if (fechaSeleccionada === "7_DIAS") {
-        return diferenciaDias >= 0 && diferenciaDias <= 7;
-      }
+            const diferenciaMilisegundos =
+              fechaFin.getTime() -
+              ahora.getTime();
 
-      if (fechaSeleccionada === "30_DIAS") {
-        return diferenciaDias >= 0 && diferenciaDias <= 30;
-      }
+            const diferenciaDias =
+              diferenciaMilisegundos /
+              (1000 * 60 * 60 * 24);
 
-      return true;
-    });
+            if (
+              fechaSeleccionada ===
+              "HOY"
+            ) {
+              return (
+                diferenciaDias >= 0 &&
+                diferenciaDias <= 1
+              );
+            }
 
-    return [...resultado].sort((primera, segunda) => {
-      if (orden === "MAS_VOTADAS") {
-        const votosPrimera =
-          primera.resultados?.totalVotantes ?? primera.totalVotos ?? 0;
+            if (
+              fechaSeleccionada ===
+              "7_DIAS"
+            ) {
+              return (
+                diferenciaDias >= 0 &&
+                diferenciaDias <= 7
+              );
+            }
 
-        const votosSegunda =
-          segunda.resultados?.totalVotantes ?? segunda.totalVotos ?? 0;
+            if (
+              fechaSeleccionada ===
+              "30_DIAS"
+            ) {
+              return (
+                diferenciaDias >= 0 &&
+                diferenciaDias <= 30
+              );
+            }
 
-        return votosSegunda - votosPrimera;
-      }
-
-      if (orden === "RECIENTES") {
-        const fechaPrimera = new Date(
-          primera.fechaCreacion || primera.fechaInicio,
-        ).getTime();
-
-        const fechaSegunda = new Date(
-          segunda.fechaCreacion || segunda.fechaInicio,
-        ).getTime();
-
-        return fechaSegunda - fechaPrimera;
-      }
-
-      if (orden === "CIERRAN_PRONTO") {
-        return (
-          new Date(primera.fechaFin).getTime() -
-          new Date(segunda.fechaFin).getTime()
+            return true;
+          },
         );
-      }
 
-      return 0;
-    });
-  }, [votaciones, orden, categoriaSeleccionada, fechaSeleccionada]);
+      return [...resultado].sort(
+        (primera, segunda) => {
+          if (
+            orden === "MAS_VOTADAS"
+          ) {
+            const votosPrimera =
+              Number(
+                primera.resultados
+                  ?.totalVotantes ??
+                  primera.totalVotos ??
+                  0,
+              );
+
+            const votosSegunda =
+              Number(
+                segunda.resultados
+                  ?.totalVotantes ??
+                  segunda.totalVotos ??
+                  0,
+              );
+
+            return (
+              votosSegunda -
+              votosPrimera
+            );
+          }
+
+          if (
+            orden === "RECIENTES"
+          ) {
+            const fechaPrimera =
+              new Date(
+                primera.fechaCreacion ||
+                  primera.fechaInicio,
+              ).getTime();
+
+            const fechaSegunda =
+              new Date(
+                segunda.fechaCreacion ||
+                  segunda.fechaInicio,
+              ).getTime();
+
+            return (
+              fechaSegunda -
+              fechaPrimera
+            );
+          }
+
+          if (
+            orden ===
+            "CIERRAN_PRONTO"
+          ) {
+            const fechaPrimera =
+              new Date(
+                primera.fechaFin,
+              ).getTime();
+
+            const fechaSegunda =
+              new Date(
+                segunda.fechaFin,
+              ).getTime();
+
+            return (
+              fechaPrimera -
+              fechaSegunda
+            );
+          }
+
+          return 0;
+        },
+      );
+    }, [
+      votaciones,
+      orden,
+      categoriaSeleccionada,
+      fechaSeleccionada,
+    ]);
 
   function limpiarFiltros() {
     setOrden("MAS_VOTADAS");
-    setCategoriaSeleccionada("TODAS");
+    setCategoriaSeleccionada(
+      "TODAS",
+    );
     setFechaSeleccionada("TODAS");
   }
 
-  async function actualizarResultados(idVotacion) {
+  async function actualizarResultados(
+    idVotacion,
+  ) {
     try {
-      const resultadosActualizados = await peticionApi(
-        `/votaciones/${idVotacion}/resultados`,
-      );
+      const resultadosActualizados =
+        await peticionApi(
+          `/votaciones/${idVotacion}/resultados`,
+        );
 
-      setVotaciones((anteriores) =>
-        anteriores.map((votacion) =>
-          Number(votacion.idVotacion) === Number(idVotacion)
-            ? {
-                ...votacion,
-                resultados: resultadosActualizados,
-              }
-            : votacion,
-        ),
+      setVotaciones(
+        (votacionesAnteriores) => {
+          const lista =
+            Array.isArray(
+              votacionesAnteriores,
+            )
+              ? votacionesAnteriores
+              : [];
+
+          return lista.map(
+            (votacion) =>
+              Number(
+                votacion.idVotacion,
+              ) === Number(idVotacion)
+                ? {
+                    ...votacion,
+                    resultados:
+                      resultadosActualizados,
+                  }
+                : votacion,
+          );
+        },
       );
     } catch (excepcion) {
       console.warn(
@@ -668,54 +1141,88 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
     }
   }
 
-  async function registrarVoto(votacion, opcion) {
-    const idVotacion = Number(votacion.idVotacion);
+  async function registrarVoto(
+    votacion,
+    opcion,
+  ) {
+    const idVotacion = Number(
+      votacion.idVotacion,
+    );
 
-    const idOpcion = Number(opcion.idOpcion);
+    const idOpcion = Number(
+      opcion.idOpcion,
+    );
 
     const tieneSeleccionLocal =
-      opcionesSeleccionadas[idVotacion] !== undefined &&
-      opcionesSeleccionadas[idVotacion] !== null;
+      opcionesSeleccionadas[
+        idVotacion
+      ] !== undefined &&
+      opcionesSeleccionadas[
+        idVotacion
+      ] !== null;
 
     const yaVoto =
-      idsVotacionesParticipadas.has(idVotacion) || tieneSeleccionLocal;
+      idsVotacionesParticipadas.has(
+        idVotacion,
+      ) || tieneSeleccionLocal;
 
-    if (idVotacionGuardando !== null) {
+    if (
+      idVotacionGuardando !== null
+    ) {
       return;
     }
 
-    if (yaVoto && !votacion.permiteCambioVoto) {
+    if (
+      yaVoto &&
+      !votacion.permiteCambioVoto
+    ) {
       setMensaje("");
 
-      setError("Ya participaste y esta elección no permite cambiar el voto.");
+      setError(
+        "Ya participaste y esta elección no permite cambiar el voto.",
+      );
 
       return;
     }
 
-    const opcionAnterior = opcionesSeleccionadas[idVotacion] ?? null;
+    const opcionAnterior =
+      opcionesSeleccionadas[
+        idVotacion
+      ] ?? null;
 
-    setOpcionesSeleccionadas((anteriores) => ({
-      ...anteriores,
-      [idVotacion]: idOpcion,
-    }));
+    setOpcionesSeleccionadas(
+      (anteriores) => ({
+        ...anteriores,
+        [idVotacion]: idOpcion,
+      }),
+    );
 
     try {
       setError("");
       setMensaje("");
-      setIdVotacionGuardando(idVotacion);
+      setIdVotacionGuardando(
+        idVotacion,
+      );
 
       const cuerpo = {
         idsOpciones: [idOpcion],
       };
 
       if (yaVoto) {
-        if (votacion.tipoVoto === "ANONIMO") {
-          const claveToken = obtenerClaveTokenCambio(
-            perfil.idUsuario,
-            idVotacion,
-          );
+        if (
+          votacion.tipoVoto ===
+          "ANONIMO"
+        ) {
+          const claveToken =
+            obtenerClaveTokenCambio(
+              perfil.idUsuario,
+              idVotacion,
+            );
 
-          const tokenCambio = localStorage.getItem(claveToken);
+          const tokenCambio =
+            localStorage.getItem(
+              claveToken,
+            );
 
           if (!tokenCambio) {
             throw new Error(
@@ -723,85 +1230,141 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
             );
           }
 
-          cuerpo.tokenCambio = tokenCambio;
+          cuerpo.tokenCambio =
+            tokenCambio;
         }
 
-        await peticionApi(`/votaciones/${idVotacion}/votos/mi-voto`, {
-          method: "PUT",
-          body: JSON.stringify(cuerpo),
-        });
+        await peticionApi(
+          `/votaciones/${idVotacion}/votos/mi-voto`,
+          {
+            method: "PUT",
+            body: JSON.stringify(
+              cuerpo,
+            ),
+          },
+        );
 
-        setMensaje(`Tu voto fue cambiado a "${opcion.nombre}".`);
+        setMensaje(
+          `Tu voto fue cambiado a "${opcion.nombre}".`,
+        );
       } else {
-        const respuesta = await peticionApi(`/votaciones/${idVotacion}/votos`, {
-          method: "POST",
-          body: JSON.stringify(cuerpo),
-        });
-
-        if (votacion.tipoVoto === "ANONIMO" && respuesta?.tokenCambio) {
-          const claveToken = obtenerClaveTokenCambio(
-            perfil.idUsuario,
-            idVotacion,
+        const respuesta =
+          await peticionApi(
+            `/votaciones/${idVotacion}/votos`,
+            {
+              method: "POST",
+              body: JSON.stringify(
+                cuerpo,
+              ),
+            },
           );
 
-          localStorage.setItem(claveToken, respuesta.tokenCambio);
+        if (
+          votacion.tipoVoto ===
+            "ANONIMO" &&
+          respuesta?.tokenCambio
+        ) {
+          const claveToken =
+            obtenerClaveTokenCambio(
+              perfil.idUsuario,
+              idVotacion,
+            );
+
+          localStorage.setItem(
+            claveToken,
+            respuesta.tokenCambio,
+          );
         }
 
-        setParticipaciones((anteriores) => {
-          const yaExiste = anteriores.some(
-            (participacion) => Number(participacion.idVotacion) === idVotacion,
-          );
+        setParticipaciones(
+          (anteriores) => {
+            const lista =
+              Array.isArray(
+                anteriores,
+              )
+                ? anteriores
+                : [];
 
-          if (yaExiste) {
-            return anteriores;
-          }
+            const yaExiste =
+              lista.some(
+                (participacion) =>
+                  Number(
+                    participacion.idVotacion,
+                  ) === idVotacion,
+              );
 
-          return [
-            ...anteriores,
-            {
-              idVotacion,
-              tipoVoto: votacion.tipoVoto,
-            },
-          ];
-        });
+            if (yaExiste) {
+              return lista;
+            }
+
+            return [
+              ...lista,
+              {
+                idVotacion,
+                tipoVoto:
+                  votacion.tipoVoto,
+              },
+            ];
+          },
+        );
 
         setMensaje(
           `Tu voto por "${opcion.nombre}" fue registrado correctamente.`,
         );
       }
 
-      const claveOpcion = obtenerClaveOpcionSeleccionada(
-        perfil.idUsuario,
-        idVotacion,
+      const claveOpcion =
+        obtenerClaveOpcionSeleccionada(
+          perfil.idUsuario,
+          idVotacion,
+        );
+
+      localStorage.setItem(
+        claveOpcion,
+        String(idOpcion),
       );
 
-      localStorage.setItem(claveOpcion, String(idOpcion));
-
-      await actualizarResultados(idVotacion);
+      await actualizarResultados(
+        idVotacion,
+      );
     } catch (excepcion) {
-      setOpcionesSeleccionadas((anteriores) => {
-        const nuevasSelecciones = {
-          ...anteriores,
-        };
+      setOpcionesSeleccionadas(
+        (anteriores) => {
+          const nuevasSelecciones = {
+            ...anteriores,
+          };
 
-        if (opcionAnterior === null) {
-          delete nuevasSelecciones[idVotacion];
-        } else {
-          nuevasSelecciones[idVotacion] = opcionAnterior;
-        }
+          if (
+            opcionAnterior === null
+          ) {
+            delete nuevasSelecciones[
+              idVotacion
+            ];
+          } else {
+            nuevasSelecciones[
+              idVotacion
+            ] = opcionAnterior;
+          }
 
-        return nuevasSelecciones;
-      });
-
-      const claveOpcion = obtenerClaveOpcionSeleccionada(
-        perfil.idUsuario,
-        idVotacion,
+          return nuevasSelecciones;
+        },
       );
+
+      const claveOpcion =
+        obtenerClaveOpcionSeleccionada(
+          perfil.idUsuario,
+          idVotacion,
+        );
 
       if (opcionAnterior === null) {
-        localStorage.removeItem(claveOpcion);
+        localStorage.removeItem(
+          claveOpcion,
+        );
       } else {
-        localStorage.setItem(claveOpcion, String(opcionAnterior));
+        localStorage.setItem(
+          claveOpcion,
+          String(opcionAnterior),
+        );
       }
 
       setMensaje("");
@@ -811,12 +1374,28 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
     }
   }
 
+  function crearVotacion() {
+    if (
+      typeof alCrearVotacion ===
+      "function"
+    ) {
+      alCrearVotacion();
+      return;
+    }
+
+    window.location.href =
+      "/crear-votacion";
+  }
+
   if (cargando) {
     return (
       <div className="pantalla-elecciones-carga">
         <div className="pantalla-elecciones-carga__circulo" />
 
-        <p>Cargando elecciones disponibles...</p>
+        <p>
+          Cargando elecciones
+          disponibles...
+        </p>
       </div>
     );
   }
@@ -826,9 +1405,17 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
       <BarraLateral
         perfil={perfil}
         seccionActiva="elecciones"
-        abierta={menuLateralAbierto}
-        alCerrar={() => setMenuLateralAbierto(false)}
-        alCerrarSesion={alCerrarSesion}
+        abierta={
+          menuLateralAbierto
+        }
+        alCerrar={() =>
+          setMenuLateralAbierto(
+            false,
+          )
+        }
+        alCerrarSesion={
+          alCerrarSesion
+        }
       />
 
       {menuLateralAbierto && (
@@ -836,7 +1423,11 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
           type="button"
           className="fondo-sidebar-elecciones"
           aria-label="Cerrar menú lateral"
-          onClick={() => setMenuLateralAbierto(false)}
+          onClick={() =>
+            setMenuLateralAbierto(
+              false,
+            )
+          }
         />
       )}
 
@@ -844,57 +1435,118 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
         <EncabezadoUsuario
           perfil={perfil}
           titulo="ELECCIONES."
-          alAbrirMenu={() => setMenuLateralAbierto(true)}
+          alAbrirMenu={() =>
+            setMenuLateralAbierto(
+              true,
+            )
+          }
         />
 
-        {error && <div className="mensaje-elecciones-error">{error}</div>}
+        {error && (
+          <div className="mensaje-elecciones-error">
+            {error}
+          </div>
+        )}
 
         {mensaje && (
-          <div className="mensaje-elecciones-correcto">{mensaje}</div>
+          <div className="mensaje-elecciones-correcto">
+            {mensaje}
+          </div>
         )}
 
         <section className="barra-filtros-elecciones">
           <div className="barra-filtros-elecciones__icono">
-            <img width={20} src={filtrar}></img>
+            <img
+              width={20}
+              src={filtrar}
+              alt="Filtrar"
+            />
           </div>
 
-          <div className="barra-filtros-elecciones__titulo">Filtrar por</div>
+          <div className="barra-filtros-elecciones__titulo">
+            Filtrar por
+          </div>
 
           <select
             value={orden}
-            onChange={(evento) => setOrden(evento.target.value)}
+            onChange={(evento) =>
+              setOrden(
+                evento.target.value,
+              )
+            }
           >
-            <option value="MAS_VOTADAS">Más votados</option>
+            <option value="MAS_VOTADAS">
+              Más votados
+            </option>
 
-            <option value="RECIENTES">Más recientes</option>
+            <option value="RECIENTES">
+              Más recientes
+            </option>
 
-            <option value="CIERRAN_PRONTO">Cierran pronto</option>
+            <option value="CIERRAN_PRONTO">
+              Cierran pronto
+            </option>
           </select>
 
           <select
-            value={categoriaSeleccionada}
-            onChange={(evento) => setCategoriaSeleccionada(evento.target.value)}
+            value={
+              categoriaSeleccionada
+            }
+            onChange={(evento) =>
+              setCategoriaSeleccionada(
+                evento.target.value,
+              )
+            }
           >
-            <option value="TODAS">Categoría</option>
+            <option value="TODAS">
+              Categoría
+            </option>
 
-            {categorias.map((categoria) => (
-              <option key={categoria.idCategoria} value={categoria.idCategoria}>
+            {(
+              Array.isArray(categorias)
+                ? categorias
+                : []
+            ).map((categoria) => (
+              <option
+                key={
+                  categoria.idCategoria ??
+                  categoria.id
+                }
+                value={
+                  categoria.idCategoria ??
+                  categoria.id
+                }
+              >
                 {categoria.nombre}
               </option>
             ))}
           </select>
 
           <select
-            value={fechaSeleccionada}
-            onChange={(evento) => setFechaSeleccionada(evento.target.value)}
+            value={
+              fechaSeleccionada
+            }
+            onChange={(evento) =>
+              setFechaSeleccionada(
+                evento.target.value,
+              )
+            }
           >
-            <option value="TODAS">Fecha</option>
+            <option value="TODAS">
+              Fecha
+            </option>
 
-            <option value="HOY">Terminan hoy</option>
+            <option value="HOY">
+              Terminan hoy
+            </option>
 
-            <option value="7_DIAS">Próximos 7 días</option>
+            <option value="7_DIAS">
+              Próximos 7 días
+            </option>
 
-            <option value="30_DIAS">Próximos 30 días</option>
+            <option value="30_DIAS">
+              Próximos 30 días
+            </option>
           </select>
 
           <button
@@ -908,42 +1560,71 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
           <button
             type="button"
             className="barra-filtros-elecciones__crear"
-            onClick={alCrearVotacion}
+            onClick={crearVotacion}
           >
             Crear mi elección
           </button>
         </section>
 
         <section className="rejilla-elecciones">
-          {votacionesFiltradas.map((votacion) => {
-            const idVotacion = Number(votacion.idVotacion);
+          {votacionesFiltradas.map(
+            (votacion) => {
+              const idVotacion =
+                Number(
+                  votacion.idVotacion,
+                );
 
-            const tieneSeleccionLocal =
-              opcionesSeleccionadas[idVotacion] !== undefined &&
-              opcionesSeleccionadas[idVotacion] !== null;
+              const tieneSeleccionLocal =
+                opcionesSeleccionadas[
+                  idVotacion
+                ] !== undefined &&
+                opcionesSeleccionadas[
+                  idVotacion
+                ] !== null;
 
-            const yaVoto =
-              idsVotacionesParticipadas.has(idVotacion) || tieneSeleccionLocal;
+              const yaVoto =
+                idsVotacionesParticipadas.has(
+                  idVotacion,
+                ) ||
+                tieneSeleccionLocal;
 
-            return (
-              <TarjetaEleccionDisponible
-                key={idVotacion}
-                votacion={votacion}
-                yaVoto={yaVoto}
-                votando={idVotacionGuardando === idVotacion}
-                bloqueado={idVotacionGuardando !== null}
-                idOpcionSeleccionada={opcionesSeleccionadas[idVotacion] ?? null}
-                alSeleccionarOpcion={registrarVoto}
-              />
-            );
-          })}
+              return (
+                <TarjetaEleccionDisponible
+                  key={idVotacion}
+                  votacion={votacion}
+                  yaVoto={yaVoto}
+                  votando={
+                    idVotacionGuardando ===
+                    idVotacion
+                  }
+                  bloqueado={
+                    idVotacionGuardando !==
+                    null
+                  }
+                  idOpcionSeleccionada={
+                    opcionesSeleccionadas[
+                      idVotacion
+                    ] ?? null
+                  }
+                  alSeleccionarOpcion={
+                    registrarVoto
+                  }
+                />
+              );
+            },
+          )}
 
-          {votacionesFiltradas.length === 0 && (
+          {votacionesFiltradas.length ===
+            0 && (
             <div className="elecciones-sin-resultados">
-              <h2>No hay elecciones disponibles</h2>
+              <h2>
+                No hay elecciones
+                disponibles
+              </h2>
 
               <p>
-                No se encontraron elecciones activas con los filtros
+                No se encontraron elecciones
+                activas con los filtros
                 seleccionados.
               </p>
             </div>
