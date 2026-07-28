@@ -25,7 +25,6 @@
   border-radius: 8px;
 }
 
-/* Barra de filtros */
 
 .barra-filtros-elecciones {
   display: grid;
@@ -1078,4 +1077,36 @@
 
 .grafica-disponible-pastel__opcion--seleccionada:hover {
   background-color: #1967d6 !important;
+}
+
+.grafica-disponible-vertical {
+  display: flex;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.grafica-disponible-vertical__elemento {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.grafica-disponible-vertical__contenedor-barra {
+  width: 48px;
+  height: 180px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.grafica-disponible-vertical__barra {
+  width: 100%;
+  max-width: 34px;
+  min-height: 0;
+  background: #edf3ff;
+  border-radius: 6px 6px 2px 2px;
+  transition: height 250ms ease;
+}
+.grafica-disponible-vertical__barra--seleccionada {
+  transform: scaleX(1.08);
+  box-shadow: 0 0 0 3px rgba(29, 111, 224, 0.2);
 }

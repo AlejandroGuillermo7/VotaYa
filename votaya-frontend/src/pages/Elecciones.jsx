@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
+import filtrar from "../assets/icons/filtrar.svg";
 
 import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
@@ -55,7 +56,7 @@ function obtenerImagenVotacion(votacion) {
 
   const opcionConImagen = votacion.opciones?.find((opcion) => opcion.imagenUrl);
 
-  return resolverUrlArchivo(opcionConImagen?.imagenUrl);
+  return resolverUrlArchivo(opcionConImagen?.imagenUrl || "imagenes/votar.png");
 }
 
 function obtenerNombreCategoria(votacion) {
@@ -75,24 +76,24 @@ function GraficaVertical({
   idOpcionSeleccionada,
 }) {
   const mayorCantidad = Math.max(
-    ...opciones.map((opcion) => opcion.totalVotos),
-    1,
+    ...opciones.map((opcion) => Number(opcion.totalVotos || 0)),
+    0,
   );
+
+  const ALTURA_MAXIMA = 115;
 
   return (
     <div className="grafica-disponible-vertical">
       {opciones.map((opcion) => {
+        const totalVotos = Number(opcion.totalVotos || 0);
+
         const estaSeleccionada =
           Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
-        let altura =
-          opcion.totalVotos === 0
-            ? 55
-            : 65 + (opcion.totalVotos / mayorCantidad) * 80;
-
-        if (estaSeleccionada) {
-          altura = Math.max(altura, 78);
-        }
+        const altura =
+          mayorCantidad === 0
+            ? 0
+            : (totalVotos / mayorCantidad) * ALTURA_MAXIMA;
 
         return (
           <button
@@ -104,7 +105,7 @@ function GraficaVertical({
             title={`Votar por ${opcion.nombre}`}
           >
             <span className="grafica-disponible-vertical__cantidad">
-              {formatearVotos(opcion.totalVotos)}
+              {formatearVotos(totalVotos)}
             </span>
 
             <div
@@ -137,25 +138,22 @@ function GraficaHorizontal({
   deshabilitado,
   idOpcionSeleccionada,
 }) {
-  const mayorCantidad = Math.max(
-    ...opciones.map((opcion) => opcion.totalVotos),
-    1,
+  const votosNormalizados = opciones.map((opcion) =>
+    Number(opcion.totalVotos ?? 0),
   );
+
+  const mayorCantidad = Math.max(...votosNormalizados, 0);
 
   return (
     <div className="grafica-disponible-horizontal">
       {opciones.map((opcion) => {
+        const totalVotos = Number(opcion.totalVotos ?? 0);
+
         const estaSeleccionada =
           Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
-        let anchura =
-          opcion.totalVotos === 0
-            ? 0
-            : Math.max(7, (opcion.totalVotos / mayorCantidad) * 100);
-
-        if (estaSeleccionada) {
-          anchura = Math.max(anchura, 12);
-        }
+        const anchura =
+          mayorCantidad === 0 ? 0 : (totalVotos / mayorCantidad) * 100;
 
         const imagen = resolverUrlArchivo(opcion.imagenUrl);
 
@@ -163,7 +161,15 @@ function GraficaHorizontal({
           <button
             type="button"
             key={opcion.idOpcion}
-            className="grafica-disponible-horizontal__fila grafica-opcion-horizontal"
+            className={[
+              "grafica-disponible-horizontal__fila",
+              "grafica-opcion-horizontal",
+              estaSeleccionada
+                ? "grafica-disponible-horizontal__fila--seleccionada"
+                : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
             disabled={deshabilitado}
             onClick={() => alSeleccionar(opcion)}
             title={`Votar por ${opcion.nombre}`}
@@ -198,7 +204,7 @@ function GraficaHorizontal({
               )}
 
               <span className="grafica-disponible-horizontal__cantidad">
-                {formatearVotos(opcion.totalVotos)}
+                {formatearVotos(totalVotos)}
               </span>
             </div>
           </button>
@@ -207,7 +213,6 @@ function GraficaHorizontal({
     </div>
   );
 }
-
 function GraficaPastel({
   opciones,
   alSeleccionar,
@@ -774,10 +779,6 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
       await actualizarResultados(idVotacion);
     } catch (excepcion) {
-      /*
-       * Si el backend rechaza el voto,
-       * se restaura la selección anterior.
-       */
       setOpcionesSeleccionadas((anteriores) => {
         const nuevasSelecciones = {
           ...anteriores,
@@ -854,7 +855,7 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
         <section className="barra-filtros-elecciones">
           <div className="barra-filtros-elecciones__icono">
-            <span>▽</span>
+            <img width={20} src={filtrar}></img>
           </div>
 
           <div className="barra-filtros-elecciones__titulo">Filtrar por</div>

@@ -1,4 +1,4 @@
-import logoVotaya from "../assets/icons/icon-votante.svg";
+import logoVotaya from "../assets/icons/logovotaya.png";
 
 import "./BarraLateral.css";
 
@@ -70,11 +70,7 @@ function BarraLateral({
 
         {esAdministrador && (
           <>
-            <div className="barra-lateral__separador" />
 
-            <span className="barra-lateral__titulo-seccion">
-              Administración
-            </span>
 
             <button
               type="button"
