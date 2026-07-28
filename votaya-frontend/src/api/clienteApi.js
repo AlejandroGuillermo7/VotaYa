@@ -1,4 +1,4 @@
-const URL_API = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const URL_API = import.meta.env.VITE_API_URL || "/api";
 
 const URL_BASE_SERVIDOR = URL_API.replace(/\/api\/?$/, "");
 
@@ -17,11 +17,12 @@ export async function peticionApi(ruta, opciones = {}) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const respuesta = await fetch(`${URL_API}${ruta}`, {
+  const rutaNormalizada = ruta.startsWith("/") ? ruta : `/${ruta}`;
+
+  const respuesta = await fetch(`${URL_API}${rutaNormalizada}`, {
     ...opciones,
     headers,
   });
-
 
   if (respuesta.status === 204) {
     return null;
@@ -65,6 +66,7 @@ export function resolverUrlArchivo(ruta) {
     return ruta;
   }
 
-  const barraInicial = ruta.startsWith("/") ? "" : "/";
-  return `http://localhost:8080${barraInicial}${ruta}`;
+  const rutaNormalizada = ruta.startsWith("/") ? ruta : `/${ruta}`;
+
+  return `${URL_BASE_SERVIDOR}${rutaNormalizada}`;
 }
