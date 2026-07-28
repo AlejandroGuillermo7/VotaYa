@@ -199,9 +199,12 @@ public class ServicioVotacion {
                         opcionRepositorio
                                         .deleteByVotacionIdVotacion(idVotacion);
 
-                        guardarOpciones(
+                                opcionRepositorio.flush();
+
+                                guardarOpciones(
                                         votacion,
-                                        solicitud.opciones());
+                                        solicitud.opciones()
+                                );
                 }
 
                 servicioAuditoria.registrar(
