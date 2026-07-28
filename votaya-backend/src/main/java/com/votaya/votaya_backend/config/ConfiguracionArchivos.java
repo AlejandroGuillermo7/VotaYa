@@ -8,8 +8,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class ConfiguracionArchivos
-        implements WebMvcConfigurer {
+public class ConfiguracionArchivos implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(
@@ -20,10 +19,15 @@ public class ConfiguracionArchivos
                         .toAbsolutePath()
                         .normalize();
 
+        String ubicacion =
+                carpetaImagenes.toUri().toString();
+
+        if (!ubicacion.endsWith("/")) {
+            ubicacion += "/";
+        }
+
         registry
                 .addResourceHandler("/imagenes/**")
-                .addResourceLocations(
-                        carpetaImagenes.toUri().toString()
-                );
+                .addResourceLocations(ubicacion);
     }
 }
