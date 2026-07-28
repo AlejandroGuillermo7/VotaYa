@@ -1,5 +1,6 @@
 package com.votaya.votaya_backend.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -7,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.votaya.votaya_backend.dto.VotacionDTO;
 import com.votaya.votaya_backend.service.ServicioArchivos;
@@ -33,7 +35,7 @@ public class ControladorVotacion {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<VotacionDTO.Respuesta> crearConImagen(
+    public ResponseEntity<VotacionDTO.Respuesta> crearConImagenes(
             @Valid
             @RequestPart("votacion")
             VotacionDTO.SolicitudGuardar solicitud,
@@ -42,38 +44,20 @@ public class ControladorVotacion {
                     value = "imagenPortada",
                     required = false
             )
-            MultipartFile imagenPortada) {
+            MultipartFile imagenPortada,
 
-        String rutaPortada =
-                servicioArchivos.guardarImagen(imagenPortada);
+            MultipartHttpServletRequest peticion) {
 
-        VotacionDTO.SolicitudGuardar solicitudConImagen =
-                new VotacionDTO.SolicitudGuardar(
-                        solicitud.titulo(),
-                        solicitud.descripcion(),
-                        rutaPortada,
-                        solicitud.fechaInicio(),
-                        solicitud.fechaFin(),
-                        solicitud.idCategoria(),
-                        solicitud.privacidad(),
-                        solicitud.tipoVoto(),
-                        solicitud.tipoSeleccion(),
-                        solicitud.maxSelecciones(),
-                        solicitud.tipoGrafica(),
-                        solicitud.edadMinima(),
-                        solicitud.comentariosPermitidos(),
-                        solicitud.permiteCambioVoto(),
-                        solicitud.estado(),
-                        solicitud.opciones()
+        VotacionDTO.SolicitudGuardar solicitudPreparada =
+                prepararSolicitudConImagenes(
+                        solicitud,
+                        imagenPortada,
+                        peticion
                 );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(
-                        servicioVotacion.crear(
-                                solicitudConImagen
-                        )
-                );
+                .body(servicioVotacion.crear(solicitudPreparada));
     }
 
     @GetMapping("/disponibles")
@@ -95,15 +79,17 @@ public class ControladorVotacion {
             @PathVariable Long idVotacion) {
 
         return ResponseEntity.ok(
-                servicioVotacion.obtenerDetalle(
-                        idVotacion
-                )
+                servicioVotacion.obtenerDetalle(idVotacion)
         );
     }
 
-    @PutMapping("/{idVotacion}")
-    public ResponseEntity<VotacionDTO.Respuesta> actualizar(
+    @PutMapping(
+            value = "/{idVotacion}",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<VotacionDTO.Respuesta> actualizarJson(
             @PathVariable Long idVotacion,
+
             @Valid
             @RequestBody
             VotacionDTO.SolicitudGuardar solicitud) {
@@ -112,6 +98,40 @@ public class ControladorVotacion {
                 servicioVotacion.actualizar(
                         idVotacion,
                         solicitud
+                )
+        );
+    }
+
+    @PutMapping(
+            value = "/{idVotacion}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<VotacionDTO.Respuesta> actualizarConImagenes(
+            @PathVariable Long idVotacion,
+
+            @Valid
+            @RequestPart("votacion")
+            VotacionDTO.SolicitudGuardar solicitud,
+
+            @RequestPart(
+                    value = "imagenPortada",
+                    required = false
+            )
+            MultipartFile imagenPortada,
+
+            MultipartHttpServletRequest peticion) {
+
+        VotacionDTO.SolicitudGuardar solicitudPreparada =
+                prepararSolicitudConImagenes(
+                        solicitud,
+                        imagenPortada,
+                        peticion
+                );
+
+        return ResponseEntity.ok(
+                servicioVotacion.actualizar(
+                        idVotacion,
+                        solicitudPreparada
                 )
         );
     }
@@ -132,5 +152,74 @@ public class ControladorVotacion {
         servicioVotacion.eliminar(idVotacion);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private VotacionDTO.SolicitudGuardar prepararSolicitudConImagenes(
+            VotacionDTO.SolicitudGuardar solicitud,
+            MultipartFile imagenPortada,
+            MultipartHttpServletRequest peticion) {
+
+        String rutaPortada = solicitud.imagenPortadaUrl();
+
+        if (imagenPortada != null && !imagenPortada.isEmpty()) {
+            rutaPortada =
+                    servicioArchivos.guardarImagen(imagenPortada);
+        }
+
+        List<VotacionDTO.SolicitudOpcion> opcionesPreparadas =
+                new ArrayList<>();
+
+        if (solicitud.opciones() != null) {
+            for (int indice = 0;
+                 indice < solicitud.opciones().size();
+                 indice++) {
+
+                VotacionDTO.SolicitudOpcion opcion =
+                        solicitud.opciones().get(indice);
+
+                MultipartFile imagenOpcion =
+                        peticion.getFile(
+                                "imagenOpcion_" + indice
+                        );
+
+                String rutaImagenOpcion =
+                        opcion.imagenUrl();
+
+                if (imagenOpcion != null &&
+                        !imagenOpcion.isEmpty()) {
+
+                    rutaImagenOpcion =
+                            servicioArchivos.guardarImagen(
+                                    imagenOpcion
+                            );
+                }
+
+                opcionesPreparadas.add(
+                        new VotacionDTO.SolicitudOpcion(
+                                opcion.nombre(),
+                                rutaImagenOpcion
+                        )
+                );
+            }
+        }
+
+        return new VotacionDTO.SolicitudGuardar(
+                solicitud.titulo(),
+                solicitud.descripcion(),
+                rutaPortada,
+                solicitud.fechaInicio(),
+                solicitud.fechaFin(),
+                solicitud.idCategoria(),
+                solicitud.privacidad(),
+                solicitud.tipoVoto(),
+                solicitud.tipoSeleccion(),
+                solicitud.maxSelecciones(),
+                solicitud.tipoGrafica(),
+                solicitud.edadMinima(),
+                solicitud.comentariosPermitidos(),
+                solicitud.permiteCambioVoto(),
+                solicitud.estado(),
+                opcionesPreparadas
+        );
     }
 }

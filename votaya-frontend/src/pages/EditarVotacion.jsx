@@ -20,21 +20,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
   const [horaF, setHoraF] = useState("");
   const [descripcion, setDescripcion] = useState("");
 
-  /*
-   * Imagen de portada de la votación.
-   *
-   * imagenPortadaArchivo:
-   * guarda el nuevo archivo seleccionado.
-   *
-   * imagenPortadaVista:
-   * guarda la imagen que se muestra en pantalla.
-   *
-   * imagenPortadaUrlOriginal:
-   * guarda la ruta de la imagen existente en el servidor.
-   *
-   * eliminarPortada:
-   * indica si el usuario decidió quitar la portada.
-   */
   const [imagenPortadaArchivo, setImagenPortadaArchivo] =
     useState(null);
 
@@ -90,22 +75,13 @@ function EditarVotacion({ idVotacion, alVolver }) {
 
   const [tipoGrafica, setTipoGrafica] =
     useState("BARRAS");
-
-  const [
-    comentariosPermitidos,
-    setComentariosPermitidos,
-  ] = useState(false);
-
-  const [error, setError] = useState("");
+const [error, setError] = useState("");
   const [mensajeExito, setMensajeExito] =
     useState("");
 
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
 
-  /*
-   * Carga las categorías y los datos de la votación.
-   */
   useEffect(() => {
     async function cargarTodo() {
       const idActual =
@@ -178,9 +154,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
           votacion.descripcion || ""
         );
 
-        /*
-         * Carga la portada existente.
-         */
         const portadaGuardada =
           votacion.imagenPortadaUrl ||
           votacion.imagen_portada_url ||
@@ -201,9 +174,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
         setImagenPortadaArchivo(null);
         setEliminarPortada(false);
 
-        /*
-         * Separa la fecha y hora de inicio.
-         */
         if (votacion.fechaInicio) {
           const [fechaInicio, horaInicio] =
             votacion.fechaInicio.split("T");
@@ -217,9 +187,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
           );
         }
 
-        /*
-         * Separa la fecha y hora de finalización.
-         */
         if (votacion.fechaFin) {
           const [fechaFin, horaFin] =
             votacion.fechaFin.split("T");
@@ -274,18 +241,7 @@ function EditarVotacion({ idVotacion, alVolver }) {
             votacion.tipo_grafica ||
             "BARRAS"
         );
-
-        setComentariosPermitidos(
-          Boolean(
-            votacion.comentariosPermitidos ??
-              votacion.comentarios_permitidos
-          )
-        );
-
-        /*
-         * Carga las opciones existentes.
-         */
-        if (
+if (
           Array.isArray(votacion.opciones) &&
           votacion.opciones.length > 0
         ) {
@@ -351,10 +307,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     cargarTodo();
   }, [idVotacion]);
 
-  /*
-   * Libera las URL temporales cuando se desmonta
-   * el componente.
-   */
   useEffect(() => {
     return () => {
       if (
@@ -369,9 +321,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     };
   }, [imagenPortadaVista]);
 
-  /*
-   * Selecciona una nueva imagen de portada.
-   */
   const cambiarImagenPortada = (e) => {
     const archivo = e.target.files?.[0];
 
@@ -421,9 +370,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     setMensajeExito("");
   };
 
-  /*
-   * Quita la portada actual.
-   */
   const quitarImagenPortada = () => {
     if (
       imagenPortadaVista?.startsWith(
@@ -451,9 +397,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     }
   };
 
-  /*
-   * Agrega una nueva opción.
-   */
   const agregarOpcion = () => {
     const nuevoOrden =
       opciones.length + 1;
@@ -474,9 +417,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     setError("");
   };
 
-  /*
-   * Elimina una opción.
-   */
   const eliminarOpcion = (id) => {
     if (opciones.length <= 2) {
       setError(
@@ -517,9 +457,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     setError("");
   };
 
-  /*
-   * Cambia el nombre de una opción.
-   */
   const cambiarNombreOpcion = (
     id,
     nombre
@@ -536,9 +473,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     );
   };
 
-  /*
-   * Cambia la imagen de una opción.
-   */
   const cambiarImagenOpcion = (
     id,
     e
@@ -598,9 +532,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     setMensajeExito("");
   };
 
-  /*
-   * Quita la imagen de una opción.
-   */
   const quitarImagenOpcion = (id) => {
     setOpciones((opcionesActuales) =>
       opcionesActuales.map((opcion) => {
@@ -640,9 +571,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     setMensajeExito("");
   };
 
-  /*
-   * Regresa a la pantalla anterior.
-   */
   const volver = () => {
     sessionStorage.removeItem(
       "idVotacionEditar"
@@ -655,9 +583,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     }
   };
 
-  /*
-   * Guarda los cambios.
-   */
   const enviar = async (e) => {
     e.preventDefault();
 
@@ -741,15 +666,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
 
     setGuardando(true);
 
-    /*
-     * Si se quitó la portada se manda null.
-     *
-     * Si no se modificó, conserva la ruta original.
-     *
-     * El archivo nuevo queda disponible en
-     * imagenPortadaArchivo para enviarlo a un endpoint
-     * multipart/form-data.
-     */
     const payload = {
       idCategoria:
         Number(idCategoria),
@@ -794,67 +710,38 @@ function EditarVotacion({ idVotacion, alVolver }) {
           ? 18
           : null,
 
-      comentariosPermitidos:
-        Boolean(
-          comentariosPermitidos
-        ),
+      comentariosPermitidos: false,
 
-      opciones: opciones.map(
-        (opcion, index) => ({
-          idOpcion:
-            opcion.idOpcion || null,
-
-          nombre:
-            opcion.nombre.trim(),
-
-          imagenUrl:
-            opcion.archivo
-              ? opcion.imagen_url_original ||
-                null
-              : opcion.imagen_url_original ||
-                null,
-
-          ordenVisual:
-            index + 1,
-        })
-      ),
+      opciones: opciones.map((opcion) => ({
+        nombre: opcion.nombre.trim(),
+        imagenUrl: opcion.imagen_url_original || null,
+      })),
     };
 
     try {
-      /*
-       * Actualiza los datos generales.
-       */
-      await peticionApi(
-        `/votaciones/${idActual}`,
-        {
-          method: "PUT",
-          body: JSON.stringify(payload),
+      const formulario = new FormData();
+
+      formulario.append(
+        "votacion",
+        new Blob([JSON.stringify(payload)], {
+          type: "application/json",
+        })
+      );
+
+      if (imagenPortadaArchivo) {
+        formulario.append("imagenPortada", imagenPortadaArchivo);
+      }
+
+      opciones.forEach((opcion, index) => {
+        if (opcion.archivo) {
+          formulario.append(`imagenOpcion_${index}`, opcion.archivo);
         }
-      );
+      });
 
-      /*
-       * Estos archivos quedan listos para enviarse
-       * mediante un endpoint multipart.
-       */
-      console.log(
-        "Nueva portada seleccionada:",
-        imagenPortadaArchivo
-      );
-
-      console.log(
-        "Nuevas imágenes de opciones:",
-        opciones
-          .filter(
-            (opcion) =>
-              opcion.archivo
-          )
-          .map((opcion) => ({
-            idOpcion:
-              opcion.idOpcion,
-            archivo:
-              opcion.archivo,
-          }))
-      );
+      await peticionApi(`/votaciones/${idActual}`, {
+        method: "PUT",
+        body: formulario,
+      });
 
       setMensajeExito(
         "¡La votación fue actualizada exitosamente!"
@@ -878,9 +765,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
     }
   };
 
-  /*
-   * Pantalla de carga.
-   */
   if (cargando) {
     return (
       <div className="pantalla-carga">
@@ -901,9 +785,7 @@ function EditarVotacion({ idVotacion, alVolver }) {
           alt="Logo de VotaYa"
           className="logo-oficial-icono"
         />
-
-        {/* Imagen de portada */}
-        <div className="contenedor-imagen-portada">
+<div className="contenedor-imagen-portada">
           <label
             htmlFor="imagen-portada-editar"
             className={`selector-imagen-portada ${
@@ -925,34 +807,7 @@ function EditarVotacion({ idVotacion, alVolver }) {
               />
             ) : (
               <div className="silueta-imagen-portada">
-                <svg
-                  className="icono-imagen-portada"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-13Z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-
-                  <circle
-                    cx="8.5"
-                    cy="8.5"
-                    r="1.5"
-                    fill="currentColor"
-                  />
-
-                  <path
-                    d="m5 17 4.2-4.2a1 1 0 0 1 1.4 0l2.1 2.1 1.7-1.7a1 1 0 0 1 1.4 0L20 17.4"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <span className="icono-imagen-portada">🖼️</span>
 
                 <span>
                   Agregar imagen de portada
@@ -1008,8 +863,7 @@ function EditarVotacion({ idVotacion, alVolver }) {
         onSubmit={enviar}
         className="formulario-edicion"
       >
-        {/* Datos generales */}
-        <section className="bloque-formulario">
+<section className="bloque-formulario">
           <h2>Datos Generales</h2>
 
           <div className="cuadrícula-datos-generales">
@@ -1194,9 +1048,7 @@ function EditarVotacion({ idVotacion, alVolver }) {
             </div>
           </div>
         </section>
-
-        {/* Opciones */}
-        <section className="bloque-formulario">
+<section className="bloque-formulario">
           <h2>Editar Opciones</h2>
 
           <div className="cuadrícula-opciones">
@@ -1315,9 +1167,7 @@ function EditarVotacion({ idVotacion, alVolver }) {
             </button>
           </div>
         </section>
-
-        {/* Reglas */}
-        <section className="bloque-formulario">
+<section className="bloque-formulario">
           <h2>Reglas de Votación</h2>
 
           <div className="cuadrícula-reglas">
@@ -1547,46 +1397,6 @@ function EditarVotacion({ idVotacion, alVolver }) {
                   }
                 >
                   +18 años
-                </button>
-              </div>
-            </div>
-
-            <div className="grupo-regla">
-              <label>
-                Comentarios
-              </label>
-
-              <div className="grupo-conmutador">
-                <button
-                  type="button"
-                  className={
-                    !comentariosPermitidos
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setComentariosPermitidos(
-                      false
-                    )
-                  }
-                >
-                  No permitido
-                </button>
-
-                <button
-                  type="button"
-                  className={
-                    comentariosPermitidos
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setComentariosPermitidos(
-                      true
-                    )
-                  }
-                >
-                  Permitido
                 </button>
               </div>
             </div>

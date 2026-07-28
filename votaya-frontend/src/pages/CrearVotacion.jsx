@@ -9,6 +9,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
   const [titulo, setTitulo] = useState("");
   const [idCategoria, setIdCategoria] = useState("");
   const [categoriasLista, setCategoriasLista] = useState([]);
+
   const [estado, setEstado] = useState("ACTIVA");
 
   const [fechaC, setFechaC] = useState("");
@@ -18,8 +19,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
   const [descripcion, setDescripcion] = useState("");
 
   const [imagenPortada, setImagenPortada] = useState(null);
-  const [vistaPreviaPortada, setVistaPreviaPortada] =
-    useState("");
+  const [vistaPreviaPortada, setVistaPreviaPortada] = useState("");
 
   const [opciones, setOpciones] = useState([
     {
@@ -38,127 +38,106 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
     },
   ]);
 
-  const [privacidad, setPrivacidad] =
-    useState("PUBLICA");
-
-  const [tipoVoto, setTipoVoto] =
-    useState("ANONIMO");
-
-  const [tipoSeleccion, setTipoSeleccion] =
-    useState("UNICA");
-
-  const [maxSelecciones, setMaxSelecciones] =
-    useState(1);
-
-  const [permiteCambioVoto, setPermiteCambioVoto] =
-    useState(false);
-
-  const [restriccionEdad, setRestriccionEdad] =
-    useState("todos");
-
-  const [tipoGrafica, setTipoGrafica] =
-    useState("BARRAS");
-
-  const [
-    comentariosPermitidos,
-    setComentariosPermitidos,
-  ] = useState(false);
-
-  const [error, setError] = useState("");
+  const [privacidad, setPrivacidad] = useState("PUBLICA");
+  const [tipoVoto, setTipoVoto] = useState("ANONIMO");
+  const [tipoSeleccion, setTipoSeleccion] = useState("UNICA");
+  const [maxSelecciones, setMaxSelecciones] = useState(1);
+  const [permiteCambioVoto, setPermiteCambioVoto] = useState(false);
+  const [restriccionEdad, setRestriccionEdad] = useState("todos");
+  const [tipoGrafica, setTipoGrafica] = useState("BARRAS");
+const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-    async function cargarCategorias() {
+    const cargarCategorias = async () => {
       try {
-        const respuesta =
-          await peticionApi("/categorias");
+        const respuesta = await peticionApi("/categorias", {
+          method: "GET",
+        });
 
         if (Array.isArray(respuesta)) {
           setCategoriasLista(respuesta);
         } else if (
-          Array.isArray(respuesta?.datos)
+          respuesta?.datos &&
+          Array.isArray(respuesta.datos)
         ) {
           setCategoriasLista(respuesta.datos);
         }
       } catch (err) {
         console.error(
-          "Error al cargar categorías:",
+          "Error al cargar categorías desde la BD:",
           err
         );
       }
-    }
+    };
 
     cargarCategorias();
   }, []);
 
-  const validarImagen = (archivo) => {
-    if (!archivo.type.startsWith("image/")) {
-      setError(
-        "El archivo seleccionado debe ser una imagen."
-      );
-      return false;
-    }
+  useEffect(() => {
+    return () => {
+      if (vistaPreviaPortada?.startsWith("blob:")) {
+        URL.revokeObjectURL(vistaPreviaPortada);
+      }
 
-    if (archivo.size > 5 * 1024 * 1024) {
-      setError(
-        "La imagen no debe superar los 5 MB."
-      );
-      return false;
-    }
-
-    return true;
-  };
+      opciones.forEach((opcion) => {
+        if (opcion.imagen_url?.startsWith("blob:")) {
+          URL.revokeObjectURL(opcion.imagen_url);
+        }
+      });
+    };
+  }, []);
 
   const cambiarImagenPortada = (e) => {
     const archivo = e.target.files?.[0];
 
-    if (!archivo) return;
+    if (!archivo) {
+      return;
+    }
 
-    if (!validarImagen(archivo)) {
+    if (!archivo.type.startsWith("image/")) {
+      setError("El archivo seleccionado debe ser una imagen.");
       e.target.value = "";
       return;
     }
 
-    if (
-      vistaPreviaPortada.startsWith("blob:")
-    ) {
-      URL.revokeObjectURL(
-        vistaPreviaPortada
-      );
+    const limiteBytes = 5 * 1024 * 1024;
+
+    if (archivo.size > limiteBytes) {
+      setError("La imagen de portada no debe superar los 5 MB.");
+      e.target.value = "";
+      return;
     }
 
+    if (vistaPreviaPortada?.startsWith("blob:")) {
+      URL.revokeObjectURL(vistaPreviaPortada);
+    }
+
+    const nuevaVistaPrevia = URL.createObjectURL(archivo);
+
     setImagenPortada(archivo);
-
-    setVistaPreviaPortada(
-      URL.createObjectURL(archivo)
-    );
-
+    setVistaPreviaPortada(nuevaVistaPrevia);
     setError("");
   };
 
   const eliminarImagenPortada = () => {
-    if (
-      vistaPreviaPortada.startsWith("blob:")
-    ) {
-      URL.revokeObjectURL(
-        vistaPreviaPortada
-      );
+    if (vistaPreviaPortada?.startsWith("blob:")) {
+      URL.revokeObjectURL(vistaPreviaPortada);
     }
 
     setImagenPortada(null);
     setVistaPreviaPortada("");
 
-    const input =
-      document.getElementById(
-        "imagen-portada"
-      );
+    const inputImagen = document.getElementById("imagen-portada");
 
-    if (input) {
-      input.value = "";
+    if (inputImagen) {
+      inputImagen.value = "";
     }
   };
 
   const agregarOpcion = () => {
+    const nuevoOrden = opciones.length + 1;
+
     setOpciones([
       ...opciones,
       {
@@ -166,37 +145,39 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
         nombre: "",
         imagen_url: "",
         archivo: null,
-        orden_visual:
-          opciones.length + 1,
+        orden_visual: nuevoOrden,
       },
     ]);
   };
 
   const eliminarOpcion = (id) => {
     if (opciones.length <= 2) {
-      setError(
-        "La votación requiere al menos 2 opciones."
-      );
+      setError("La votación requiere al menos 2 opciones.");
       return;
     }
 
-    const nuevasOpciones = opciones
-      .filter(
-        (opcion) => opcion.id !== id
-      )
-      .map((opcion, index) => ({
-        ...opcion,
-        orden_visual: index + 1,
-      }));
+    const opcionEliminada = opciones.find(
+      (opcion) => opcion.id === id
+    );
 
-    setOpciones(nuevasOpciones);
+    if (opcionEliminada?.imagen_url?.startsWith("blob:")) {
+      URL.revokeObjectURL(opcionEliminada.imagen_url);
+    }
+
+    const filtradas = opciones.filter(
+      (opcion) => opcion.id !== id
+    );
+
+    const reordenadas = filtradas.map((opcion, index) => ({
+      ...opcion,
+      orden_visual: index + 1,
+    }));
+
+    setOpciones(reordenadas);
     setError("");
   };
 
-  const cambiarNombreOpcion = (
-    id,
-    nombre
-  ) => {
+  const cambiarNombreOpcion = (id, nombre) => {
     setOpciones(
       opciones.map((opcion) =>
         opcion.id === id
@@ -209,40 +190,41 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
     );
   };
 
-  const cambiarImagenOpcion = (
-    id,
-    e
-  ) => {
+  const cambiarImagenOpcion = (id, e) => {
     const archivo = e.target.files?.[0];
 
-    if (!archivo) return;
+    if (!archivo) {
+      return;
+    }
 
-    if (!validarImagen(archivo)) {
+    if (!archivo.type.startsWith("image/")) {
+      setError("El archivo seleccionado debe ser una imagen.");
       e.target.value = "";
       return;
     }
 
-    setOpciones((anteriores) =>
-      anteriores.map((opcion) => {
+    const limiteBytes = 5 * 1024 * 1024;
+
+    if (archivo.size > limiteBytes) {
+      setError("La imagen no debe superar los 5 MB.");
+      e.target.value = "";
+      return;
+    }
+
+    setOpciones((opcionesAnteriores) =>
+      opcionesAnteriores.map((opcion) => {
         if (opcion.id !== id) {
           return opcion;
         }
 
-        if (
-          opcion.imagen_url.startsWith(
-            "blob:"
-          )
-        ) {
-          URL.revokeObjectURL(
-            opcion.imagen_url
-          );
+        if (opcion.imagen_url?.startsWith("blob:")) {
+          URL.revokeObjectURL(opcion.imagen_url);
         }
 
         return {
           ...opcion,
           archivo,
-          imagen_url:
-            URL.createObjectURL(archivo),
+          imagen_url: URL.createObjectURL(archivo),
         };
       })
     );
@@ -251,20 +233,14 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
   };
 
   const eliminarImagenOpcion = (id) => {
-    setOpciones((anteriores) =>
-      anteriores.map((opcion) => {
+    setOpciones((opcionesAnteriores) =>
+      opcionesAnteriores.map((opcion) => {
         if (opcion.id !== id) {
           return opcion;
         }
 
-        if (
-          opcion.imagen_url.startsWith(
-            "blob:"
-          )
-        ) {
-          URL.revokeObjectURL(
-            opcion.imagen_url
-          );
+        if (opcion.imagen_url?.startsWith("blob:")) {
+          URL.revokeObjectURL(opcion.imagen_url);
         }
 
         return {
@@ -275,19 +251,17 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
       })
     );
 
-    const input =
-      document.getElementById(
-        `archivo-${id}`
-      );
+    const inputImagen = document.getElementById(
+      `archivo-${id}`
+    );
 
-    if (input) {
-      input.value = "";
+    if (inputImagen) {
+      inputImagen.value = "";
     }
   };
 
   const enviar = async (e) => {
     e.preventDefault();
-
     setError("");
 
     if (
@@ -299,60 +273,46 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
       !horaF
     ) {
       setError(
-        "Completa todos los campos obligatorios."
+        "Completa todos los campos obligatorios de Datos Generales."
       );
       return;
     }
 
-    if (
-      opciones.some(
-        (opcion) =>
-          !opcion.nombre.trim()
-      )
-    ) {
-      setError(
-        "Todas las opciones deben tener un nombre."
-      );
+    if (opciones.some((opcion) => !opcion.nombre.trim())) {
+      setError("Todas las opciones deben tener un nombre.");
       return;
     }
 
-    const fechaInicio = new Date(
-      `${fechaC}T${horaC}:00`
-    );
-
-    const fechaFin = new Date(
-      `${fechaF}T${horaF}:00`
-    );
+    const fechaInicio = new Date(`${fechaC}T${horaC}:00`);
+    const fechaFin = new Date(`${fechaF}T${horaF}:00`);
 
     if (fechaFin <= fechaInicio) {
       setError(
-        "La fecha final debe ser posterior a la fecha inicial."
+        "La fecha de finalización debe ser posterior a la fecha de comienzo."
       );
       return;
     }
 
     if (
       tipoSeleccion === "MULTIPLE" &&
-      Number(maxSelecciones) >
-        opciones.length
+      Number(maxSelecciones) > opciones.length
     ) {
       setError(
-        "El máximo de selecciones no puede superar las opciones."
+        "El máximo de selecciones no puede superar el número de opciones."
       );
       return;
     }
 
+    setCargando(true);
+
     const payload = {
+      idCategoria: Number(idCategoria),
       titulo: titulo.trim(),
-      descripcion:
-        descripcion.trim() || null,
+      descripcion: descripcion.trim() || null,
       imagenPortadaUrl: null,
-      fechaInicio:
-        `${fechaC}T${horaC}:00`,
-      fechaFin:
-        `${fechaF}T${horaF}:00`,
-      idCategoria:
-        Number(idCategoria),
+      fechaInicio: `${fechaC}T${horaC}:00`,
+      fechaFin: `${fechaF}T${horaF}:00`,
+      estado,
       privacidad,
       tipoVoto,
       tipoSeleccion,
@@ -360,72 +320,50 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
         tipoSeleccion === "MULTIPLE"
           ? Number(maxSelecciones)
           : 1,
+      permiteCambioVoto: Boolean(permiteCambioVoto),
       tipoGrafica,
       edadMinima:
-        restriccionEdad === "18"
-          ? 18
-          : null,
-      comentariosPermitidos:
-        Boolean(
-          comentariosPermitidos
-        ),
-      permiteCambioVoto:
-        Boolean(
-          permiteCambioVoto
-        ),
-      estado,
-      opciones: opciones.map(
-        (opcion) => ({
-          nombre:
-            opcion.nombre.trim(),
-          imagenUrl: null,
-        })
-      ),
+        restriccionEdad === "18" ? 18 : null,
+      comentariosPermitidos: false,
+      opciones: opciones.map((opcion) => ({
+        nombre: opcion.nombre.trim(),
+        imagenUrl: null,
+      })),
     };
 
     try {
-      setCargando(true);
-
-      const formulario =
-        new FormData();
+      const formulario = new FormData();
 
       formulario.append(
         "votacion",
-        new Blob(
-          [JSON.stringify(payload)],
-          {
-            type: "application/json",
-          }
-        )
+        new Blob([JSON.stringify(payload)], {
+          type: "application/json",
+        })
       );
 
       if (imagenPortada) {
-        formulario.append(
-          "imagenPortada",
-          imagenPortada
-        );
+        formulario.append("imagenPortada", imagenPortada);
       }
 
-      await peticionApi(
-        "/votaciones",
-        {
-          method: "POST",
-          body: formulario,
+      opciones.forEach((opcion, index) => {
+        if (opcion.archivo) {
+          formulario.append(`imagenOpcion_${index}`, opcion.archivo);
         }
-      );
+      });
+
+      await peticionApi("/votaciones", {
+        method: "POST",
+        body: formulario,
+      });
 
       if (alCrearExitosa) {
         alCrearExitosa();
       }
     } catch (err) {
-      console.error(
-        "Error al crear votación:",
-        err
-      );
+      console.error("Error al crear votación:", err);
 
       setError(
-        err.message ||
-          "No se pudo crear la votación."
+        err.message || "Error al conectar con el servidor."
       );
     } finally {
       setCargando(false);
@@ -445,32 +383,22 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
           <label
             htmlFor="imagen-portada"
             className={`selector-imagen-portada ${
-              vistaPreviaPortada
-                ? "con-imagen"
-                : ""
+              vistaPreviaPortada ? "con-imagen" : ""
             }`}
+            title="Seleccionar imagen de portada"
           >
             {vistaPreviaPortada ? (
               <img
-                src={
-                  vistaPreviaPortada
-                }
-                alt="Vista previa"
+                src={vistaPreviaPortada}
+                alt="Vista previa de la portada"
                 className="vista-previa-portada"
               />
             ) : (
               <div className="silueta-imagen-portada">
-                <span className="icono-imagen-portada">
-                  🖼️
-                </span>
+                <span className="icono-imagen-portada">🖼️</span>
 
-                <span>
-                  Agregar imagen de portada
-                </span>
-
-                <small>
-                  PNG, JPG o WEBP · Máximo 5 MB
-                </small>
+                <span>Agregar imagen de portada</span>
+                <small>PNG, JPG o WEBP · Máximo 5 MB</small>
               </div>
             )}
           </label>
@@ -478,10 +406,8 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
           <input
             id="imagen-portada"
             type="file"
-            accept="image/*"
-            onChange={
-              cambiarImagenPortada
-            }
+            accept="image/png,image/jpeg,image/webp"
+            onChange={cambiarImagenPortada}
             hidden
           />
 
@@ -497,9 +423,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
               <button
                 type="button"
                 className="boton-eliminar-portada"
-                onClick={
-                  eliminarImagenPortada
-                }
+                onClick={eliminarImagenPortada}
               >
                 Quitar imagen
               </button>
@@ -507,13 +431,8 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
           )}
         </div>
 
-        <h1>
-          Crear una votación
-        </h1>
-
-        <h3>
-          Únete a VotaYa
-        </h3>
+        <h1>Crear una votación</h1>
+        <h3>Únete a VotaYa</h3>
       </div>
 
       <form
@@ -521,9 +440,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
         className="formulario-edicion"
       >
         <section className="bloque-formulario">
-          <h2>
-            Datos Generales
-          </h2>
+          <h2>Datos Generales</h2>
 
           <div className="cuadrícula-datos-generales">
             <div className="campo-formulario columna-doble">
@@ -536,51 +453,36 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 type="text"
                 placeholder="Ej: Elección de Mesa Directiva"
                 value={titulo}
-                onChange={(e) =>
-                  setTitulo(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setTitulo(e.target.value)}
               />
             </div>
 
             <div className="campo-formulario">
-              <label htmlFor="categoria">
-                Categoría *
-              </label>
+              <label htmlFor="categoria">Categoría *</label>
 
               <select
                 id="categoria"
                 value={idCategoria}
                 onChange={(e) =>
-                  setIdCategoria(
-                    e.target.value
-                  )
+                  setIdCategoria(e.target.value)
                 }
               >
                 <option value="">
                   -- Selecciona una categoría --
                 </option>
 
-                {categoriasLista.map(
-                  (categoria) => {
-                    const id =
-                      categoria.idCategoria ||
-                      categoria.id_categoria ||
-                      categoria.id;
+                {categoriasLista.map((categoria) => {
+                  const id =
+                    categoria.idCategoria ||
+                    categoria.id_categoria ||
+                    categoria.id;
 
-                    return (
-                      <option
-                        key={id}
-                        value={id}
-                      >
-                        {
-                          categoria.nombre
-                        }
-                      </option>
-                    );
-                  }
-                )}
+                  return (
+                    <option key={id} value={id}>
+                      {categoria.nombre}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
@@ -592,31 +494,17 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
               <select
                 id="estado"
                 value={estado}
-                onChange={(e) =>
-                  setEstado(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setEstado(e.target.value)}
               >
-                <option value="BORRADOR">
-                  Borrador
-                </option>
-
-                <option value="ACTIVA">
-                  Activa
-                </option>
-
+                <option value="BORRADOR">Borrador</option>
+                <option value="ACTIVA">Activa</option>
                 <option value="PROGRAMADA">
                   Programada
                 </option>
-
                 <option value="FINALIZADA">
                   Finalizada
                 </option>
-
-                <option value="CANCELADA">
-                  Cancelada
-                </option>
+                <option value="CANCELADA">Cancelada</option>
               </select>
             </div>
 
@@ -629,11 +517,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 id="fechaC"
                 type="date"
                 value={fechaC}
-                onChange={(e) =>
-                  setFechaC(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setFechaC(e.target.value)}
               />
             </div>
 
@@ -646,11 +530,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 id="horaC"
                 type="time"
                 value={horaC}
-                onChange={(e) =>
-                  setHoraC(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setHoraC(e.target.value)}
               />
             </div>
 
@@ -663,11 +543,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 id="fechaF"
                 type="date"
                 value={fechaF}
-                onChange={(e) =>
-                  setFechaF(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setFechaF(e.target.value)}
               />
             </div>
 
@@ -680,11 +556,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 id="horaF"
                 type="time"
                 value={horaF}
-                onChange={(e) =>
-                  setHoraF(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setHoraF(e.target.value)}
               />
             </div>
 
@@ -698,9 +570,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 placeholder="Describe los detalles de esta votación..."
                 value={descripcion}
                 onChange={(e) =>
-                  setDescripcion(
-                    e.target.value
-                  )
+                  setDescripcion(e.target.value)
                 }
                 rows={3}
               />
@@ -709,149 +579,114 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
         </section>
 
         <section className="bloque-formulario">
-          <h2>
-            Agregar Opciones
-          </h2>
+          <h2>Agregar Opciones</h2>
 
           <div className="cuadrícula-opciones">
-            {opciones.map(
-              (opcion, index) => (
-                <div
-                  key={opcion.id}
-                  className="tarjeta-opcion"
+            {opciones.map((opcion, index) => (
+              <div
+                key={opcion.id}
+                className="tarjeta-opcion"
+              >
+                <button
+                  type="button"
+                  className="boton-eliminar-opcion"
+                  onClick={() =>
+                    eliminarOpcion(opcion.id)
+                  }
+                  aria-label={`Eliminar opción ${index + 1}`}
                 >
-                  <button
-                    type="button"
-                    className="boton-eliminar-opcion"
-                    onClick={() =>
-                      eliminarOpcion(
-                        opcion.id
-                      )
-                    }
+                  &times;
+                </button>
+
+                <div className="caja-subir-imagen">
+                  <label
+                    htmlFor={`archivo-${opcion.id}`}
+                    className="etiqueta-imagen-opcion"
                   >
-                    &times;
-                  </button>
-
-                  <div className="caja-subir-imagen">
-                    <label
-                      htmlFor={`archivo-${opcion.id}`}
-                      className="etiqueta-imagen-opcion"
-                    >
-                      {opcion.imagen_url ? (
-                        <img
-                          src={
-                            opcion.imagen_url
-                          }
-                          alt={`Opción ${
-                            index + 1
-                          }`}
-                          className="imagen-vista-previa"
-                        />
-                      ) : (
-                        <div className="marcador-posicion-imagen">
-                          <span>
-                            🖼️
-                          </span>
-
-                          <small>
-                            Subir imagen
-                          </small>
-                        </div>
-                      )}
-                    </label>
-
-                    <input
-                      id={`archivo-${opcion.id}`}
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        cambiarImagenOpcion(
-                          opcion.id,
-                          e
-                        )
-                      }
-                      hidden
-                    />
-                  </div>
-
-                  {opcion.imagen_url && (
-                    <button
-                      type="button"
-                      className="boton-quitar-imagen-opcion"
-                      onClick={() =>
-                        eliminarImagenOpcion(
-                          opcion.id
-                        )
-                      }
-                    >
-                      Quitar imagen
-                    </button>
-                  )}
-
-                  <span className="numero-opcion">
-                    Opción {index + 1}
-                  </span>
+                    {opcion.imagen_url ? (
+                      <img
+                        src={opcion.imagen_url}
+                        alt={`Vista previa de la opción ${
+                          index + 1
+                        }`}
+                        className="imagen-vista-previa"
+                      />
+                    ) : (
+                      <div className="marcador-posicion-imagen">
+                        <span>🖼️</span>
+                        <small>Subir imagen</small>
+                      </div>
+                    )}
+                  </label>
 
                   <input
-                    type="text"
-                    placeholder={`Ej: Opción ${
-                      index + 1
-                    }`}
-                    value={
-                      opcion.nombre
-                    }
+                    id={`archivo-${opcion.id}`}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
                     onChange={(e) =>
-                      cambiarNombreOpcion(
-                        opcion.id,
-                        e.target.value
-                      )
+                      cambiarImagenOpcion(opcion.id, e)
                     }
+                    hidden
                   />
                 </div>
-              )
-            )}
+
+                {opcion.imagen_url && (
+                  <button
+                    type="button"
+                    className="boton-quitar-imagen-opcion"
+                    onClick={() =>
+                      eliminarImagenOpcion(opcion.id)
+                    }
+                  >
+                    Quitar imagen
+                  </button>
+                )}
+
+                <span className="numero-opcion">
+                  Opción {index + 1}
+                </span>
+
+                <input
+                  type="text"
+                  placeholder={`Ej: Opción ${index + 1}`}
+                  value={opcion.nombre}
+                  onChange={(e) =>
+                    cambiarNombreOpcion(
+                      opcion.id,
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+            ))}
 
             <button
               type="button"
               className="tarjeta-opcion boton-agregar-tarjeta"
               onClick={agregarOpcion}
             >
-              <span>
-                Agregar
-              </span>
-
-              <span className="icono-mas">
-                +
-              </span>
+              <span>Agregar</span>
+              <span className="icono-mas">+</span>
             </button>
           </div>
         </section>
 
         <section className="bloque-formulario">
-          <h2>
-            Reglas de Votación
-          </h2>
+          <h2>Reglas de Votación</h2>
 
           <div className="cuadrícula-reglas">
             <div className="grupo-regla">
-              <label>
-                Privacidad
-              </label>
+              <label>Privacidad</label>
 
               <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={
-                    privacidad ===
-                    "PUBLICA"
+                    privacidad === "PUBLICA"
                       ? "activo"
                       : ""
                   }
-                  onClick={() =>
-                    setPrivacidad(
-                      "PUBLICA"
-                    )
-                  }
+                  onClick={() => setPrivacidad("PUBLICA")}
                 >
                   Pública
                 </button>
@@ -859,16 +694,11 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 <button
                   type="button"
                   className={
-                    privacidad ===
-                    "PRIVADA"
+                    privacidad === "PRIVADA"
                       ? "activo"
                       : ""
                   }
-                  onClick={() =>
-                    setPrivacidad(
-                      "PRIVADA"
-                    )
-                  }
+                  onClick={() => setPrivacidad("PRIVADA")}
                 >
                   Privada
                 </button>
@@ -876,24 +706,17 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
             </div>
 
             <div className="grupo-regla">
-              <label>
-                Identificación de Voto
-              </label>
+              <label>Identificación de Voto</label>
 
               <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={
-                    tipoVoto ===
-                    "ANONIMO"
+                    tipoVoto === "ANONIMO"
                       ? "activo"
                       : ""
                   }
-                  onClick={() =>
-                    setTipoVoto(
-                      "ANONIMO"
-                    )
-                  }
+                  onClick={() => setTipoVoto("ANONIMO")}
                 >
                   Anónimo
                 </button>
@@ -901,15 +724,12 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 <button
                   type="button"
                   className={
-                    tipoVoto ===
-                    "IDENTIFICADO"
+                    tipoVoto === "IDENTIFICADO"
                       ? "activo"
                       : ""
                   }
                   onClick={() =>
-                    setTipoVoto(
-                      "IDENTIFICADO"
-                    )
+                    setTipoVoto("IDENTIFICADO")
                   }
                 >
                   Identificado
@@ -918,23 +738,18 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
             </div>
 
             <div className="grupo-regla">
-              <label>
-                Tipo de Selección
-              </label>
+              <label>Tipo de Selección</label>
 
               <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={
-                    tipoSeleccion ===
-                    "UNICA"
+                    tipoSeleccion === "UNICA"
                       ? "activo"
                       : ""
                   }
                   onClick={() =>
-                    setTipoSeleccion(
-                      "UNICA"
-                    )
+                    setTipoSeleccion("UNICA")
                   }
                 >
                   Opción única
@@ -943,15 +758,12 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 <button
                   type="button"
                   className={
-                    tipoSeleccion ===
-                    "MULTIPLE"
+                    tipoSeleccion === "MULTIPLE"
                       ? "activo"
                       : ""
                   }
                   onClick={() =>
-                    setTipoSeleccion(
-                      "MULTIPLE"
-                    )
+                    setTipoSeleccion("MULTIPLE")
                   }
                 >
                   Opción múltiple
@@ -959,12 +771,9 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
               </div>
             </div>
 
-            {tipoSeleccion ===
-              "MULTIPLE" && (
+            {tipoSeleccion === "MULTIPLE" && (
               <div className="grupo-regla">
-                <label>
-                  Máx. Selecciones
-                </label>
+                <label>Máx. Selecciones</label>
 
                 <input
                   type="number"
@@ -972,9 +781,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                   max={opciones.length}
                   value={maxSelecciones}
                   onChange={(e) =>
-                    setMaxSelecciones(
-                      e.target.value
-                    )
+                    setMaxSelecciones(e.target.value)
                   }
                   className="entrada-max-selecciones"
                 />
@@ -982,22 +789,16 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
             )}
 
             <div className="grupo-regla">
-              <label>
-                ¿Permitir cambiar voto?
-              </label>
+              <label>¿Permitir cambiar voto?</label>
 
               <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={
-                    !permiteCambioVoto
-                      ? "activo"
-                      : ""
+                    !permiteCambioVoto ? "activo" : ""
                   }
                   onClick={() =>
-                    setPermiteCambioVoto(
-                      false
-                    )
+                    setPermiteCambioVoto(false)
                   }
                 >
                   No
@@ -1006,14 +807,10 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 <button
                   type="button"
                   className={
-                    permiteCambioVoto
-                      ? "activo"
-                      : ""
+                    permiteCambioVoto ? "activo" : ""
                   }
                   onClick={() =>
-                    setPermiteCambioVoto(
-                      true
-                    )
+                    setPermiteCambioVoto(true)
                   }
                 >
                   Sí
@@ -1022,23 +819,18 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
             </div>
 
             <div className="grupo-regla">
-              <label>
-                Restricción de Edad
-              </label>
+              <label>Restricción de Edad</label>
 
               <div className="grupo-conmutador">
                 <button
                   type="button"
                   className={
-                    restriccionEdad ===
-                    "todos"
+                    restriccionEdad === "todos"
                       ? "activo"
                       : ""
                   }
                   onClick={() =>
-                    setRestriccionEdad(
-                      "todos"
-                    )
+                    setRestriccionEdad("todos")
                   }
                 >
                   Todos
@@ -1047,15 +839,12 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                 <button
                   type="button"
                   className={
-                    restriccionEdad ===
-                    "18"
+                    restriccionEdad === "18"
                       ? "activo"
                       : ""
                   }
                   onClick={() =>
-                    setRestriccionEdad(
-                      "18"
-                    )
+                    setRestriccionEdad("18")
                   }
                 >
                   +18 años
@@ -1063,64 +852,27 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
               </div>
             </div>
 
-            <div className="grupo-regla">
-              <label>
-                Comentarios
-              </label>
-
-              <div className="grupo-conmutador">
-                <button
-                  type="button"
-                  className={
-                    !comentariosPermitidos
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setComentariosPermitidos(
-                      false
-                    )
-                  }
-                >
-                  No permitido
-                </button>
-
-                <button
-                  type="button"
-                  className={
-                    comentariosPermitidos
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setComentariosPermitidos(
-                      true
-                    )
-                  }
-                >
-                  Permitido
-                </button>
-              </div>
-            </div>
-
             <div className="grupo-regla columna-completa">
-              <label>
-                Tipo de gráfica
-              </label>
+              <label>Tipo de gráfica</label>
 
               <div className="cuadrícula-seleccion-grafica">
                 <div
                   className={`tarjeta-grafica-opcion ${
-                    tipoGrafica ===
-                    "BARRAS"
+                    tipoGrafica === "BARRAS"
                       ? "seleccionada"
                       : ""
                   }`}
-                  onClick={() =>
-                    setTipoGrafica(
-                      "BARRAS"
-                    )
-                  }
+                  onClick={() => setTipoGrafica("BARRAS")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === "Enter" ||
+                      e.key === " "
+                    ) {
+                      setTipoGrafica("BARRAS");
+                    }
+                  }}
                 >
                   <img
                     src={imgBarras}
@@ -1129,28 +881,28 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                   />
 
                   <div>
-                    <strong>
-                      Gráfica Barras
-                    </strong>
-
-                    <small>
-                      Comparativa vertical
-                    </small>
+                    <strong>Gráfica Barras</strong>
+                    <small>Comparativa vertical</small>
                   </div>
                 </div>
 
                 <div
                   className={`tarjeta-grafica-opcion ${
-                    tipoGrafica ===
-                    "PASTEL"
+                    tipoGrafica === "PASTEL"
                       ? "seleccionada"
                       : ""
                   }`}
-                  onClick={() =>
-                    setTipoGrafica(
-                      "PASTEL"
-                    )
-                  }
+                  onClick={() => setTipoGrafica("PASTEL")}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === "Enter" ||
+                      e.key === " "
+                    ) {
+                      setTipoGrafica("PASTEL");
+                    }
+                  }}
                 >
                   <img
                     src={imgPastel}
@@ -1159,10 +911,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
                   />
 
                   <div>
-                    <strong>
-                      Gráfica Circular
-                    </strong>
-
+                    <strong>Gráfica Circular</strong>
                     <small>
                       Porcentajes y proporciones
                     </small>
@@ -1191,9 +940,7 @@ function CrearVotacion({ alVolver, alCrearExitosa }) {
           </button>
 
           <div className="contenedor-regresar">
-            <span>
-              ¿Deseas regresar?{" "}
-            </span>
+            <span>¿Deseas regresar? </span>
 
             <button
               type="button"
