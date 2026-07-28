@@ -35,7 +35,7 @@ public class ControladorAutenticacion {
             try {
                 /*para evitar coliciones  */
                 String nombreArchivo = UUID.randomUUID().toString() + "_" +foto.getOriginalFilename();
-                Path rutaDirectorio = Paths.get("src/main/resources/static/imagenes/");
+                Path rutaDirectorio = Paths.get("uploads/imagenes/");
                 
                 if (!Files.exists(rutaDirectorio)) {
                     Files.createDirectories(rutaDirectorio);

@@ -42,7 +42,7 @@ function Login({alIniciarSesion, irARegistro, irARecuperar}) {
     return true;
   }
 
-  async function enviar(e) {
+async function enviar(e) {
     e.preventDefault();
     setError("");
 
@@ -51,6 +51,7 @@ function Login({alIniciarSesion, irARegistro, irARecuperar}) {
     setCargando(true);
 
     try {
+      // 1. Petición de autenticación
       const respuesta = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: {
@@ -68,10 +69,32 @@ function Login({alIniciarSesion, irARegistro, irARecuperar}) {
         throw new Error(data.mensaje || "Correo o contraseña incorrectos.");
       }
 
+      // Guardamos token de autenticación
       if (data.token) {
         localStorage.setItem("token", data.token);
       }
-      if (alIniciarSesion) alIniciarSesion(data);
+
+      // 2. ⚡ PETICIÓN EXTRA: Obtener el perfil completo (incluyendo la foto de la BD)
+      let usuarioCompleto = { ...data };
+
+      try {
+        const resPerfil = await fetch("http://localhost:8080/api/usuarios/perfil", {
+          headers: { 
+            "Authorization": `Bearer ${data.token}` 
+          },
+        });
+
+        if (resPerfil.ok) {
+          const perfilBD = await resPerfil.json();
+          // Unimos los datos del perfil con los del login
+          usuarioCompleto = { ...data, ...perfilBD };
+        }
+      } catch (errPerfil) {
+        console.warn("No se pudo cargar la foto en el login, se usarán datos básicos:", errPerfil);
+      }
+
+      // 3. Notificamos al componente padre con la foto lista
+      if (alIniciarSesion) alIniciarSesion(usuarioCompleto);
 
     } catch (err) {
       setError(err.message || "Error al conectar con el servidor.");

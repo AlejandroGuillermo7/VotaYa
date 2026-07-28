@@ -3,27 +3,31 @@ import { resolverUrlArchivo } from "../api/clienteApi";
 import "./EncabezadoUsuario.css";
 
 function obtenerIniciales(perfil) {
-  if (!perfil) {
-    return "U";
-  }
+  if (!perfil) return "U";
   const primeraInicial = perfil.nombres?.trim()?.[0] || "";
   const segundaInicial = perfil.apellidoPaterno?.trim()?.[0] || "";
   return `${primeraInicial}${segundaInicial}`.toUpperCase();
 }
 
-function EncabezadoUsuario({
-  perfil,
-  alAbrirMenu,
-  titulo,
-  alIrAPerfil,
-}) {
+function EncabezadoUsuario({ perfil, alAbrirMenu, titulo, alIrAPerfil }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const [errorFoto, setErrorFoto] = useState(false);
   const referenciaDropdown = useRef(null);
-  const foto = resolverUrlArchivo(perfil?.fotoUrl);
+
+  const rutaFoto = perfil?.fotoUrl || perfil?.foto_url || perfil?.foto || perfil?.imagenUrl;
+  const fotoUrl = resolverUrlArchivo(rutaFoto);
+
+  
+  useEffect(() => {
+    setErrorFoto(false);
+  }, [perfil, rutaFoto, fotoUrl]);
 
   useEffect(() => {
     function manejarClicFuera(event) {
-      if (referenciaDropdown.current && !referenciaDropdown.current.contains(event.target)) {
+      if (
+        referenciaDropdown.current &&
+        !referenciaDropdown.current.contains(event.target)
+      ) {
         setMenuAbierto(false);
       }
     }
@@ -56,8 +60,7 @@ function EncabezadoUsuario({
         </h1>
       </div>
 
-  
-      <div 
+      <div
         className="encabezado-usuario__contenedor-dropdown"
         ref={referenciaDropdown}
         style={{ position: "relative" }}
@@ -67,11 +70,12 @@ function EncabezadoUsuario({
           onClick={() => setMenuAbierto(!menuAbierto)}
           style={{ cursor: "pointer" }}
         >
-          {foto ? (
+          {fotoUrl && !errorFoto ? (
             <img
-              src={foto}
+              src={fotoUrl}
               alt={`Fotografía de ${perfil?.nombres || "usuario"}`}
               className="encabezado-usuario__foto"
+              onError={() => setErrorFoto(true)}
             />
           ) : (
             <div className="encabezado-usuario__iniciales">
@@ -80,7 +84,7 @@ function EncabezadoUsuario({
           )}
           <span className="encabezado-usuario__nombre">
             {perfil
-              ? `${perfil.nombres} ${perfil.apellidoPaterno}`
+              ? `${perfil.nombres} ${perfil.apellidoPaterno || ""}`.trim()
               : "Usuario"}
           </span>
           <span style={{ fontSize: "12px", marginLeft: "4px" }}>

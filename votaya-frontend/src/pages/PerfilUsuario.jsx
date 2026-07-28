@@ -6,13 +6,11 @@ import email from "../assets/icons/icon-email.svg";
 import password from "../assets/icons/icon-password.svg";
 import "./PerfilUsuario.css";
 
-function resolverUrlArchivo(ruta) {
+const resolverUrlArchivo = (ruta) => {
   if (!ruta) return null;
-  if (ruta.startsWith("http://") || ruta.startsWith("https://") || ruta.startsWith("blob:")) {
-    return ruta;
-  }
+  if (ruta.startsWith("http") || ruta.startsWith("blob:")) return ruta;
   return `http://localhost:8080${ruta.startsWith("/") ? "" : "/"}${ruta}`;
-}
+};
 
 function PerfilUsuario({ volver, onActualizado }) {
   const [nombre, setNombre] = useState("");
@@ -21,11 +19,8 @@ function PerfilUsuario({ volver, onActualizado }) {
   const [fechaN, setFechaN] = useState("");
   const [correo, setCorreo] = useState("");
 
-
   const [fotoPerfil, setFotoPerfil] = useState(null);
-
   const [archivoFoto, setArchivoFoto] = useState(null);
-
   const [fotoFallo, setFotoFallo] = useState(false);
 
   const [contraseñaActual, setContraseñaActual] = useState("");
@@ -43,7 +38,7 @@ function PerfilUsuario({ volver, onActualizado }) {
       const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -67,21 +62,22 @@ function PerfilUsuario({ volver, onActualizado }) {
 
   useEffect(() => {
     if (token) obtenerPerfil();
-
   }, [token]);
 
   const cambiarFoto = (e) => {
     const archivo = e.target.files[0];
     if (archivo) {
       setFotoFallo(false);
-      setFotoPerfil(URL.createObjectURL(archivo));
       setArchivoFoto(archivo);
+      const previewUrl = URL.createObjectURL(archivo);
+      setFotoPerfil(previewUrl);
     }
   };
 
   const eliminarFotoNueva = () => {
-  
-    
+    if (fotoPerfil && fotoPerfil.startsWith("blob:")) {
+      URL.revokeObjectURL(fotoPerfil);
+    }
     setArchivoFoto(null);
     obtenerPerfil();
   };
@@ -100,7 +96,7 @@ function PerfilUsuario({ volver, onActualizado }) {
       const respuesta = await fetch("http://localhost:8080/api/usuario/verificar-password", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ passwordActual: contraseñaActual }),
@@ -124,79 +120,66 @@ function PerfilUsuario({ volver, onActualizado }) {
 
   const handleActualizar = async (e) => {
     e.preventDefault();
+  setMensaje({ tipo: "", texto: "" });
 
-    if (isVerificada || contraseñaNueva) {
-      if (contraseñaNueva !== confirmarContraseña) {
-        setMensaje({ tipo: "error", texto: "Las nuevas contraseñas no coinciden." });
-        return;
-      }
-      if (contraseñaNueva.length < 8) {
-        setMensaje({ tipo: "error", texto: "La nueva contraseña debe tener al menos 8 caracteres." });
-        return;
-      }
-    }
-
-    setGuardando(true);
-    setMensaje({ tipo: "", texto: "" });
+  if (isVerificada && contraseñaNueva && contraseñaNueva !== confirmarContraseña) {
+    setMensaje({ tipo: "error", texto: "La confirmación de la nueva contraseña no coincide." });
+    return;
+  }
 
     try {
       const formData = new FormData();
 
-      const datosActualizados = {
-        nombres: nombre,
-        apellidoPaterno: apellidoP,
-        apellidoMaterno: apellidoM,
-        fechaNacimiento: fechaN,
-        correo: correo,
-        ...(isVerificada && contraseñaNueva ? { nuevaContrasena: contraseñaNueva } : {}),
-      };
+      // DTO estructurado correctamente usando las variables de estado individuales
+      const datosUsuario = {
+  nombres: nombre,
+  apellidoPaterno: apellidoP,
+  apellidoMaterno: apellidoM,
+  fechaNacimiento: fechaN,
+  correo: correo,
+  nuevaContrasena: isVerificada && contraseñaNueva ? contraseñaNueva : null,
+};
 
       formData.append(
         "datos",
-        new Blob([JSON.stringify(datosActualizados)], { type: "application/json" })
+        new Blob([JSON.stringify(datosUsuario)], {
+          type: "application/json",
+        })
       );
 
       if (archivoFoto) {
         formData.append("foto", archivoFoto);
       }
 
-      const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
+      const respuesta = await fetch("http://localhost:8080/api/usuarios/verificar-password", {
         method: "PUT",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
 
-      const data = await respuesta.json();
-
       if (!respuesta.ok) {
-        throw new Error(data.mensaje || "Ocurrió un error al actualizar los datos.");
+        const errorData = await respuesta.json();
+        throw new Error(errorData.mensaje || "Error al actualizar el perfil.");
       }
 
-
-      setNombre(data.nombres || "");
-      setApellidoP(data.apellidoPaterno || "");
-      setApellidoM(data.apellidoMaterno || "");
-      setFechaN(data.fechaNacimiento || "");
-      setCorreo(data.correo || "");
-      setFotoFallo(false);
-      setFotoPerfil(data.fotoUrl ? resolverUrlArchivo(data.fotoUrl) : null);
-
-      setArchivoFoto(null);
-      setContraseñaActual("");
-      setContraseñaNueva("");
-      setConfirmarContraseña("");
-      setIsVerificada(false);
+      const dataActualizada = await respuesta.json();
 
       setMensaje({ tipo: "exito", texto: "Perfil actualizado correctamente." });
+      setArchivoFoto(null);
 
+      if (dataActualizada.fotoUrl) {
+        setFotoPerfil(resolverUrlArchivo(dataActualizada.fotoUrl));
+      }
 
-      if (typeof onActualizado === "function") {
+      // Notificar al padre (App / Dashboard) para que recargue el perfil global y actualice EncabezadoUsuario
+      if (onActualizado) {
         onActualizado();
       }
-    } catch (error) {
-      setMensaje({ tipo: "error", texto: error.message || "Error al actualizar los datos." });
+    } catch (err) {
+      console.error(err);
+      setMensaje({ tipo: "error", texto: err.message || "Ocurrió un error interno en el servidor." });
     } finally {
       setGuardando(false);
     }
@@ -214,7 +197,7 @@ function PerfilUsuario({ volver, onActualizado }) {
               {fotoPerfil && !fotoFallo ? (
                 <img
                   src={fotoPerfil}
-                  alt=""
+                  alt="Foto de perfil"
                   className="foto-perfil-imagen"
                   onError={() => setFotoFallo(true)}
                 />

@@ -1,5 +1,7 @@
 package com.votaya.votaya_backend.controller;
 
+import java.util.Map;
+
 import com.votaya.votaya_backend.dto.UsuarioDTO;
 import com.votaya.votaya_backend.service.ServicioUsuario;
 
@@ -9,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,5 +59,19 @@ public class ControladorUsuario {
                 );
 
         return ResponseEntity.ok(respuesta);
+    }
+
+    @PostMapping("/verificar-password")
+    public ResponseEntity<Map<String, String>>
+    verificarPassword(
+            @RequestBody Map<String, String> solicitud
+    ) {
+        servicioUsuario.verificarPasswordActual(
+                solicitud.get("passwordActual")
+        );
+
+        return ResponseEntity.ok(
+                Map.of("mensaje", "Contraseña verificada correctamente.")
+        );
     }
 }

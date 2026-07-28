@@ -1,71 +1,40 @@
-const URL_API =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:8080/api";
+const URL_API = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
-export async function peticionApi(
-  ruta,
-  opciones = {},
-) {
-  const token =
-    localStorage.getItem("token");
+const URL_BASE_SERVIDOR = URL_API.replace(/\/api\/?$/, "");
 
-  const headers = new Headers(
-    opciones.headers || {},
-  );
+export async function peticionApi(ruta, opciones = {}) {
+  const token = localStorage.getItem("token");
 
-  const esFormData =
-    opciones.body instanceof FormData;
+  const headers = new Headers(opciones.headers || {});
 
-  if (
-    opciones.body &&
-    !esFormData &&
-    !headers.has("Content-Type")
-  ) {
-    headers.set(
-      "Content-Type",
-      "application/json",
-    );
+  const esFormData = opciones.body instanceof FormData;
+
+  if (opciones.body && !esFormData && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
   }
 
   if (token) {
-    headers.set(
-      "Authorization",
-      `Bearer ${token}`,
-    );
+    headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const respuesta = await fetch(
-    `${URL_API}${ruta}`,
-    {
-      ...opciones,
-      headers,
-    },
-  );
+  const respuesta = await fetch(`${URL_API}${ruta}`, {
+    ...opciones,
+    headers,
+  });
 
-  /*
-   * DELETE normalmente responde 204
-   * y no contiene JSON.
-   */
+
   if (respuesta.status === 204) {
     return null;
   }
 
-  const tipoContenido =
-    respuesta.headers.get(
-      "content-type",
-    ) || "";
+  const tipoContenido = respuesta.headers.get("content-type") || "";
 
   let datos = null;
 
-  if (
-    tipoContenido.includes(
-      "application/json",
-    )
-  ) {
+  if (tipoContenido.includes("application/json")) {
     datos = await respuesta.json();
   } else {
     const texto = await respuesta.text();
-
     datos = texto || null;
   }
 
@@ -73,29 +42,29 @@ export async function peticionApi(
     const mensaje =
       datos?.mensaje ||
       datos?.message ||
-      datos ||
+      (typeof datos === "string" ? datos : null) ||
       "Ocurrió un error en la solicitud.";
 
-    throw new Error(mensaje);
+    const error = new Error(mensaje);
+    error.status = respuesta.status;
+    throw error;
   }
 
   return datos;
 }
 
 export function resolverUrlArchivo(ruta) {
-  if (!ruta) {
-    return null;
-  }
+  if (!ruta) return null;
 
   if (
     ruta.startsWith("http://") ||
     ruta.startsWith("https://") ||
-    ruta.startsWith("blob:")
+    ruta.startsWith("blob:") ||
+    ruta.startsWith("data:")
   ) {
     return ruta;
   }
 
-  return `http://localhost:8080${
-    ruta.startsWith("/") ? "" : "/"
-  }${ruta}`;
+  const barraInicial = ruta.startsWith("/") ? "" : "/";
+  return `http://localhost:8080${barraInicial}${ruta}`;
 }

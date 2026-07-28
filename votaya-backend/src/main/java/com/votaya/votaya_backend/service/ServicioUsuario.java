@@ -3,6 +3,7 @@ package com.votaya.votaya_backend.service;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,7 @@ public class ServicioUsuario {
         private final ServicioUsuarioActual servicioUsuarioActual;
         private final ServicioAuditoria servicioAuditoria;
         private final ServicioArchivos servicioArchivos;
+        private final PasswordEncoder codificadorContrasena;
 
         @Transactional(readOnly = true)
         public UsuarioDTO.Respuesta obtenerPerfil() {
@@ -62,6 +64,20 @@ public class ServicioUsuario {
                         usuario.setFotoUrl(nuevaFotoUrl);
                 }
 
+                /*
+                 * Solo cambia la contraseña si el usuario
+                 * mandó una nueva contraseña no vacía.
+                 * La verificación de la contraseña actual
+                 * ya se hizo antes en un endpoint separado.
+                 */
+                if (solicitud.nuevaContrasena() != null
+                                && !solicitud.nuevaContrasena().isBlank()) {
+
+                        usuario.setPasswordHash(
+                                        codificadorContrasena.encode(
+                                                        solicitud.nuevaContrasena()));
+                }
+
                 Usuario usuarioGuardado = usuarioRepositorio.save(usuario);
 
                 servicioAuditoria.registrar(
@@ -72,6 +88,20 @@ public class ServicioUsuario {
                                 null);
 
                 return convertir(usuarioGuardado);
+        }
+
+        @Transactional(readOnly = true)
+        public void verificarPasswordActual(String passwordActual) {
+                Usuario usuario = servicioUsuarioActual.obtener();
+
+                if (passwordActual == null
+                                || !codificadorContrasena.matches(
+                                                passwordActual,
+                                                usuario.getPasswordHash())) {
+
+                        throw new ReglaNegocioExcepcion(
+                                        "La contraseña actual no es correcta.");
+                }
         }
 
         @Transactional(readOnly = true)
