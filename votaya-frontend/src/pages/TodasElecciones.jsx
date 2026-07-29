@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
+import PerfilUsuario from "./PerfilUsuario";
 
 import { peticionApi } from "../api/clienteApi";
 
 import "./TodasElecciones.css";
+import iconoFiltrar from "../assets/icons/filtrar.svg";
+
 
 const formateadorNumero = new Intl.NumberFormat("es-MX");
 
@@ -114,6 +117,8 @@ function TodasElecciones({ alCerrarSesion }) {
   const [filtroEstado, setFiltroEstado] = useState("TODAS");
 
   const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
+
+  const [vistaActiva, setVistaActiva] = useState("TODAS_ELECCIONES");
 
   const [cargando, setCargando] = useState(true);
 
@@ -266,12 +271,23 @@ function TodasElecciones({ alCerrarSesion }) {
     }
   }
 
+  function abrirPerfil() {
+    setVotacionDetalle(null);
+    setVistaActiva("PERFIL");
+    setMenuLateralAbierto(false);
+  }
+
+  function volverATodasElecciones() {
+    setVistaActiva("TODAS_ELECCIONES");
+    cargarDatos();
+  }
+
   if (cargando) {
     return (
       <div className="pantalla-todas-elecciones-carga">
         <div className="pantalla-todas-elecciones-carga__circulo" />
 
-        <p>Cargando todas las elecciones...</p>
+        <p>Cargando todas las votaciones...</p>
       </div>
     );
   }
@@ -298,166 +314,185 @@ function TodasElecciones({ alCerrarSesion }) {
       <main className="contenido-todas-elecciones">
         <EncabezadoUsuario
           perfil={perfil}
-          titulo="TODAS LAS ELECCIONES."
+          titulo="TODAS LAS VOTACIONES"
           alAbrirMenu={() => setMenuLateralAbierto(true)}
+          alIrAPerfil={abrirPerfil}
+          alCerrarSesion={alCerrarSesion}
         />
 
-        {error && (
-          <div className="mensaje-todas-elecciones mensaje-todas-elecciones--error">
-            {error}
-          </div>
+        {vistaActiva === "PERFIL" && (
+          <PerfilUsuario
+            volver={volverATodasElecciones}
+            onActualizado={cargarDatos}
+          />
         )}
 
-        {mensaje && (
-          <div className="mensaje-todas-elecciones mensaje-todas-elecciones--correcto">
-            {mensaje}
-          </div>
-        )}
+        {vistaActiva === "TODAS_ELECCIONES" && (
+          <>
+            {error && (
+              <div className="mensaje-todas-elecciones mensaje-todas-elecciones--error">
+                {error}
+              </div>
+            )}
 
-        <section className="filtros-todas-elecciones">
-          <div className="filtros-todas-elecciones__icono">♢</div>
+            {mensaje && (
+              <div className="mensaje-todas-elecciones mensaje-todas-elecciones--correcto">
+                {mensaje}
+              </div>
+            )}
 
-          <div className="filtros-todas-elecciones__titulo">Filtrar por</div>
+            <section className="filtros-todas-elecciones">
+              <div className="filtros-todas-elecciones__icono">
+                 <img width="50%"  src={iconoFiltrar}></img>
+              </div>
 
-          <label className="buscador-todas-elecciones">
-            <span>⌕</span>
+              <div className="filtros-todas-elecciones__titulo">
+                Filtrar por
+              </div>
 
-            <input
-              type="search"
-              placeholder="Buscar elección"
-              value={busqueda}
-              onChange={(evento) => setBusqueda(evento.target.value)}
-            />
-          </label>
+              <label className="buscador-todas-elecciones">
+                <span>⌕</span>
 
-          <select
-            value={orden}
-            onChange={(evento) => setOrden(evento.target.value)}
-          >
-            <option value="MAS_VOTADAS">Más votada</option>
+                <input
+                  type="search"
+                  placeholder="Buscar elección"
+                  value={busqueda}
+                  onChange={(evento) => setBusqueda(evento.target.value)}
+                />
+              </label>
 
-            <option value="RECIENTES">Más reciente</option>
+              <select
+                value={orden}
+                onChange={(evento) => setOrden(evento.target.value)}
+              >
+                <option value="MAS_VOTADAS">Más votada</option>
 
-            <option value="CIERRAN_PRONTO">Cierran pronto</option>
-          </select>
+                <option value="RECIENTES">Más reciente</option>
 
-          <select
-            value={filtroEstado}
-            onChange={(evento) => setFiltroEstado(evento.target.value)}
-          >
-            <option value="TODAS">Estado</option>
+                <option value="CIERRAN_PRONTO">Cierran pronto</option>
+              </select>
 
-            <option value="ACTIVA">Activas</option>
+              <select
+                value={filtroEstado}
+                onChange={(evento) => setFiltroEstado(evento.target.value)}
+              >
+                <option value="TODAS">Estado</option>
 
-            <option value="PROGRAMADA">Programadas</option>
+                <option value="ACTIVA">Activas</option>
 
-            <option value="FINALIZADA">Finalizadas</option>
+                <option value="PROGRAMADA">Programadas</option>
 
-            <option value="BORRADOR">Borradores</option>
-          </select>
+                <option value="FINALIZADA">Finalizadas</option>
 
-          <button
-            type="button"
-            className="filtros-todas-elecciones__limpiar"
-            onClick={limpiarFiltros}
-          >
-            ↻ Limpiar filtros
-          </button>
+                <option value="BORRADOR">Borradores</option>
+              </select>
 
-          <span className="filtros-todas-elecciones__total">
-            {votacionesFiltradas.length}{" "}
-            {votacionesFiltradas.length === 1 ? "elección" : "elecciones"}
-          </span>
-        </section>
+              <button
+                type="button"
+                className="filtros-todas-elecciones__limpiar"
+                onClick={limpiarFiltros}
+              >
+                ↻ Limpiar filtros
+              </button>
 
-        <section className="panel-todas-elecciones">
-          <div className="contenedor-tabla-todas-elecciones">
-            <table className="tabla-todas-elecciones">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Fecha de publicación</th>
-                  <th>Fecha de cierre</th>
-                  <th>Total votaciones</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
+              <span className="filtros-todas-elecciones__total">
+                {votacionesFiltradas.length}{" "}
+                {votacionesFiltradas.length === 1 ? "elección" : "elecciones"}
+              </span>
+            </section>
 
-              <tbody>
-                {votacionesFiltradas.map((votacion) => {
-                  const eliminando =
-                    Number(idVotacionEliminando) ===
-                    Number(votacion.idVotacion);
-
-                  return (
-                    <tr key={votacion.idVotacion}>
-                      <td>{votacion.idVotacion}</td>
-
-                      <td>
-                        <div className="informacion-eleccion-admin">
-                          <strong>{votacion.titulo}</strong>
-
-                          <span>
-                            {obtenerCreador(votacion)}
-                            {" · "}
-                            {traducirEstado(votacion.estado)}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td>
-                        {formatearFecha(obtenerFechaPublicacion(votacion))}
-                      </td>
-
-                      <td>{formatearFechaCierre(votacion)}</td>
-
-                      <td>
-                        {formateadorNumero.format(obtenerTotalVotos(votacion))}
-                      </td>
-
-                      <td>
-                        <div className="acciones-eleccion-admin">
-                          <button
-                            type="button"
-                            className="acciones-eleccion-admin__detalle"
-                            onClick={() => abrirDetalle(votacion)}
-                          >
-                            Detalle
-                          </button>
-
-                          <button
-                            type="button"
-                            className="acciones-eleccion-admin__eliminar"
-                            disabled={eliminando}
-                            onClick={() => eliminarVotacion(votacion)}
-                          >
-                            {eliminando ? "Eliminando..." : "Eliminar"}
-                          </button>
-                        </div>
-                      </td>
+            <section className="panel-todas-elecciones">
+              <div className="contenedor-tabla-todas-elecciones">
+                <table className="tabla-todas-elecciones">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nombre</th>
+                      <th>Fecha de publicación</th>
+                      <th>Fecha de cierre</th>
+                      <th>Total votaciones</th>
+                      <th>Acciones</th>
                     </tr>
-                  );
-                })}
+                  </thead>
 
-                {votacionesFiltradas.length === 0 && (
-                  <tr>
-                    <td colSpan="6">
-                      <div className="tabla-todas-elecciones__vacia">
-                        <strong>No se encontraron elecciones</strong>
+                  <tbody>
+                    {votacionesFiltradas.map((votacion) => {
+                      const eliminando =
+                        Number(idVotacionEliminando) ===
+                        Number(votacion.idVotacion);
 
-                        <span>Cambia o limpia los filtros.</span>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                      return (
+                        <tr key={votacion.idVotacion}>
+                          <td>{votacion.idVotacion}</td>
+
+                          <td>
+                            <div className="informacion-eleccion-admin">
+                              <strong>{votacion.titulo}</strong>
+
+                              <span>
+                                {obtenerCreador(votacion)}
+                                {" · "}
+                                {traducirEstado(votacion.estado)}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td>
+                            {formatearFecha(obtenerFechaPublicacion(votacion))}
+                          </td>
+
+                          <td>{formatearFechaCierre(votacion)}</td>
+
+                          <td>
+                            {formateadorNumero.format(
+                              obtenerTotalVotos(votacion),
+                            )}
+                          </td>
+
+                          <td>
+                            <div className="acciones-eleccion-admin">
+                              <button
+                                type="button"
+                                className="acciones-eleccion-admin__detalle"
+                                onClick={() => abrirDetalle(votacion)}
+                              >
+                                Detalle
+                              </button>
+
+                              <button
+                                type="button"
+                                className="acciones-eleccion-admin__eliminar"
+                                disabled={eliminando}
+                                onClick={() => eliminarVotacion(votacion)}
+                              >
+                                {eliminando ? "Eliminando..." : "Eliminar"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {votacionesFiltradas.length === 0 && (
+                      <tr>
+                        <td colSpan="6">
+                          <div className="tabla-todas-elecciones__vacia">
+                            <strong>No se encontraron votaciones</strong>
+
+                            <span>Cambia o limpia los filtros.</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
-      {votacionDetalle && (
+      {vistaActiva === "TODAS_ELECCIONES" && votacionDetalle && (
         <div
           className="modal-detalle-eleccion"
           role="presentation"

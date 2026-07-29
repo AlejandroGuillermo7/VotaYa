@@ -1,4 +1,5 @@
 import { resolverUrlArchivo } from "../api/clienteApi";
+import iconoFiltrar from "../assets/icons/votaste.png";
 
 function combinarOpciones(votacion) {
   const resultados = votacion.resultados?.opciones || [];
@@ -144,7 +145,12 @@ function TarjetaVotacion({ votacion }) {
             className="tarjeta-votacion__portada"
           />
         ) : (
-          <span className="tarjeta-votacion__icono">🗳️</span>
+          <img
+            src={iconoFiltrar}
+            alt=""
+            className="tarjeta-votacion__portada"
+          />
+          
         )}
       </header>
 

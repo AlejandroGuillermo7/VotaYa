@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BarraLateral from "../Components/BarraLateral";
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
+import PerfilUsuario from "./PerfilUsuario";
+import iconoFiltrar from "../assets/icons/filtrar.svg";
+
 
 import { peticionApi } from "../api/clienteApi";
 
@@ -62,6 +65,8 @@ function Usuarios({ alCerrarSesion }) {
   const [filtroRol, setFiltroRol] = useState("TODOS");
 
   const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
+
+  const [vistaActiva, setVistaActiva] = useState("USUARIOS");
 
   const [cargando, setCargando] = useState(true);
 
@@ -194,6 +199,16 @@ function Usuarios({ alCerrarSesion }) {
     }
   }
 
+  function abrirPerfil() {
+    setVistaActiva("PERFIL");
+    setMenuLateralAbierto(false);
+  }
+
+  function volverAUsuarios() {
+    setVistaActiva("USUARIOS");
+    cargarDatos();
+  }
+
   if (cargando) {
     return (
       <div className="pantalla-usuarios-carga">
@@ -228,178 +243,185 @@ function Usuarios({ alCerrarSesion }) {
           perfil={perfil}
           titulo="USUARIOS."
           alAbrirMenu={() => setMenuLateralAbierto(true)}
+          alIrAPerfil={abrirPerfil}
+          alCerrarSesion={alCerrarSesion}
         />
 
-        {error && (
-          <div className="mensaje-usuarios mensaje-usuarios--error">
-            {error}
-          </div>
+        {vistaActiva === "PERFIL" && (
+          <PerfilUsuario volver={volverAUsuarios} onActualizado={cargarDatos} />
         )}
 
-        {mensaje && (
-          <div className="mensaje-usuarios mensaje-usuarios--correcto">
-            {mensaje}
-          </div>
-        )}
+        {vistaActiva === "USUARIOS" && (
+          <>
+            {error && (
+              <div className="mensaje-usuarios mensaje-usuarios--error">
+                {error}
+              </div>
+            )}
 
-        <section className="filtros-usuarios">
-          <div className="filtros-usuarios__icono">♢</div>
+            {mensaje && (
+              <div className="mensaje-usuarios mensaje-usuarios--correcto">
+                {mensaje}
+              </div>
+            )}
 
-          <div className="filtros-usuarios__titulo">Filtrar por</div>
+            <section className="filtros-usuarios">
+              <div className="filtros-usuarios__icono">
+                 <img width="50%"  src={iconoFiltrar}></img>
+              </div>
 
-          <label className="buscador-usuarios">
-            <span>⌕</span>
+              <div className="filtros-usuarios__titulo">Filtrar por</div>
 
-            <input
-              type="search"
-              placeholder="Buscar usuario"
-              value={busqueda}
-              onChange={(evento) => setBusqueda(evento.target.value)}
-            />
-          </label>
+              <label className="buscador-usuarios">
+                <span>⌕</span>
 
-          <select
-            value={filtroEdad}
-            onChange={(evento) => setFiltroEdad(evento.target.value)}
-          >
-            <option value="TODAS">Edad</option>
+                <input
+                  type="search"
+                  placeholder="Buscar usuario"
+                  value={busqueda}
+                  onChange={(evento) => setBusqueda(evento.target.value)}
+                />
+              </label>
 
-            <option value="MENORES_18">Menores de 18</option>
+              <select
+                value={filtroEdad}
+                onChange={(evento) => setFiltroEdad(evento.target.value)}
+              >
+                <option value="TODAS">Edad</option>
 
-            <option value="18_25">De 18 a 25</option>
+                <option value="MENORES_18">Menores de 18</option>
 
-            <option value="26_40">De 26 a 40</option>
+                <option value="18_25">De 18 a 25</option>
 
-            <option value="MAS_40">Más de 40</option>
-          </select>
+                <option value="26_40">De 26 a 40</option>
 
-          <select
-            value={filtroRol}
-            onChange={(evento) => setFiltroRol(evento.target.value)}
-          >
-            <option value="TODOS">Rol</option>
+                <option value="MAS_40">Más de 40</option>
+              </select>
 
-            <option value="USUARIO">Usuarios</option>
+              <select
+                value={filtroRol}
+                onChange={(evento) => setFiltroRol(evento.target.value)}
+              >
+                <option value="TODOS">Rol</option>
 
-            <option value="ADMINISTRADOR">Administradores</option>
-          </select>
+                <option value="USUARIO">Usuarios</option>
 
-          <button
-            type="button"
-            className="filtros-usuarios__limpiar"
-            onClick={limpiarFiltros}
-          >
-            ↻ Limpiar filtros
-          </button>
+                <option value="ADMINISTRADOR">Administradores</option>
+              </select>
 
-          <span className="filtros-usuarios__total">
-            {usuariosFiltrados.length}{" "}
-            {usuariosFiltrados.length === 1 ? "usuario" : "usuarios"}
-          </span>
-        </section>
+              <button
+                type="button"
+                className="filtros-usuarios__limpiar"
+                onClick={limpiarFiltros}
+              >
+                ↻ Limpiar filtros
+              </button>
 
-        <section className="panel-tabla-usuarios">
-          <div className="contenedor-tabla-usuarios">
-            <table className="tabla-usuarios">
-              <thead>
-                <tr>
-                  <th>ID</th>
+              <span className="filtros-usuarios__total">
+                {usuariosFiltrados.length}{" "}
+                {usuariosFiltrados.length === 1 ? "usuario" : "usuarios"}
+              </span>
+            </section>
 
-                  <th>Nombre</th>
+            <section className="panel-tabla-usuarios">
+              <div className="contenedor-tabla-usuarios">
+                <table className="tabla-usuarios">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
 
-                  <th>
-                    Apellido
-                    <br />
-                    paterno
-                  </th>
+                      <th>Nombre</th>
 
-                  <th>
-                    Apellido
-                    <br />
-                    materno
-                  </th>
+                      <th>
+                        Apellido
+                        <br />
+                        paterno
+                      </th>
 
-                  <th>Edad</th>
+                      <th>
+                        Apellido
+                        <br />
+                        materno
+                      </th>
 
-                  <th>Acciones</th>
-                </tr>
-              </thead>
+                      <th>Edad</th>
 
-              <tbody>
-                {usuariosFiltrados.map((usuario) => {
-                  const esUsuarioActual =
-                    Number(usuario.idUsuario) === Number(perfil?.idUsuario);
-
-                  const seEstaEliminando =
-                    Number(idUsuarioEliminando) === Number(usuario.idUsuario);
-
-                  return (
-                    <tr key={usuario.idUsuario}>
-                      <td>{usuario.idUsuario}</td>
-
-                      <td>
-                        <div className="usuario-tabla__nombre">
-                          <strong>{usuario.nombres}</strong>
-
-                          <span>
-                            {usuario.rol === "ADMINISTRADOR"
-                              ? "Administrador"
-                              : "Usuario"}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td>{usuario.apellidoPaterno || "—"}</td>
-
-                      <td>{usuario.apellidoMaterno || "—"}</td>
-
-                      <td>{calcularEdad(usuario.fechaNacimiento)}</td>
-
-                      <td>
-                        <div className="acciones-usuario">
-                          <button
-                            type="button"
-                            className="acciones-usuario__editar"
-                            disabled
-                            title="La edición se agregará después"
-                          >
-                            Editar
-                          </button>
-
-                          <button
-                            type="button"
-                            className="acciones-usuario__eliminar"
-                            disabled={esUsuarioActual || seEstaEliminando}
-                            onClick={() => eliminarUsuario(usuario)}
-                            title={
-                              esUsuarioActual
-                                ? "No puedes eliminar tu propia cuenta"
-                                : "Eliminar usuario"
-                            }
-                          >
-                            {seEstaEliminando ? "Eliminando..." : "Eliminar"}
-                          </button>
-                        </div>
-                      </td>
+                      <th>Acciones</th>
                     </tr>
-                  );
-                })}
+                  </thead>
 
-                {usuariosFiltrados.length === 0 && (
-                  <tr>
-                    <td colSpan="6">
-                      <div className="tabla-usuarios__vacia">
-                        <strong>No se encontraron usuarios</strong>
+                  <tbody>
+                    {usuariosFiltrados.map((usuario) => {
+                      const esUsuarioActual =
+                        Number(usuario.idUsuario) === Number(perfil?.idUsuario);
 
-                        <span>Cambia o limpia los filtros.</span>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                      const seEstaEliminando =
+                        Number(idUsuarioEliminando) ===
+                        Number(usuario.idUsuario);
+
+                      return (
+                        <tr key={usuario.idUsuario}>
+                          <td>{usuario.idUsuario}</td>
+
+                          <td>
+                            <div className="usuario-tabla__nombre">
+                              <strong>{usuario.nombres}</strong>
+
+                              <span>
+                                {usuario.rol === "ADMINISTRADOR"
+                                  ? "Administrador"
+                                  : "Usuario"}
+                              </span>
+                            </div>
+                          </td>
+
+                          <td>{usuario.apellidoPaterno || "—"}</td>
+
+                          <td>{usuario.apellidoMaterno || "—"}</td>
+
+                          <td>{calcularEdad(usuario.fechaNacimiento)}</td>
+
+                          <td>
+                            <div className="acciones-usuario">
+
+                              <button
+                                type="button"
+                                className="acciones-usuario__eliminar"
+                                disabled={esUsuarioActual || seEstaEliminando}
+                                onClick={() => eliminarUsuario(usuario)}
+                                title={
+                                  esUsuarioActual
+                                    ? "No puedes eliminar tu propia cuenta"
+                                    : "Eliminar usuario"
+                                }
+                              >
+                                {seEstaEliminando
+                                  ? "Eliminando..."
+                                  : "Eliminar"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {usuariosFiltrados.length === 0 && (
+                      <tr>
+                        <td colSpan="6">
+                          <div className="tabla-usuarios__vacia">
+                            <strong>No se encontraron usuarios</strong>
+
+                            <span>Cambia o limpia los filtros.</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );

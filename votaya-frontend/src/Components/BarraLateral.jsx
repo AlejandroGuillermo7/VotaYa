@@ -70,8 +70,6 @@ function BarraLateral({
 
         {esAdministrador && (
           <>
-
-
             <button
               type="button"
               className={obtenerClase("usuarios")}
@@ -85,7 +83,7 @@ function BarraLateral({
               className={obtenerClase("todas-las-elecciones")}
               onClick={() => navegar("/administrador/elecciones")}
             >
-              Todas las elecciones
+              Todas las votaciones
             </button>
           </>
         )}

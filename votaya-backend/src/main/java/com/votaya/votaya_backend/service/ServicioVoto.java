@@ -7,17 +7,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.votaya.votaya_backend.Excepciones.RecursoNoEncontradoExcepcion;
 import com.votaya.votaya_backend.Excepciones.ReglaNegocioExcepcion;
-import com.votaya.votaya_backend.Repository.InvitacionVotacionRepositorio;
 import com.votaya.votaya_backend.Repository.OpcionVotacionRepositorio;
 import com.votaya.votaya_backend.Repository.ParticipacionRepositorio;
 import com.votaya.votaya_backend.Repository.VotacionRepositorio;
 import com.votaya.votaya_backend.Repository.VotoOpcionRepositorio;
 import com.votaya.votaya_backend.Repository.VotoRepositorio;
 import com.votaya.votaya_backend.dto.VotoDTO;
-import com.votaya.votaya_backend.enumeraciones.EstadoInvitacion;
 import com.votaya.votaya_backend.enumeraciones.EstadoVotacion;
-import com.votaya.votaya_backend.enumeraciones.PrivacidadVotacion;
-import com.votaya.votaya_backend.enumeraciones.RolUsuario;
 import com.votaya.votaya_backend.enumeraciones.TipoSeleccion;
 import com.votaya.votaya_backend.enumeraciones.TipoVoto;
 import com.votaya.votaya_backend.model.OpcionVotacion;
@@ -29,9 +25,17 @@ import com.votaya.votaya_backend.model.VotoOpcion;
 import com.votaya.votaya_backend.model.VotoOpcionID;
 
 import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.time.*;
-import java.util.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
+import java.util.Base64;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +46,6 @@ public class ServicioVoto {
     private final ParticipacionRepositorio participacionRepositorio;
     private final VotoRepositorio votoRepositorio;
     private final VotoOpcionRepositorio votoOpcionRepositorio;
-    private final InvitacionVotacionRepositorio invitacionRepositorio;
     private final ServicioUsuarioActual servicioUsuarioActual;
     private final ServicioAuditoria servicioAuditoria;
 
@@ -51,23 +54,32 @@ public class ServicioVoto {
     @Transactional
     public VotoDTO.RespuestaEmision emitir(
             Long idVotacion,
-            VotoDTO.SolicitudEmitir solicitud) {
+            VotoDTO.SolicitudEmitir solicitud
+    ) {
         Usuario usuario = servicioUsuarioActual.obtener();
         Votacion votacion = buscarVotacion(idVotacion);
 
+        /*
+         * Para este proyecto de prueba, una elección pública o privada
+         * puede abrirse y votarse con el enlace. Solo se valida sesión,
+         * estado, fechas y edad mínima.
+         */
         validarPuedeVotar(votacion, usuario);
 
         if (participacionRepositorio
                 .existsByVotacionIdVotacionAndUsuarioIdUsuario(
                         idVotacion,
-                        usuario.getIdUsuario())) {
+                        usuario.getIdUsuario()
+                )) {
             throw new ReglaNegocioExcepcion(
-                    "Ya participaste en esta votación");
+                    "Ya participaste en esta votación"
+            );
         }
 
         List<OpcionVotacion> opciones = validarOpciones(
                 votacion,
-                solicitud.idsOpciones());
+                solicitud.idsOpciones()
+        );
 
         Participacion participacion = Participacion.builder()
                 .votacion(votacion)
@@ -80,21 +92,23 @@ public class ServicioVoto {
         String tokenCambioOriginal = null;
         String tokenCambioHash = null;
 
+        /*
+         * El token original se entrega una sola vez al frontend.
+         * En MySQL únicamente se guarda su SHA-256.
+         */
         if (votacion.getTipoVoto() == TipoVoto.ANONIMO
                 && votacion.getPermiteCambioVoto()) {
-
             tokenCambioOriginal = generarTokenSeguro();
             tokenCambioHash = calcularHash(tokenCambioOriginal);
         }
 
         Voto voto = Voto.builder()
                 .votacion(votacion)
-
                 .usuario(
                         votacion.getTipoVoto() == TipoVoto.ANONIMO
                                 ? null
-                                : usuario)
-
+                                : usuario
+                )
                 .folioPublico(UUID.randomUUID().toString())
                 .tokenCambioHash(tokenCambioHash)
                 .build();
@@ -104,25 +118,29 @@ public class ServicioVoto {
         guardarOpciones(
                 voto,
                 votacion,
-                opciones);
+                opciones
+        );
 
         servicioAuditoria.registrar(
                 usuario,
                 "EMITIR_VOTO",
                 "VOTACION",
                 idVotacion,
-                null);
+                null
+        );
 
         return new VotoDTO.RespuestaEmision(
                 "Voto registrado correctamente",
                 voto.getFolioPublico(),
-                tokenCambioOriginal);
+                tokenCambioOriginal
+        );
     }
 
     @Transactional
     public VotoDTO.RespuestaEmision cambiar(
             Long idVotacion,
-            VotoDTO.SolicitudCambiar solicitud) {
+            VotoDTO.SolicitudCambiar solicitud
+    ) {
         Usuario usuario = servicioUsuarioActual.obtener();
         Votacion votacion = buscarVotacion(idVotacion);
 
@@ -130,39 +148,50 @@ public class ServicioVoto {
 
         if (!votacion.getPermiteCambioVoto()) {
             throw new ReglaNegocioExcepcion(
-                    "Esta votación no permite cambiar el voto");
+                    "Esta votación no permite cambiar el voto"
+            );
+        }
+
+        /*
+         * La participación sí conserva id_usuario incluso cuando el voto
+         * es anónimo. Esto confirma que la cuenta realmente participó.
+         */
+        boolean participo = participacionRepositorio
+                .existsByVotacionIdVotacionAndUsuarioIdUsuario(
+                        idVotacion,
+                        usuario.getIdUsuario()
+                );
+
+        if (!participo) {
+            throw new ReglaNegocioExcepcion(
+                    "No has participado en esta votación"
+            );
         }
 
         List<OpcionVotacion> nuevasOpciones = validarOpciones(
                 votacion,
-                solicitud.idsOpciones());
+                solicitud.idsOpciones()
+        );
 
-        Voto voto;
-
-        if (votacion.getTipoVoto() == TipoVoto.IDENTIFICADO) {
-
-            voto = votoRepositorio
-                    .findByVotacionIdVotacionAndUsuarioIdUsuario(
-                            idVotacion,
-                            usuario.getIdUsuario())
-                    .orElseThrow();
-
-        } else {
-            if (solicitud.tokenCambio() == null
-                    || solicitud.tokenCambio().isBlank()) {
-                throw new ReglaNegocioExcepcion(
-                        "Debes enviar el token de cambio del voto anónimo");
-            }
-
-            String tokenHash = calcularHash(solicitud.tokenCambio());
-
-            voto = votoRepositorio
-                    .findByVotacionIdVotacionAndTokenCambioHash(
-                            idVotacion,
-                            tokenHash)
-                    .orElseThrow(() -> new ReglaNegocioExcepcion(
-                            "Token de cambio incorrecto"));
-        }
+        /*
+         * CORRECCIÓN PRINCIPAL:
+         *
+         * Ya no se decide cómo buscar el voto únicamente usando
+         * votacion.tipoVoto.
+         *
+         * 1. Primero se intenta encontrar un voto identificado
+         *    relacionado con la cuenta.
+         * 2. Si no existe, se trata como voto anónimo y se busca
+         *    mediante el hash del token de cambio.
+         *
+         * Así nunca se ejecuta un orElseThrow() vacío y los votos
+         * anónimos, cuyo id_usuario es NULL, sí pueden localizarse.
+         */
+        Voto voto = buscarVotoParaCambio(
+                idVotacion,
+                usuario,
+                solicitud.tokenCambio()
+        );
 
         votoOpcionRepositorio
                 .eliminarPorIdVoto(voto.getIdVoto());
@@ -170,30 +199,37 @@ public class ServicioVoto {
         guardarOpciones(
                 voto,
                 votacion,
-                nuevasOpciones);
+                nuevasOpciones
+        );
 
         servicioAuditoria.registrar(
                 usuario,
                 "CAMBIAR_VOTO",
                 "VOTACION",
                 idVotacion,
-                null);
+                null
+        );
 
         return new VotoDTO.RespuestaEmision(
                 "Voto actualizado correctamente",
                 voto.getFolioPublico(),
-                null);
+                null
+        );
     }
 
+    @Transactional(readOnly = true)
     public VotoDTO.RespuestaResultados obtenerResultados(
-            Long idVotacion) {
+            Long idVotacion
+    ) {
         Votacion votacion = buscarVotacion(idVotacion);
 
-        validarAccesoResultados(votacion);
+        /*
+         * Para la versión de prueba, los resultados se consultan
+         * mediante el enlace sin distinguir PUBLICA o PRIVADA.
+         */
 
         long totalVotantes = votoRepositorio
-                .countByVotacionIdVotacion(
-                        idVotacion);
+                .countByVotacionIdVotacion(idVotacion);
 
         long totalSelecciones = votoOpcionRepositorio
                 .countByIdVotacion(idVotacion);
@@ -202,25 +238,30 @@ public class ServicioVoto {
                 .obtenerResultados(idVotacion)
                 .stream()
                 .map(fila -> {
-                    Long idOpcion = ((Number) fila[0]).longValue();
+                    Long idOpcion =
+                            ((Number) fila[0]).longValue();
 
-                    String nombre = String.valueOf(fila[1]);
+                    String nombre =
+                            String.valueOf(fila[1]);
 
-                    long votos = ((Number) fila[2]).longValue();
+                    long votos =
+                            ((Number) fila[2]).longValue();
 
-                    double porcentaje = totalVotantes == 0
-                            ? 0
-                            : Math.round(
-                                    votos
-                                            * 10000.0
-                                            / totalVotantes)
-                                    / 100.0;
+                    double porcentaje =
+                            totalVotantes == 0
+                                    ? 0
+                                    : Math.round(
+                                            votos
+                                                    * 10000.0
+                                                    / totalVotantes
+                                    ) / 100.0;
 
                     return new VotoDTO.ResultadoOpcion(
                             idOpcion,
                             nombre,
                             votos,
-                            porcentaje);
+                            porcentaje
+                    );
                 })
                 .toList();
 
@@ -229,67 +270,103 @@ public class ServicioVoto {
                 votacion.getTitulo(),
                 totalVotantes,
                 totalSelecciones,
-                resultados);
+                resultados
+        );
     }
 
     @Transactional(readOnly = true)
-    public List<VotoDTO.RespuestaParticipacion> listarMisParticipaciones() {
+    public List<VotoDTO.RespuestaParticipacion>
+    listarMisParticipaciones() {
 
         Usuario usuario = servicioUsuarioActual.obtener();
 
         return participacionRepositorio
                 .findByUsuarioIdUsuarioOrderByFechaVotoDesc(
-                        usuario.getIdUsuario())
+                        usuario.getIdUsuario()
+                )
                 .stream()
-                .map(participacion -> new VotoDTO.RespuestaParticipacion(
-                        participacion.getIdParticipacion(),
-                        participacion.getVotacion()
-                                .getIdVotacion(),
-                        participacion.getVotacion()
-                                .getTitulo(),
-                        participacion.getVotacion()
-                                .getTipoVoto(),
-                        participacion.getFechaVoto()))
+                .map(participacion ->
+                        new VotoDTO.RespuestaParticipacion(
+                                participacion.getIdParticipacion(),
+                                participacion
+                                        .getVotacion()
+                                        .getIdVotacion(),
+                                participacion
+                                        .getVotacion()
+                                        .getTitulo(),
+                                participacion
+                                        .getVotacion()
+                                        .getTipoVoto(),
+                                participacion.getFechaVoto()
+                        )
+                )
                 .toList();
+    }
+
+    private Voto buscarVotoParaCambio(
+            Long idVotacion,
+            Usuario usuario,
+            String tokenCambio
+    ) {
+        Optional<Voto> votoIdentificado = votoRepositorio
+                .findByVotacionIdVotacionAndUsuarioIdUsuario(
+                        idVotacion,
+                        usuario.getIdUsuario()
+                );
+
+        if (votoIdentificado.isPresent()) {
+            return votoIdentificado.get();
+        }
+
+        /*
+         * Si no existe un voto ligado al usuario, entonces el voto
+         * fue almacenado como anónimo y tiene id_usuario = NULL.
+         */
+        if (tokenCambio == null || tokenCambio.isBlank()) {
+            throw new ReglaNegocioExcepcion(
+                    "Debes enviar el token de cambio del voto anónimo"
+            );
+        }
+
+        String tokenCambioHash =
+                calcularHash(tokenCambio.trim());
+
+        return votoRepositorio
+                .findByVotacionIdVotacionAndTokenCambioHash(
+                        idVotacion,
+                        tokenCambioHash
+                )
+                .orElseThrow(() ->
+                        new ReglaNegocioExcepcion(
+                                "El token de cambio del voto anónimo no es válido"
+                        )
+                );
     }
 
     private void validarPuedeVotar(
             Votacion votacion,
-            Usuario usuario) {
+            Usuario usuario
+    ) {
         validarActiva(votacion);
 
         if (votacion.getEdadMinima() != null) {
             int edad = Period.between(
                     usuario.getFechaNacimiento(),
-                    LocalDate.now()).getYears();
+                    LocalDate.now()
+            ).getYears();
 
             if (edad < votacion.getEdadMinima()) {
                 throw new AccessDeniedException(
-                        "No cumples con la edad mínima");
+                        "No cumples con la edad mínima"
+                );
             }
         }
 
-        if (votacion.getPrivacidad() == PrivacidadVotacion.PRIVADA) {
-
-            boolean invitado = invitacionRepositorio
-                    .existsByVotacionIdVotacionAndUsuarioIdUsuarioAndEstado(
-                            votacion.getIdVotacion(),
-                            usuario.getIdUsuario(),
-                            EstadoInvitacion.ACEPTADA);
-
-            boolean creador = votacion.getCreador()
-                    .getIdUsuario()
-                    .equals(usuario.getIdUsuario());
-
-            boolean administrador = usuario.getRol() == RolUsuario.ADMINISTRADOR;
-
-            if (!invitado
-                    && !creador
-                    && !administrador) {
-                throw new AccessDeniedException(
-                        "No tienes acceso a esta votación privada");
-            }
-        }
+        /*
+         * No se valida invitación:
+         * pública o privada, quien tenga el enlace y una sesión
+         * iniciada puede participar.
+         */
     }
 
     private void validarActiva(Votacion votacion) {
@@ -297,57 +374,75 @@ public class ServicioVoto {
 
         if (votacion.getEstado() == EstadoVotacion.BORRADOR) {
             throw new ReglaNegocioExcepcion(
-                    "La votación todavía es un borrador");
+                    "La votación todavía es un borrador"
+            );
         }
 
         if (votacion.getEstado() == EstadoVotacion.CANCELADA) {
             throw new ReglaNegocioExcepcion(
-                    "La votación fue cancelada");
+                    "La votación fue cancelada"
+            );
         }
 
         if (ahora.isBefore(votacion.getFechaInicio())) {
             throw new ReglaNegocioExcepcion(
-                    "La votación todavía no comienza");
+                    "La votación todavía no comienza"
+            );
         }
 
         if (ahora.isAfter(votacion.getFechaFin())) {
             throw new ReglaNegocioExcepcion(
-                    "La votación ya finalizó");
+                    "La votación ya finalizó"
+            );
         }
     }
 
     private List<OpcionVotacion> validarOpciones(
             Votacion votacion,
-            List<Long> idsOpciones) {
-        List<Long> idsSinRepetidos = idsOpciones.stream()
+            List<Long> idsOpciones
+    ) {
+        if (idsOpciones == null || idsOpciones.isEmpty()) {
+            throw new ReglaNegocioExcepcion(
+                    "Debes seleccionar al menos una opción"
+            );
+        }
+
+        List<Long> idsSinRepetidos = idsOpciones
+                .stream()
                 .distinct()
                 .toList();
 
         if (idsSinRepetidos.size() != idsOpciones.size()) {
             throw new ReglaNegocioExcepcion(
-                    "No puedes repetir opciones");
+                    "No puedes repetir opciones"
+            );
         }
 
         if (votacion.getTipoSeleccion() == TipoSeleccion.UNICA
                 && idsOpciones.size() != 1) {
             throw new ReglaNegocioExcepcion(
-                    "Solo puedes seleccionar una opción");
+                    "Solo puedes seleccionar una opción"
+            );
         }
 
         if (votacion.getTipoSeleccion() == TipoSeleccion.MULTIPLE
-                && idsOpciones.size() > votacion.getMaxSelecciones()) {
+                && idsOpciones.size()
+                > votacion.getMaxSelecciones()) {
             throw new ReglaNegocioExcepcion(
-                    "Superaste el máximo de selecciones");
+                    "Superaste el máximo de selecciones"
+            );
         }
 
         List<OpcionVotacion> opciones = opcionRepositorio
                 .findByIdOpcionInAndVotacionIdVotacion(
                         idsOpciones,
-                        votacion.getIdVotacion());
+                        votacion.getIdVotacion()
+                );
 
         if (opciones.size() != idsOpciones.size()) {
             throw new ReglaNegocioExcepcion(
-                    "Una o más opciones no pertenecen a la votación");
+                    "Una o más opciones no pertenecen a la votación"
+            );
         }
 
         return opciones;
@@ -356,52 +451,33 @@ public class ServicioVoto {
     private void guardarOpciones(
             Voto voto,
             Votacion votacion,
-            List<OpcionVotacion> opciones) {
+            List<OpcionVotacion> opciones
+    ) {
         for (OpcionVotacion opcion : opciones) {
             VotoOpcion votoOpcion = VotoOpcion.builder()
                     .id(
                             new VotoOpcionID(
                                     voto.getIdVoto(),
-                                    opcion.getIdOpcion()))
+                                    opcion.getIdOpcion()
+                            )
+                    )
                     .idVotacion(
-                            votacion.getIdVotacion())
+                            votacion.getIdVotacion()
+                    )
                     .build();
 
             votoOpcionRepositorio.save(votoOpcion);
         }
     }
 
-    private void validarAccesoResultados(
-            Votacion votacion) {
-        if (votacion.getPrivacidad() == PrivacidadVotacion.PUBLICA) {
-            return;
-        }
-
-        Usuario usuario = servicioUsuarioActual.obtener();
-
-        boolean invitado = invitacionRepositorio
-                .existsByVotacionIdVotacionAndUsuarioIdUsuarioAndEstado(
-                        votacion.getIdVotacion(),
-                        usuario.getIdUsuario(),
-                        EstadoInvitacion.ACEPTADA);
-
-        boolean creador = votacion.getCreador()
-                .getIdUsuario()
-                .equals(usuario.getIdUsuario());
-
-        boolean administrador = usuario.getRol() == RolUsuario.ADMINISTRADOR;
-
-        if (!invitado && !creador && !administrador) {
-            throw new AccessDeniedException(
-                    "No puedes consultar los resultados");
-        }
-    }
-
     private Votacion buscarVotacion(Long idVotacion) {
         return votacionRepositorio
                 .findById(idVotacion)
-                .orElseThrow(() -> new RecursoNoEncontradoExcepcion(
-                        "Votación no encontrada"));
+                .orElseThrow(() ->
+                        new RecursoNoEncontradoExcepcion(
+                                "Votación no encontrada"
+                        )
+                );
     }
 
     private String generarTokenSeguro() {
@@ -415,17 +491,20 @@ public class ServicioVoto {
 
     private String calcularHash(String token) {
         try {
-            MessageDigest resumen = MessageDigest.getInstance("SHA-256");
+            MessageDigest resumen =
+                    MessageDigest.getInstance("SHA-256");
 
             byte[] hash = resumen.digest(
-                    token.getBytes(StandardCharsets.UTF_8));
+                    token.getBytes(StandardCharsets.UTF_8)
+            );
 
             return HexFormat.of().formatHex(hash);
 
         } catch (NoSuchAlgorithmException excepcion) {
             throw new IllegalStateException(
                     "No fue posible generar el hash",
-                    excepcion);
+                    excepcion
+            );
         }
     }
 }

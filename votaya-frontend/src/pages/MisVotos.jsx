@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BarraLateral from "../Components/BarraLateral";
-import logovotar from "../assets/icons/votar.png";
+import logovotar from "../assets/icons/votaste.png";
 
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
+import PerfilUsuario from "./PerfilUsuario";
 
 import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
@@ -101,6 +102,8 @@ function MisVotos({ alCerrarSesion }) {
 
   const [menuLateralAbierto, setMenuLateralAbierto] = useState(false);
 
+  const [vistaActiva, setVistaActiva] = useState("MIS_VOTOS");
+
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
 
@@ -180,6 +183,16 @@ function MisVotos({ alCerrarSesion }) {
     });
   }, [votos, busqueda, tipoSeleccionado]);
 
+  function abrirPerfil() {
+    setVistaActiva("PERFIL");
+    setMenuLateralAbierto(false);
+  }
+
+  function volverAMisVotos() {
+    setVistaActiva("MIS_VOTOS");
+    cargarDatos();
+  }
+
   if (cargando) {
     return (
       <div className="pantalla-mis-votos-carga">
@@ -214,139 +227,153 @@ function MisVotos({ alCerrarSesion }) {
           perfil={perfil}
           titulo="MIS VOTOS."
           alAbrirMenu={() => setMenuLateralAbierto(true)}
+          alIrAPerfil={abrirPerfil}
+          alCerrarSesion={alCerrarSesion}
         />
 
-        {error && <div className="mensaje-mis-votos-error">{error}</div>}
+        {vistaActiva === "PERFIL" && (
+          <PerfilUsuario volver={volverAMisVotos} onActualizado={cargarDatos} />
+        )}
 
-        <section className="panel-mis-votos">
-          <div className="panel-mis-votos__superior">
-            <div>
-              <h2>Historial de votos.</h2>
+        {vistaActiva === "MIS_VOTOS" && (
+          <>
+            {error && <div className="mensaje-mis-votos-error">{error}</div>}
 
-              <p>
-                Has participado en <strong>{votos.length}</strong>{" "}
-                {votos.length === 1 ? "elección" : "elecciones"}.
-              </p>
-            </div>
+            <section className="panel-mis-votos">
+              <div className="panel-mis-votos__superior">
+                <div>
+                  <h2>Historial de votos.</h2>
 
-            <div className="panel-mis-votos__filtros">
-              <label className="buscador-mis-votos">
-                <span>⌕</span>
+                  <p>
+                    Has participado en <strong>{votos.length}</strong>{" "}
+                    {votos.length === 1 ? "elección" : "elecciones"}.
+                  </p>
+                </div>
 
-                <input
-                  type="search"
-                  placeholder="Buscar elección"
-                  value={busqueda}
-                  onChange={(evento) => setBusqueda(evento.target.value)}
-                />
-              </label>
+                <div className="panel-mis-votos__filtros">
+                  <label className="buscador-mis-votos">
+                    <span>⌕</span>
 
-              <select
-                className="selector-tipo-voto"
-                value={tipoSeleccionado}
-                onChange={(evento) => setTipoSeleccionado(evento.target.value)}
-              >
-                <option value="TODOS">Todos</option>
+                    <input
+                      type="search"
+                      placeholder="Buscar elección"
+                      value={busqueda}
+                      onChange={(evento) => setBusqueda(evento.target.value)}
+                    />
+                  </label>
 
-                <option value="ANONIMO">Anónimos</option>
+                  <select
+                    className="selector-tipo-voto"
+                    value={tipoSeleccionado}
+                    onChange={(evento) =>
+                      setTipoSeleccionado(evento.target.value)
+                    }
+                  >
+                    <option value="TODOS">Todos</option>
 
-                <option value="IDENTIFICADO">Identificados</option>
-              </select>
-            </div>
-          </div>
+                    <option value="ANONIMO">Anónimos</option>
 
-          <div className="contenedor-tabla-mis-votos">
-            <table className="tabla-mis-votos">
-              <thead>
-                <tr>
-                  <th>Elección</th>
-                  <th>Fecha del voto</th>
-                  <th>Tipo de voto</th>
-                  <th>Estado</th>
-                  <th>Privacidad</th>
-                </tr>
-              </thead>
+                    <option value="IDENTIFICADO">Identificados</option>
+                  </select>
+                </div>
+              </div>
 
-              <tbody>
-                {votosFiltrados.map((voto) => {
-                  const imagen = obtenerImagenVotacion(voto);
-
-                  return (
-                    <tr key={voto.idParticipacion || voto.idVotacion}>
-                      <td>
-                        <div className="informacion-voto">
-                          {imagen ? (
-                            <img
-                              src={imagen}
-                              alt=""
-                              className="informacion-voto__imagen"
-                            />
-                          ) : (
-                            <img
-                              src={logovotar}
-                              alt=""
-                              className="informacion-voto__imagen"
-                            />
-                          )}
-
-                          <div className="informacion-voto__texto">
-                            <strong>{voto.titulo || "Elección"}</strong>
-
-                            <span>{obtenerNombreCategoria(voto)}</span>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td>{formatearFecha(voto.fechaVoto)}</td>
-
-                      <td>
-                        <span
-                          className={[
-                            "etiqueta-tipo-voto",
-                            voto.tipoVoto === "ANONIMO"
-                              ? "etiqueta-tipo-voto--anonimo"
-                              : "etiqueta-tipo-voto--identificado",
-                          ].join(" ")}
-                        >
-                          {traducirTipoVoto(voto.tipoVoto)}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span
-                          className={[
-                            "estado-votacion",
-                            `estado-votacion--${(
-                              voto.estado || "activa"
-                            ).toLowerCase()}`,
-                          ].join(" ")}
-                        >
-                          {traducirEstado(voto.estado)}
-                        </span>
-                      </td>
-
-                      <td>{traducirPrivacidad(voto.privacidad)}</td>
+              <div className="contenedor-tabla-mis-votos">
+                <table className="tabla-mis-votos">
+                  <thead>
+                    <tr>
+                      <th>Elección</th>
+                      <th>Fecha del voto</th>
+                      <th>Tipo de voto</th>
+                      <th>Estado</th>
+                      <th>Privacidad</th>
                     </tr>
-                  );
-                })}
+                  </thead>
 
-                {votosFiltrados.length === 0 && (
-                  <tr>
-                    <td colSpan="5">
-                      <div className="tabla-mis-votos__vacia">
-                        <span></span>
+                  <tbody>
+                    {votosFiltrados.map((voto) => {
+                      const imagen = obtenerImagenVotacion(voto);
 
-                        <strong>No se encontraron votos</strong>
+                      return (
+                        <tr key={voto.idParticipacion || voto.idVotacion}>
+                          <td>
+                            <div className="informacion-voto">
+                              {imagen ? (
+                                <img
+                                  src={imagen}
+                                  alt=""
+                                  className="informacion-voto__imagen"
+                                />
+                              ) : (
+                                <img
+                                  src={logovotar}
+                                  alt=""
+                                  className="informacion-voto__imagen"
+                                />
+                              )}
 
-                        <p>Las elecciones donde participes aparecerán aquí.</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                              <div className="informacion-voto__texto">
+                                <strong>{voto.titulo || "Elección"}</strong>
+
+                                <span>{obtenerNombreCategoria(voto)}</span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td>{formatearFecha(voto.fechaVoto)}</td>
+
+                          <td>
+                            <span
+                              className={[
+                                "etiqueta-tipo-voto",
+                                voto.tipoVoto === "ANONIMO"
+                                  ? "etiqueta-tipo-voto--anonimo"
+                                  : "etiqueta-tipo-voto--identificado",
+                              ].join(" ")}
+                            >
+                              {traducirTipoVoto(voto.tipoVoto)}
+                            </span>
+                          </td>
+
+                          <td>
+                            <span
+                              className={[
+                                "estado-votacion",
+                                `estado-votacion--${(
+                                  voto.estado || "activa"
+                                ).toLowerCase()}`,
+                              ].join(" ")}
+                            >
+                              {traducirEstado(voto.estado)}
+                            </span>
+                          </td>
+
+                          <td>{traducirPrivacidad(voto.privacidad)}</td>
+                        </tr>
+                      );
+                    })}
+
+                    {votosFiltrados.length === 0 && (
+                      <tr>
+                        <td colSpan="5">
+                          <div className="tabla-mis-votos__vacia">
+                            <span></span>
+
+                            <strong>No se encontraron votos</strong>
+
+                            <p>
+                              Las elecciones donde participes aparecerán aquí.
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        )}
       </main>
     </div>
   );

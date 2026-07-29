@@ -9,6 +9,7 @@ import Usuarios from "./pages/Usuarios";
 import TodasElecciones from "./pages/TodasElecciones";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
+import VotarVotacion from "./pages/VotarVotacion";
 
 import "./App.css";
 
@@ -34,16 +35,26 @@ function App() {
   }, []);
 
   function navegarA(nuevaRuta) {
-    window.history.pushState({}, "", nuevaRuta);
+    const url = new URL(nuevaRuta, window.location.origin);
 
-    setRuta(nuevaRuta);
+    window.history.pushState(
+      {},
+      "",
+      `${url.pathname}${url.search}${url.hash}`,
+    );
+
+    setRuta(url.pathname);
   }
 
   function iniciarSesion() {
     setSesionActiva(true);
 
-    window.history.replaceState({}, "", "/mis-elecciones");
+    if (window.location.pathname === "/votar") {
+      setRuta("/votar");
+      return;
+    }
 
+    window.history.replaceState({}, "", "/mis-elecciones");
     setRuta("/mis-elecciones");
   }
 
@@ -54,11 +65,14 @@ function App() {
     setPantalla("login");
 
     window.history.replaceState({}, "", "/");
-
     setRuta("/");
   }
 
   if (sesionActiva) {
+    if (ruta === "/votar") {
+      return <VotarVotacion />;
+    }
+
     if (ruta === "/administrador/usuarios") {
       return <Usuarios alCerrarSesion={cerrarSesion} />;
     }
@@ -66,7 +80,6 @@ function App() {
     if (ruta === "/administrador/elecciones") {
       return <TodasElecciones alCerrarSesion={cerrarSesion} />;
     }
-
 
     if (ruta === "/elecciones") {
       return (

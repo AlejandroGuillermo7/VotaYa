@@ -325,29 +325,9 @@ public class ServicioVotacion {
         }
 
         private void validarAccesoLectura(
-                        Votacion votacion) {
-                if (votacion.getPrivacidad() == PrivacidadVotacion.PUBLICA) {
-                        return;
-                }
-
-                Usuario usuario = servicioUsuarioActual.obtener();
-
-                if (puedeAdministrar(votacion, usuario)) {
-                        return;
-                }
-
-                boolean invitado = invitacionRepositorio
-                                .existsByVotacionIdVotacionAndUsuarioIdUsuarioAndEstado(
-                                                votacion.getIdVotacion(),
-                                                usuario.getIdUsuario(),
-                                                EstadoInvitacion.ACEPTADA);
-
-                if (!invitado) {
-                        throw new AccessDeniedException(
-                                        "No tienes acceso a esta votación privada");
-                }
-        }
-
+        Votacion votacion
+) {
+}
         private void validarPropietarioOAdministrador(
                         Votacion votacion,
                         Usuario usuario) {

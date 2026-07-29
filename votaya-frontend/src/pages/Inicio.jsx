@@ -345,7 +345,7 @@ function Inicio({ alCerrarSesion }) {
       );
     });
 
-    setMensaje("La elección fue quitada de tu pantalla.");
+    setMensaje("La votación fue quitada de tu pantalla.");
   }
 
   function editarVotacion(idVotacion) {
@@ -378,13 +378,23 @@ function Inicio({ alCerrarSesion }) {
       return;
     }
 
-    const enlace = `${window.location.origin}/elecciones?votacion=${idNumerico}`;
+    /*
+     * En producción toma el dominio configurado en .env:
+     * VITE_FRONTEND_URL=https://votaya.com.mx
+     *
+     * En desarrollo, si no existe esa variable, usa localhost.
+     */
+    const origenFrontend = String(
+      import.meta.env.VITE_FRONTEND_URL || window.location.origin,
+    ).replace(/\/+$/, "");
+
+    const enlace = `${origenFrontend}/votar?votacion=${idNumerico}`;
 
     try {
       await copiarTexto(enlace);
 
       setError("");
-      setMensaje("El link de la elección fue copiado.");
+      setMensaje("El link para votar fue copiado correctamente.");
     } catch (excepcion) {
       setMensaje("");
       setError(excepcion.message || "No se pudo copiar el link.");
@@ -484,7 +494,7 @@ function Inicio({ alCerrarSesion }) {
 
             <section className="seccion-elecciones">
               <div className="seccion-elecciones__superior">
-                <h2>Todas tus elecciones.</h2>
+                <h2>Todas tus votaciones.</h2>
 
                 <div className="seccion-elecciones__filtros">
                   <label className="campo-busqueda">

@@ -403,12 +403,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 .grafica-disponible-horizontal__pista {
   position: relative;
   width: 100%;
   height: 28px;
   overflow: hidden;
-  background: transparent;
+  background: #edf3ff;
   border-radius: 5px;
 }
 
@@ -463,9 +464,10 @@
   border: 0;
   cursor: pointer;
 }
+
 .grafica-opcion-horizontal:hover
   .grafica-disponible-horizontal__pista {
-  outline: none;
+  outline: 2px solid rgba(38, 117, 229, 0.2);
 }
 
 .grafica-opcion-horizontal:hover
@@ -823,4 +825,73 @@
     grid-template-columns: 1fr;
     padding-top: 18px;
   }
+}
+
+
+/* =========================================================
+   OPCIÓN SELECCIONADA — APARTADO ELECCIONES
+   No afecta Inicio ni Mis votaciones.
+========================================================= */
+
+.pagina-elecciones
+  .grafica-opcion--seleccionada
+  .grafica-disponible-vertical__barra {
+  background-color: #2675e5 !important;
+  box-shadow: 0 0 0 3px rgba(38, 117, 229, 0.18);
+  opacity: 1 !important;
+}
+
+.pagina-elecciones
+  .grafica-opcion-horizontal--seleccionada
+  .grafica-disponible-horizontal__pista {
+  background: #dce8fc;
+  box-shadow: 0 0 0 3px rgba(38, 117, 229, 0.14);
+}
+
+.pagina-elecciones
+  .grafica-opcion-horizontal--seleccionada
+  .grafica-disponible-horizontal__barra {
+  background-color: #2675e5 !important;
+  opacity: 1 !important;
+}
+
+.pagina-elecciones
+  .grafica-disponible-pastel__opcion--seleccionada {
+  color: #ffffff !important;
+  background-color: #2675e5 !important;
+  box-shadow: 0 0 0 3px rgba(38, 117, 229, 0.14);
+  opacity: 1 !important;
+}
+
+.pagina-elecciones
+  .grafica-disponible-pastel__opcion--seleccionada
+  span {
+  color: #ffffff !important;
+}
+
+.pagina-elecciones
+  .grafica-disponible-pastel__opcion--seleccionada:hover {
+  background-color: #1967d6 !important;
+}
+
+.pagina-elecciones
+  .grafica-opcion:disabled,
+.pagina-elecciones
+  .grafica-opcion-horizontal:disabled,
+.pagina-elecciones
+  .grafica-disponible-pastel__opcion:disabled {
+  opacity: 1;
+}
+
+.pagina-elecciones
+  .grafica-opcion:disabled:not(.grafica-opcion--seleccionada),
+.pagina-elecciones
+  .grafica-opcion-horizontal:disabled:not(
+    .grafica-opcion-horizontal--seleccionada
+  ),
+.pagina-elecciones
+  .grafica-disponible-pastel__opcion:disabled:not(
+    .grafica-disponible-pastel__opcion--seleccionada
+  ) {
+  opacity: 0.65;
 }
