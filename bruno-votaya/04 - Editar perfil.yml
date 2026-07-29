@@ -1,0 +1,33 @@
+info:
+  name: 04 - Editar perfil
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: https://votaya.com.mx/api/usuarios/perfil
+  body:
+    type: multipart-form
+    data:
+      - name: datos
+        type: text
+        value: |-
+          {
+            "nombres": "Usuario Actualizado",
+            "apellidoPaterno": "Prueba",
+            "apellidoMaterno": "Bruno",
+            "fechaNacimiento": "2000-05-15",
+            "correo": "usuario.bruno03@gmail.com",
+            "telefono": "+5219515852205",
+            "nuevaContrasena": null
+          }
+        contentType: application/json
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c3VhcmlvLmJydW5vMDJAZ21haWwuY29tIiwiaWRVc3VhcmlvIjo3LCJyb2wiOiJVU1VBUklPIiwiaWF0IjoxNzg1MzM1ODA3LCJleHAiOjE3ODU0MjIyMDd9.F1zRjq2ZkeG3Ru-JVJl53Yp-70cJBTCXRHNj6UqN6PoBaxFzXFrB9eoPglAqN6_pGr7Z220Ww4b9QNXBhTp-IA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

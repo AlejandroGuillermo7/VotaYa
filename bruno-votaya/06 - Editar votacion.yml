@@ -1,0 +1,61 @@
+info:
+  name: 06 - Editar votacion
+  type: http
+  seq: 8
+
+http:
+  method: PUT
+  url: https://votaya.com.mx/api/votaciones/5
+  body:
+    type: multipart-form
+    data:
+      - name: votacion
+        type: text
+        value: |-
+          {
+            "idCategoria": 1,
+            "titulo": "Votación actualizada desde Bruno",
+            "descripcion": "Esta votación fue editada desde la VPS.",
+            "imagenPortadaUrl": null,
+            "fechaInicio": "2026-07-29T09:30:00",
+            "fechaFin": "2026-08-15T20:00:00",
+            "estado": "ACTIVA",
+            "privacidad": "PUBLICA",
+            "tipoVoto": "IDENTIFICADO",
+            "tipoSeleccion": "MULTIPLE",
+            "maxSelecciones": 2,
+            "permiteCambioVoto": true,
+            "tipoGrafica": "BARRAS",
+            "edadMinima": 18,
+            "comentariosPermitidos": true,
+            "opciones": [
+              {
+                "idOpcion": 10,
+                "nombre": "Java actualizado",
+                "imagenUrl": null,
+                "ordenVisual": 1
+              },
+              {
+                "idOpcion": 11,
+                "nombre": "JavaScript actualizado",
+                "imagenUrl": null,
+                "ordenVisual": 2
+              },
+              {
+                "idOpcion": 12,
+                "nombre": "Python actualizado",
+                "imagenUrl": null,
+                "ordenVisual": 3
+              }
+            ]
+          }
+        contentType: application/json
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c3VhcmlvLmJydW5vMDJAZ21haWwuY29tIiwiaWRVc3VhcmlvIjo3LCJyb2wiOiJVU1VBUklPIiwiaWF0IjoxNzg1MzM1ODA3LCJleHAiOjE3ODU0MjIyMDd9.F1zRjq2ZkeG3Ru-JVJl53Yp-70cJBTCXRHNj6UqN6PoBaxFzXFrB9eoPglAqN6_pGr7Z220Ww4b9QNXBhTp-IA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

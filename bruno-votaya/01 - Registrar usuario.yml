@@ -1,0 +1,37 @@
+info:
+  name: "Nombre: 01 - Registrar usuario"
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/auth/registro
+  body:
+    type: multipart-form
+    data:
+      - name: datos
+        type: text
+        value: |-
+          {
+            "nombres": "Usuario",
+            "apellidoPaterno": "Prueba",
+            "apellidoMaterno": "Bruno",
+            "fechaNacimiento": "2000-05-15",
+            "correo": "usuario.bruno02@gmail.com",
+            "telefono": "+5219515852204",
+            "contrasena": "Password123",
+            "fotoUrl": null
+          }
+        contentType: application/json
+      - name: foto
+        type: file
+        value:
+          - D:\Alejandro\Descargas\son.jfif
+        contentType: Auto
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

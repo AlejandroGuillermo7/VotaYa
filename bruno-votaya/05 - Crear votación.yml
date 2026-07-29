@@ -1,0 +1,55 @@
+info:
+  name: 05 - Crear votación
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/votaciones
+  body:
+    type: multipart-form
+    data:
+      - name: votacion
+        type: text
+        value: |-
+          {
+            "idCategoria": 1,
+            "titulo": "¿Cuál lenguaje de programación prefieres?",
+            "descripcion": "Votación creada desde Bruno.",
+            "imagenPortadaUrl": null,
+            "fechaInicio": "2026-07-29T09:00:00",
+            "fechaFin": "2026-08-10T18:00:00",
+            "estado": "ACTIVA",
+            "privacidad": "PUBLICA",
+            "tipoVoto": "IDENTIFICADO",
+            "tipoSeleccion": "UNICA",
+            "maxSelecciones": 1,
+            "permiteCambioVoto": true,
+            "tipoGrafica": "BARRAS",
+            "edadMinima": null,
+            "comentariosPermitidos": true,
+            "opciones": [
+              {
+                "nombre": "Java",
+                "imagenUrl": null
+              },
+              {
+                "nombre": "JavaScript",
+                "imagenUrl": null
+              },
+              {
+                "nombre": "Python",
+                "imagenUrl": null
+              }
+            ]
+          }
+        contentType: application/json
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ1c3VhcmlvLmJydW5vMDJAZ21haWwuY29tIiwiaWRVc3VhcmlvIjo3LCJyb2wiOiJVU1VBUklPIiwiaWF0IjoxNzg1MzM1ODA3LCJleHAiOjE3ODU0MjIyMDd9.F1zRjq2ZkeG3Ru-JVJl53Yp-70cJBTCXRHNj6UqN6PoBaxFzXFrB9eoPglAqN6_pGr7Z220Ww4b9QNXBhTp-IA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
