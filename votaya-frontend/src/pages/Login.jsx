@@ -1,130 +1,345 @@
-import { useState } from "react";
-import Swal from "sweetalert2";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import iconLogo from "../assets/icons/icon-login.png";
 import iconEmail from "../assets/icons/icon-email.svg";
 import iconPassword from "../assets/icons/icon-password.svg";
+
+import { peticionApi } from "../api/clienteApi";
+
 import "./Login.css";
 
-function Login({alIniciarSesion, irARegistro, irARecuperar}) {
+function Login({
+  alIniciarSesion,
+  irARegistro,
+  irARecuperar,
+}) {
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
-  const [erroresCampos, setErroresCampos] = useState({});
-  const [cargando, setCargando] = useState(false);
+  const [erroresCampos, setErroresCampos] =
+    useState({});
+  const [cargando, setCargando] =
+    useState(false);
 
-  
-  function validarCampos() {
-    const formato = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    let nuevosErrores = {};
+  const contenedorGoogle = useRef(null);
 
-    if (correo.trim() === "") nuevosErrores.correo = true;
-    if (contraseña.trim() === "") nuevosErrores.contraseña = true;
+  useEffect(() => {
+    let temporizador;
+    let intentos = 0;
 
-    if (correo.trim() === "" || contraseña.trim() === "") {
-      setError("Complete todos los campos requeridos.");
-      setErroresCampos(nuevosErrores);
-      return false;
-    }
+    function cargarBotonGoogle() {
+      const clientId =
+        import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
-    if (!formato.test(correo)) {
-      setError("Ingresa un correo electrónico válido, ej: user@correo.com");
-      setErroresCampos({ correo: true });
-      return false;
-    }
+      if (!clientId) {
+        setError(
+          "No se configuró VITE_GOOGLE_CLIENT_ID."
+        );
+        return;
+      }
 
-    if (contraseña.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres.");
-      setErroresCampos({ contraseña: true });
-      return false;
-    }
+      if (
+        !window.google?.accounts?.id ||
+        !contenedorGoogle.current
+      ) {
+        intentos += 1;
 
-    setErroresCampos({});
-    return true;
-  }
+        if (intentos < 40) {
+          temporizador = setTimeout(
+            cargarBotonGoogle,
+            200
+          );
+        }
 
-async function enviar(e) {
-    e.preventDefault();
-    setError("");
+        return;
+      }
 
-    if (!validarCampos()) return;
-
-    setCargando(true);
-
-    try {
-      const respuesta = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          correo: correo,
-          contrasena: contraseña, 
-        }),
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: manejarRespuestaGoogle,
+        auto_select: false,
+        cancel_on_tap_outside: true,
       });
 
-      const data = await respuesta.json();
+      contenedorGoogle.current.innerHTML = "";
 
-      if (!respuesta.ok) {
-        throw new Error(data.mensaje || "Correo o contraseña incorrectos.");
+      window.google.accounts.id.renderButton(
+        contenedorGoogle.current,
+        {
+          type: "standard",
+          theme: "outline",
+          size: "large",
+          text: "continue_with",
+          shape: "rectangular",
+          logo_alignment: "left",
+          width: 316,
+          locale: "es",
+        }
+      );
+    }
+
+    cargarBotonGoogle();
+
+    return () => {
+      clearTimeout(temporizador);
+    };
+  }, []);
+
+  async function manejarRespuestaGoogle(
+    respuestaGoogle
+  ) {
+    if (!respuestaGoogle?.credential) {
+      setError(
+        "Google no devolvió una credencial válida."
+      );
+      return;
+    }
+
+    setCargando(true);
+    setError("");
+
+    try {
+      const datos = await peticionApi(
+        "/auth/google",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            credential:
+              respuestaGoogle.credential,
+          }),
+        }
+      );
+
+      if (!datos?.token) {
+        throw new Error(
+          "El servidor no devolvió el token de sesión."
+        );
       }
 
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-      }
+      localStorage.setItem(
+        "token",
+        datos.token
+      );
 
-      let usuarioCompleto = { ...data };
+      let usuarioCompleto = {
+        ...datos,
+      };
 
       try {
-        const resPerfil = await fetch("http://localhost:8080/api/usuarios/perfil", {
-          headers: { 
-            "Authorization": `Bearer ${data.token}` 
-          },
-        });
+        const perfil = await peticionApi(
+          "/usuarios/perfil"
+        );
 
-        if (resPerfil.ok) {
-          const perfilBD = await resPerfil.json();
-          usuarioCompleto = { ...data, ...perfilBD };
-        }
-      } catch (errPerfil) {
-        console.warn("No se pudo cargar la foto en el login, se usarán datos básicos:", errPerfil);
+        usuarioCompleto = {
+          ...datos,
+          ...perfil,
+        };
+      } catch (errorPerfil) {
+        console.warn(
+          "No se pudo cargar el perfil:",
+          errorPerfil
+        );
       }
 
-      if (alIniciarSesion) alIniciarSesion(usuarioCompleto);
-
-    } catch (err) {
-      setError(err.message || "Error al conectar con el servidor.");
+      if (alIniciarSesion) {
+        alIniciarSesion(
+          usuarioCompleto
+        );
+      }
+    } catch (excepcion) {
+      setError(
+        excepcion.message ||
+          "No se pudo iniciar sesión con Google."
+      );
     } finally {
       setCargando(false);
     }
   }
 
-  const limpiarError = (campo) => {
-    if (error) setError("");
-    if (erroresCampos[campo]) {
-      setErroresCampos((prev) => ({ ...prev, [campo]: false }));
+  function validarCampos() {
+    const formato =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const nuevosErrores = {};
+
+    if (correo.trim() === "") {
+      nuevosErrores.correo = true;
     }
-  };
+
+    if (contraseña.trim() === "") {
+      nuevosErrores.contraseña = true;
+    }
+
+    if (
+      correo.trim() === "" ||
+      contraseña.trim() === ""
+    ) {
+      setError(
+        "Complete todos los campos requeridos."
+      );
+
+      setErroresCampos(nuevosErrores);
+
+      return false;
+    }
+
+    if (!formato.test(correo)) {
+      setError(
+        "Ingresa un correo electrónico válido."
+      );
+
+      setErroresCampos({
+        correo: true,
+      });
+
+      return false;
+    }
+
+    if (contraseña.length < 8) {
+      setError(
+        "La contraseña debe tener al menos 8 caracteres."
+      );
+
+      setErroresCampos({
+        contraseña: true,
+      });
+
+      return false;
+    }
+
+    setErroresCampos({});
+
+    return true;
+  }
+
+  async function enviar(evento) {
+    evento.preventDefault();
+
+    setError("");
+
+    if (!validarCampos()) {
+      return;
+    }
+
+    setCargando(true);
+
+    try {
+      const datos = await peticionApi(
+        "/auth/login",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            correo,
+            contrasena: contraseña,
+          }),
+        }
+      );
+
+      if (datos.token) {
+        localStorage.setItem(
+          "token",
+          datos.token
+        );
+      }
+
+      let usuarioCompleto = {
+        ...datos,
+      };
+
+      try {
+        const perfil = await peticionApi(
+          "/usuarios/perfil"
+        );
+
+        usuarioCompleto = {
+          ...datos,
+          ...perfil,
+        };
+      } catch (errorPerfil) {
+        console.warn(
+          "No se pudo cargar el perfil:",
+          errorPerfil
+        );
+      }
+
+      if (alIniciarSesion) {
+        alIniciarSesion(
+          usuarioCompleto
+        );
+      }
+    } catch (excepcion) {
+      setError(
+        excepcion.message ||
+          "Error al conectar con el servidor."
+      );
+    } finally {
+      setCargando(false);
+    }
+  }
+
+  function limpiarError(campo) {
+    if (error) {
+      setError("");
+    }
+
+    if (erroresCampos[campo]) {
+      setErroresCampos(
+        (anteriores) => ({
+          ...anteriores,
+          [campo]: false,
+        })
+      );
+    }
+  }
 
   return (
     <div className="loginFondo">
       <div className="loginCard">
         <div className="loginIconoTop">
-          <img src={iconLogo} alt="Logo" className="loginIconoTopImg" />
+          <img
+            src={iconLogo}
+            alt="Logo de VotaYa"
+            className="loginIconoTopImg"
+          />
         </div>
-        <h2 className="LoginTitulo">Inicia sesión</h2>
+
+        <h2 className="LoginTitulo">
+          Inicia sesión
+        </h2>
 
         <form onSubmit={enviar}>
           <div className="loginCampo">
-            <label htmlFor="correo">Correo Electrónico</label>
-            <div className={`loginInputConIcono ${erroresCampos.correo ? "campo-error" : ""}`}>
-              <img src={iconEmail} alt="" className="loginIcono" />
+            <label htmlFor="correo">
+              Correo Electrónico
+            </label>
+
+            <div
+              className={`loginInputConIcono ${
+                erroresCampos.correo
+                  ? "campo-error"
+                  : ""
+              }`}
+            >
+              <img
+                src={iconEmail}
+                alt=""
+                className="loginIcono"
+              />
+
               <input
                 type="email"
                 id="correo"
                 value={correo}
                 placeholder="nombre@correo.com"
-                onChange={(e) => {
-                  setCorreo(e.target.value);
+                onChange={(evento) => {
+                  setCorreo(
+                    evento.target.value
+                  );
+
                   limpiarError("correo");
                 }}
               />
@@ -132,35 +347,82 @@ async function enviar(e) {
           </div>
 
           <div className="loginCampo">
-            <label htmlFor="contraseña">Contraseña</label>
-            <div className={`loginInputConIcono ${erroresCampos.contraseña ? "campo-error" : ""}`}>
-              <img src={iconPassword} alt="" className="loginIcono" />
+            <label htmlFor="contraseña">
+              Contraseña
+            </label>
+
+            <div
+              className={`loginInputConIcono ${
+                erroresCampos.contraseña
+                  ? "campo-error"
+                  : ""
+              }`}
+            >
+              <img
+                src={iconPassword}
+                alt=""
+                className="loginIcono"
+              />
+
               <input
                 type="password"
                 id="contraseña"
                 value={contraseña}
                 placeholder="********"
-                onChange={(e) => {
-                  setContraseña(e.target.value);
-                  limpiarError("contraseña");
+                onChange={(evento) => {
+                  setContraseña(
+                    evento.target.value
+                  );
+
+                  limpiarError(
+                    "contraseña"
+                  );
                 }}
               />
             </div>
           </div>
 
-          <p className="loginContraseña" onClick={irARecuperar}>
+          <p
+            className="loginContraseña"
+            onClick={irARecuperar}
+          >
             ¿Olvidaste tu contraseña?
           </p>
-          
-          {error && <p className="loginError">{error}</p>}
 
-          <button type="submit" className="loginBoton" disabled={cargando}>
-            {cargando ? "Entrando..." : "Entrar"}
+          {error && (
+            <p className="loginError">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="loginBoton"
+            disabled={cargando}
+          >
+            {cargando
+              ? "Entrando..."
+              : "Entrar"}
           </button>
 
+          <div className="loginSeparador">
+            <span>o</span>
+          </div>
+
+          <div
+            ref={contenedorGoogle}
+            className="loginGoogle"
+          />
+
           <div className="loginRegistrate">
-            <label>¿No tienes cuenta?</label>
-            <p className="registrate" onClick={irARegistro} style={{ cursor: "pointer" }}>
+            <label>
+              ¿No tienes cuenta?
+            </label>
+
+            <p
+              className="registrate"
+              onClick={irARegistro}
+            >
               Regístrate
             </p>
           </div>

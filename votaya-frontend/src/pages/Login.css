@@ -127,3 +127,38 @@ input::placeholder {
 .loginInputConIcono input {
   padding-left: 36px;
 }
+
+.loginSeparador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: #9aafc2;
+  font-size: 12px;
+}
+
+.loginSeparador::before,
+.loginSeparador::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #d6e0ea;
+}
+
+.loginGoogle {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.loginGoogle > div {
+  width: 100% !important;
+}
+
+.loginGoogle iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+}

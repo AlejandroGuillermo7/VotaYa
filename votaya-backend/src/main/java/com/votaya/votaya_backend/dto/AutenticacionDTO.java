@@ -12,45 +12,60 @@ import jakarta.validation.constraints.Size;
 
 public final class AutenticacionDTO {
 
-        private AutenticacionDTO() {
-        }
+    private AutenticacionDTO() {
+    }
 
-        public record SolicitudRegistro(
-                        @NotBlank 
-                        @Size(max = 100) 
-                        String 
-                        nombres,
+    public record SolicitudRegistro(
+            @NotBlank
+            @Size(max = 100)
+            String nombres,
 
-                        @NotBlank
-                        @Size(max = 80)
-                        String
-                        apellidoPaterno,
+            @NotBlank
+            @Size(max = 80)
+            String apellidoPaterno,
 
-                        @Size(max = 80)
-                        String 
-                        apellidoMaterno,
+            @Size(max = 80)
+            String apellidoMaterno,
 
-                        @NotNull @Past LocalDate fechaNacimiento,
+            @NotNull
+            @Past
+            LocalDate fechaNacimiento,
 
-                        @NotBlank @Email @Size(max = 150) String correo,
+            @NotBlank
+            @Email
+            @Size(max = 150)
+            String correo,
 
-                        @NotBlank @Size(min = 6, max = 72) String contrasena,
-                        
-                        String fotoUrl)
-        {
-        }
+            @NotBlank
+            @Size(min = 6, max = 72)
+            String contrasena,
 
-        public record SolicitudLogin(
-                        @NotBlank @Email String correo,
+            String fotoUrl
+    ) {
+    }
 
-                        @NotBlank String contrasena) {
-        }
+    public record SolicitudLogin(
+            @NotBlank
+            @Email
+            String correo,
 
-        public record Respuesta(
-                        Long idUsuario,
-                        String nombreCompleto,
-                        String correo,
-                        RolUsuario rol,
-                        String token) {
-        }
+            @NotBlank
+            String contrasena
+    ) {
+    }
+
+    public record SolicitudGoogle(
+            @NotBlank
+            String credential
+    ) {
+    }
+
+    public record Respuesta(
+            Long idUsuario,
+            String nombreCompleto,
+            String correo,
+            RolUsuario rol,
+            String token
+    ) {
+    }
 }
