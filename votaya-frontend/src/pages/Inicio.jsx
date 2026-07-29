@@ -9,10 +9,7 @@ import EditarVotacion from "./EditarVotacion";
 
 import logovotar from "../assets/icons/votar.png";
 
-import {
-  peticionApi,
-  resolverUrlArchivo,
-} from "../api/clienteApi";
+import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
 
 import "./Inicio.css";
 
@@ -127,26 +124,19 @@ function obtenerImagenEleccion(votacion) {
     return resolverUrlArchivo(votacion.imagenPortadaUrl);
   }
 
-  const opciones = Array.isArray(votacion?.opciones)
-    ? votacion.opciones
-    : [];
+  const opciones = Array.isArray(votacion?.opciones) ? votacion.opciones : [];
 
-  const primeraOpcionConImagen = opciones.find(
-    (opcion) => opcion.imagenUrl,
-  );
+  const primeraOpcionConImagen = opciones.find((opcion) => opcion.imagenUrl);
 
   return resolverUrlArchivo(primeraOpcionConImagen?.imagenUrl);
 }
 
 function obtenerOpcionesOrdenadas(votacion) {
-  const opciones = Array.isArray(votacion?.opciones)
-    ? votacion.opciones
-    : [];
+  const opciones = Array.isArray(votacion?.opciones) ? votacion.opciones : [];
 
   return [...opciones].sort(
     (primera, segunda) =>
-      Number(primera.ordenVisual ?? 0) -
-      Number(segunda.ordenVisual ?? 0),
+      Number(primera.ordenVisual ?? 0) - Number(segunda.ordenVisual ?? 0),
   );
 }
 
@@ -162,10 +152,7 @@ function obtenerVotacionesOcultas() {
 }
 
 function guardarVotacionesOcultas(ids) {
-  localStorage.setItem(
-    CLAVE_VOTACIONES_OCULTAS,
-    JSON.stringify(ids),
-  );
+  localStorage.setItem(CLAVE_VOTACIONES_OCULTAS, JSON.stringify(ids));
 }
 
 async function copiarTexto(texto) {
@@ -306,9 +293,7 @@ function Inicio({ alCerrarSesion }) {
   const eleccionesFiltradas = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
 
-    const listaElecciones = Array.isArray(misElecciones)
-      ? misElecciones
-      : [];
+    const listaElecciones = Array.isArray(misElecciones) ? misElecciones : [];
 
     return listaElecciones.filter((votacion) => {
       const contenidoBuscable = [
@@ -321,8 +306,7 @@ function Inicio({ alCerrarSesion }) {
         .join(" ")
         .toLowerCase();
 
-      const coincideTexto =
-        texto === "" || contenidoBuscable.includes(texto);
+      const coincideTexto = texto === "" || contenidoBuscable.includes(texto);
 
       if (!coincideTexto) {
         return false;
@@ -362,9 +346,7 @@ function Inicio({ alCerrarSesion }) {
     const idNumerico = Number(idVotacion);
     const idsOcultos = obtenerVotacionesOcultas();
 
-    guardarVotacionesOcultas([
-      ...new Set([...idsOcultos, idNumerico]),
-    ]);
+    guardarVotacionesOcultas([...new Set([...idsOcultos, idNumerico])]);
 
     setMisElecciones((eleccionesAnteriores) => {
       const lista = Array.isArray(eleccionesAnteriores)
@@ -372,8 +354,7 @@ function Inicio({ alCerrarSesion }) {
         : [];
 
       return lista.filter(
-        (votacion) =>
-          Number(obtenerIdVotacion(votacion)) !== idNumerico,
+        (votacion) => Number(obtenerIdVotacion(votacion)) !== idNumerico,
       );
     });
 
@@ -383,8 +364,7 @@ function Inicio({ alCerrarSesion }) {
         : [];
 
       return lista.filter(
-        (votacion) =>
-          Number(obtenerIdVotacion(votacion)) !== idNumerico,
+        (votacion) => Number(obtenerIdVotacion(votacion)) !== idNumerico,
       );
     });
 
@@ -411,9 +391,7 @@ function Inicio({ alCerrarSesion }) {
       setMensaje("");
       setIdDetalleCargando(Number(idVotacion));
 
-      const detalle = await peticionApi(
-        `/votaciones/${idVotacion}`,
-      );
+      const detalle = await peticionApi(`/votaciones/${idVotacion}`);
 
       setVotacionDetalle({
         ...votacion,
@@ -500,15 +478,10 @@ function Inicio({ alCerrarSesion }) {
 
         {error && <div className="mensaje mensaje--error">{error}</div>}
 
-        {mensaje && (
-          <div className="mensaje mensaje--correcto">{mensaje}</div>
-        )}
+        {mensaje && <div className="mensaje mensaje--correcto">{mensaje}</div>}
 
         {vistaActiva === "PERFIL" && (
-          <PerfilUsuario
-            volver={volverAlInicio}
-            onActualizado={cargarDatos}
-          />
+          <PerfilUsuario volver={volverAlInicio} onActualizado={cargarDatos} />
         )}
 
         {vistaActiva === "EDITAR" && (
@@ -536,9 +509,7 @@ function Inicio({ alCerrarSesion }) {
                 <div className="estado-vacio estado-vacio--grande">
                   <div>
                     <h2>No hay elecciones activas</h2>
-                    <p>
-                      Las votaciones activas aparecerán en esta sección.
-                    </p>
+                    <p>Las votaciones activas aparecerán en esta sección.</p>
                   </div>
                 </div>
               )}
@@ -556,9 +527,7 @@ function Inicio({ alCerrarSesion }) {
                       type="search"
                       placeholder="Buscar"
                       value={busqueda}
-                      onChange={(evento) =>
-                        setBusqueda(evento.target.value)
-                      }
+                      onChange={(evento) => setBusqueda(evento.target.value)}
                     />
                   </label>
 
@@ -606,8 +575,7 @@ function Inicio({ alCerrarSesion }) {
                                   alt=""
                                   className="informacion-eleccion__imagen"
                                   onError={(evento) => {
-                                    evento.currentTarget.style.display =
-                                      "none";
+                                    evento.currentTarget.style.display = "none";
                                   }}
                                 />
                               ) : (
@@ -744,9 +712,7 @@ function Inicio({ alCerrarSesion }) {
                   {traducirEstado(votacionDetalle.estado)}
                 </span>
 
-                <h2 id="titulo-detalle-votacion">
-                  {votacionDetalle.titulo}
-                </h2>
+                <h2 id="titulo-detalle-votacion">{votacionDetalle.titulo}</h2>
               </div>
             </div>
 
@@ -765,9 +731,7 @@ function Inicio({ alCerrarSesion }) {
 
               <div>
                 <span>Tipo de voto</span>
-                <strong>
-                  {traducirTipoVoto(votacionDetalle.tipoVoto)}
-                </strong>
+                <strong>{traducirTipoVoto(votacionDetalle.tipoVoto)}</strong>
               </div>
 
               <div>
@@ -797,9 +761,7 @@ function Inicio({ alCerrarSesion }) {
               <div>
                 <span>Total de votos</span>
                 <strong>
-                  {formateadorNumero.format(
-                    obtenerTotalVotos(votacionDetalle),
-                  )}
+                  {formateadorNumero.format(obtenerTotalVotos(votacionDetalle))}
                 </strong>
               </div>
 
