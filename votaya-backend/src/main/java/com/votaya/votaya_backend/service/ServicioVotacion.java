@@ -190,13 +190,12 @@ public class ServicioVotacion {
                 if (solicitud.opciones() != null
                                 && !solicitud.opciones().isEmpty()) {
 
-                        if (votoRepositorio
-                                        .countByVotacionIdVotacion(idVotacion) > 0) {
-                                throw new ReglaNegocioExcepcion(
-                                                "No puedes modificar las opciones porque la votación ya tiene votos");
-                        }
+                        long totalVotos =
+                                votoRepositorio
+                                        .countByVotacionIdVotacion(idVotacion);
 
-                        opcionRepositorio
+                        if (totalVotos == 0) {
+                                opcionRepositorio
                                         .deleteByVotacionIdVotacion(idVotacion);
 
                                 opcionRepositorio.flush();
@@ -205,7 +204,8 @@ public class ServicioVotacion {
                                         votacion,
                                         solicitud.opciones()
                                 );
-                }
+                        }
+                        }
 
                 servicioAuditoria.registrar(
                                 usuario,

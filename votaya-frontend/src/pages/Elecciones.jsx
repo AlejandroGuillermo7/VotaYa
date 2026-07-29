@@ -515,7 +515,26 @@ function TarjetaEleccionDisponible({
   );
 }
 
+const CLAVE_VOTACIONES_OCULTAS =
+  "votaya_votaciones_ocultas";
 
+function obtenerVotacionesOcultas() {
+  try {
+    const guardadas = localStorage.getItem(
+      CLAVE_VOTACIONES_OCULTAS
+    );
+
+    const ids = guardadas
+      ? JSON.parse(guardadas)
+      : [];
+
+    return Array.isArray(ids)
+      ? ids.map(Number)
+      : [];
+  } catch {
+    return [];
+  }
+}
 function Elecciones({ alCerrarSesion, alCrearVotacion }) {
   const [perfil, setPerfil] = useState(null);
 
@@ -555,8 +574,31 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
           peticionApi("/categorias"),
         ]);
 
-      const listaVotaciones = normalizarLista(respuestaVotaciones);
+      const listaVotacionesOriginal =
+  normalizarLista(respuestaVotaciones);
+  console.table(
+  listaVotacionesOriginal.map((votacion) => ({
+    id: votacion.idVotacion ?? votacion.id,
+    titulo: votacion.titulo,
+  }))
+);
 
+const idsOcultos =
+  obtenerVotacionesOcultas();
+
+const listaVotaciones =
+  listaVotacionesOriginal.filter(
+    (votacion) => {
+      const id =
+        votacion.idVotacion ??
+        votacion.id;
+
+      return !idsOcultos.includes(
+        Number(id)
+      );
+    }
+  );
+        
       const listaCategorias = normalizarLista(respuestaCategorias);
 
       let listaParticipaciones = [];

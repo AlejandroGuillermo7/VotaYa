@@ -98,6 +98,27 @@ function obtenerImagenEleccion(votacion) {
   return resolverUrlArchivo(primeraOpcionConImagen?.imagenUrl);
 }
 
+const CLAVE_VOTACIONES_OCULTAS = "votaya_votaciones_ocultas";
+
+function obtenerVotacionesOcultas() {
+  try {
+    const guardadas = localStorage.getItem(CLAVE_VOTACIONES_OCULTAS);
+
+    const ids = guardadas ? JSON.parse(guardadas) : [];
+
+    return Array.isArray(ids) ? ids.map(Number) : [];
+  } catch {
+    return [];
+  }
+}
+
+function guardarVotacionesOcultas(ids) {
+  localStorage.setItem(
+    CLAVE_VOTACIONES_OCULTAS,
+    JSON.stringify(ids),
+  );
+}
+
 function Inicio({ alCerrarSesion }) {
   const [idVotacionEditar, setIdVotacionEditar] = useState(null);
 
@@ -131,14 +152,33 @@ function Inicio({ alCerrarSesion }) {
         peticionApi("/votaciones/mias"),
       ]);
 
-      const elecciones = normalizarVotaciones(respuestaElecciones);
+      const elecciones =
+  normalizarVotaciones(respuestaElecciones);
 
-      setPerfil(datosPerfil);
-      setMisElecciones(elecciones);
+const idsOcultos =
+  obtenerVotacionesOcultas();
 
-      const eleccionesActivasPropias = elecciones
-        .filter((votacion) => votacion.estado === "ACTIVA")
-        .slice(0, 2);
+const eleccionesVisibles =
+  elecciones.filter((votacion) => {
+    const id =
+      votacion.idVotacion ??
+      votacion.id;
+
+    return !idsOcultos.includes(
+      Number(id)
+    );
+  });
+
+  setPerfil(datosPerfil);
+  setMisElecciones(eleccionesVisibles);
+
+  const eleccionesActivasPropias =
+    eleccionesVisibles
+      .filter(
+        (votacion) =>
+          votacion.estado === "ACTIVA"
+      )
+      .slice(0, 2);
 
       const destacadasConResultados = await Promise.all(
         eleccionesActivasPropias.map(async (votacion) => {
@@ -213,48 +253,75 @@ function Inicio({ alCerrarSesion }) {
     });
   }, [misElecciones, busqueda, periodo]);
 
-  async function eliminarVotacion(idVotacion) {
-    const confirmado = window.confirm(
-      "¿Seguro que deseas eliminar esta elección?",
-    );
+  function eliminarVotacion(idVotacion) {
+  const confirmado = window.confirm(
+    "¿Seguro que deseas quitar esta elección de tu pantalla?"
+  );
 
-    if (!confirmado) {
-      return;
-    }
-
-    try {
-      setError("");
-      setMensaje("");
-
-      await peticionApi(`/votaciones/${idVotacion}`, {
-        method: "DELETE",
-      });
-
-      setMisElecciones((eleccionesAnteriores) => {
-        const lista = Array.isArray(eleccionesAnteriores)
-          ? eleccionesAnteriores
-          : [];
-
-        return lista.filter(
-          (votacion) => Number(votacion.idVotacion) !== Number(idVotacion),
-        );
-      });
-
-      setVotacionesDestacadas((eleccionesAnteriores) => {
-        const lista = Array.isArray(eleccionesAnteriores)
-          ? eleccionesAnteriores
-          : [];
-
-        return lista.filter(
-          (votacion) => Number(votacion.idVotacion) !== Number(idVotacion),
-        );
-      });
-
-      setMensaje("La elección fue eliminada correctamente.");
-    } catch (excepcion) {
-      setError(excepcion.message);
-    }
+  if (!confirmado) {
+    return;
   }
+
+  setError("");
+  setMensaje("");
+
+  const idNumerico =
+    Number(idVotacion);
+
+  const idsOcultos =
+    obtenerVotacionesOcultas();
+
+  const nuevosIds = [
+    ...new Set([
+      ...idsOcultos,
+      idNumerico,
+    ]),
+  ];
+
+  guardarVotacionesOcultas(
+    nuevosIds
+  );
+
+  setMisElecciones(
+    (eleccionesAnteriores) => {
+      const lista = Array.isArray(
+        eleccionesAnteriores
+      )
+        ? eleccionesAnteriores
+        : [];
+
+      return lista.filter(
+        (votacion) =>
+          Number(
+            votacion.idVotacion ??
+              votacion.id
+          ) !== idNumerico
+      );
+    }
+  );
+
+  setVotacionesDestacadas(
+    (eleccionesAnteriores) => {
+      const lista = Array.isArray(
+        eleccionesAnteriores
+      )
+        ? eleccionesAnteriores
+        : [];
+
+      return lista.filter(
+        (votacion) =>
+          Number(
+            votacion.idVotacion ??
+              votacion.id
+          ) !== idNumerico
+      );
+    }
+  );
+
+  setMensaje(
+    "La elección fue quitada de tu pantalla."
+  );
+}
 
   function editarVotacion(idVotacion) {
     setIdVotacionEditar(idVotacion);
