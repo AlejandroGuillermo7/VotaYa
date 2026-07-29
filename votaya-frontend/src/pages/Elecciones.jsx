@@ -51,6 +51,17 @@ function obtenerClaveTokenCambio(idUsuario, idVotacion) {
   return `tokenCambioVoto_${idUsuario}_${idVotacion}`;
 }
 
+function extraerTokenCambio(respuesta) {
+  return (
+    respuesta?.tokenCambio ||
+    respuesta?.tokenCambioVoto ||
+    respuesta?.tokenCambioPlano ||
+    respuesta?.data?.tokenCambio ||
+    respuesta?.data?.tokenCambioVoto ||
+    null
+  );
+}
+
 function formatearVotos(cantidad) {
   const total = Number(cantidad || 0);
 
@@ -802,7 +813,6 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
   async function registrarVoto(votacion, opcion) {
     const idVotacion = Number(votacion.idVotacion);
-
     const idOpcion = Number(opcion.idOpcion);
 
     const tieneSeleccionLocal =
@@ -818,14 +828,37 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
     if (yaVoto && !votacion.permiteCambioVoto) {
       setMensaje("");
-
       setError("Ya participaste y esta elección no permite cambiar el voto.");
-
       return;
+    }
+
+    /*
+     * Los votos anónimos se modifican con un token secreto.
+     * Ese token solo existe en el navegador donde se emitió el voto.
+     * Se valida antes de cambiar visualmente la opción seleccionada.
+     */
+    let tokenCambioAnonimo = null;
+
+    if (yaVoto && votacion.tipoVoto === "ANONIMO") {
+      const claveToken = obtenerClaveTokenCambio(
+        perfil.idUsuario,
+        idVotacion,
+      );
+
+      tokenCambioAnonimo = localStorage.getItem(claveToken);
+
+      if (!tokenCambioAnonimo) {
+        setMensaje("");
+        setError(
+          "Este voto anónimo fue registrado en otro navegador, en otro dominio o antes de guardar el token. Por seguridad no puede cambiarse desde este dispositivo.",
+        );
+        return;
+      }
     }
 
     const opcionAnterior = opcionesSeleccionadas[idVotacion] ?? null;
 
+    /* Cambio visual inmediato mientras el servidor procesa la petición. */
     setOpcionesSeleccionadas((anteriores) => ({
       ...anteriores,
       [idVotacion]: idOpcion,
@@ -842,20 +875,7 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
       if (yaVoto) {
         if (votacion.tipoVoto === "ANONIMO") {
-          const claveToken = obtenerClaveTokenCambio(
-            perfil.idUsuario,
-            idVotacion,
-          );
-
-          const tokenCambio = localStorage.getItem(claveToken);
-
-          if (!tokenCambio) {
-            throw new Error(
-              "No se encontró el token necesario para cambiar este voto anónimo.",
-            );
-          }
-
-          cuerpo.tokenCambio = tokenCambio;
+          cuerpo.tokenCambio = tokenCambioAnonimo;
         }
 
         await peticionApi(`/votaciones/${idVotacion}/votos/mi-voto`, {
@@ -865,25 +885,43 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
         setMensaje(`Tu voto fue cambiado a "${opcion.nombre}".`);
       } else {
-        const respuesta = await peticionApi(`/votaciones/${idVotacion}/votos`, {
-          method: "POST",
-          body: JSON.stringify(cuerpo),
-        });
+        const respuesta = await peticionApi(
+          `/votaciones/${idVotacion}/votos`,
+          {
+            method: "POST",
+            body: JSON.stringify(cuerpo),
+          },
+        );
 
-        if (votacion.tipoVoto === "ANONIMO" && respuesta?.tokenCambio) {
-          const claveToken = obtenerClaveTokenCambio(
-            perfil.idUsuario,
-            idVotacion,
-          );
+        let tokenRecibido = null;
 
-          localStorage.setItem(claveToken, respuesta.tokenCambio);
+        if (
+          votacion.tipoVoto === "ANONIMO" &&
+          votacion.permiteCambioVoto
+        ) {
+          tokenRecibido = extraerTokenCambio(respuesta);
+
+          if (tokenRecibido) {
+            const claveToken = obtenerClaveTokenCambio(
+              perfil.idUsuario,
+              idVotacion,
+            );
+
+            localStorage.setItem(claveToken, tokenRecibido);
+          } else {
+            console.error(
+              "El backend no devolvió el token de cambio del voto anónimo:",
+              respuesta,
+            );
+          }
         }
 
         setParticipaciones((anteriores) => {
           const lista = Array.isArray(anteriores) ? anteriores : [];
 
           const yaExiste = lista.some(
-            (participacion) => Number(participacion.idVotacion) === idVotacion,
+            (participacion) =>
+              Number(participacion.idVotacion) === idVotacion,
           );
 
           if (yaExiste) {
@@ -899,9 +937,19 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
           ];
         });
 
-        setMensaje(
-          `Tu voto por "${opcion.nombre}" fue registrado correctamente.`,
-        );
+        if (
+          votacion.tipoVoto === "ANONIMO" &&
+          votacion.permiteCambioVoto &&
+          !tokenRecibido
+        ) {
+          setMensaje(
+            `Tu voto por "${opcion.nombre}" fue registrado, pero el servidor no devolvió el token necesario para cambiarlo después.`,
+          );
+        } else {
+          setMensaje(
+            `Tu voto por "${opcion.nombre}" fue registrado correctamente.`,
+          );
+        }
       }
 
       const claveOpcion = obtenerClaveOpcionSeleccionada(
@@ -913,6 +961,7 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
 
       await actualizarResultados(idVotacion);
     } catch (excepcion) {
+      /* Regresar a la opción anterior si la petición falla. */
       setOpcionesSeleccionadas((anteriores) => {
         const nuevasSelecciones = {
           ...anteriores,
