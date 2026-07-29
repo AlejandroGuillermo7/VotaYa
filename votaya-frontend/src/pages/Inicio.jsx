@@ -6,10 +6,14 @@ import TarjetaVotacion from "../Components/TarjetaVotacion";
 
 import PerfilUsuario from "./PerfilUsuario";
 import EditarVotacion from "./EditarVotacion";
+import DetalleVotacion from "./DetalleVotacion";
 
 import logovotar from "../assets/icons/votar.png";
 
-import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
+import {
+  peticionApi,
+  resolverUrlArchivo,
+} from "../api/clienteApi";
 
 import "./Inicio.css";
 
@@ -124,19 +128,26 @@ function obtenerImagenEleccion(votacion) {
     return resolverUrlArchivo(votacion.imagenPortadaUrl);
   }
 
-  const opciones = Array.isArray(votacion?.opciones) ? votacion.opciones : [];
+  const opciones = Array.isArray(votacion?.opciones)
+    ? votacion.opciones
+    : [];
 
-  const primeraOpcionConImagen = opciones.find((opcion) => opcion.imagenUrl);
+  const primeraOpcionConImagen = opciones.find(
+    (opcion) => opcion.imagenUrl,
+  );
 
   return resolverUrlArchivo(primeraOpcionConImagen?.imagenUrl);
 }
 
 function obtenerOpcionesOrdenadas(votacion) {
-  const opciones = Array.isArray(votacion?.opciones) ? votacion.opciones : [];
+  const opciones = Array.isArray(votacion?.opciones)
+    ? votacion.opciones
+    : [];
 
   return [...opciones].sort(
     (primera, segunda) =>
-      Number(primera.ordenVisual ?? 0) - Number(segunda.ordenVisual ?? 0),
+      Number(primera.ordenVisual ?? 0) -
+      Number(segunda.ordenVisual ?? 0),
   );
 }
 
@@ -152,7 +163,10 @@ function obtenerVotacionesOcultas() {
 }
 
 function guardarVotacionesOcultas(ids) {
-  localStorage.setItem(CLAVE_VOTACIONES_OCULTAS, JSON.stringify(ids));
+  localStorage.setItem(
+    CLAVE_VOTACIONES_OCULTAS,
+    JSON.stringify(ids),
+  );
 }
 
 async function copiarTexto(texto) {
@@ -183,12 +197,11 @@ async function copiarTexto(texto) {
 
 function Inicio({ alCerrarSesion }) {
   const [idVotacionEditar, setIdVotacionEditar] = useState(null);
-  const [idDetalleCargando, setIdDetalleCargando] = useState(null);
+  const [idVotacionDetalle, setIdVotacionDetalle] = useState(null);
 
   const [perfil, setPerfil] = useState(null);
   const [votacionesDestacadas, setVotacionesDestacadas] = useState([]);
   const [misElecciones, setMisElecciones] = useState([]);
-  const [votacionDetalle, setVotacionDetalle] = useState(null);
 
   const [busqueda, setBusqueda] = useState("");
   const [periodo, setPeriodo] = useState("TODAS");
@@ -267,33 +280,13 @@ function Inicio({ alCerrarSesion }) {
     cargarDatos();
   }, [cargarDatos]);
 
-  useEffect(() => {
-    if (!votacionDetalle) {
-      return undefined;
-    }
-
-    const overflowAnterior = document.body.style.overflow;
-
-    document.body.style.overflow = "hidden";
-
-    function cerrarConEscape(evento) {
-      if (evento.key === "Escape") {
-        setVotacionDetalle(null);
-      }
-    }
-
-    window.addEventListener("keydown", cerrarConEscape);
-
-    return () => {
-      document.body.style.overflow = overflowAnterior;
-      window.removeEventListener("keydown", cerrarConEscape);
-    };
-  }, [votacionDetalle]);
 
   const eleccionesFiltradas = useMemo(() => {
     const texto = busqueda.trim().toLowerCase();
 
-    const listaElecciones = Array.isArray(misElecciones) ? misElecciones : [];
+    const listaElecciones = Array.isArray(misElecciones)
+      ? misElecciones
+      : [];
 
     return listaElecciones.filter((votacion) => {
       const contenidoBuscable = [
@@ -306,7 +299,8 @@ function Inicio({ alCerrarSesion }) {
         .join(" ")
         .toLowerCase();
 
-      const coincideTexto = texto === "" || contenidoBuscable.includes(texto);
+      const coincideTexto =
+        texto === "" || contenidoBuscable.includes(texto);
 
       if (!coincideTexto) {
         return false;
@@ -346,7 +340,9 @@ function Inicio({ alCerrarSesion }) {
     const idNumerico = Number(idVotacion);
     const idsOcultos = obtenerVotacionesOcultas();
 
-    guardarVotacionesOcultas([...new Set([...idsOcultos, idNumerico])]);
+    guardarVotacionesOcultas([
+      ...new Set([...idsOcultos, idNumerico]),
+    ]);
 
     setMisElecciones((eleccionesAnteriores) => {
       const lista = Array.isArray(eleccionesAnteriores)
@@ -354,7 +350,8 @@ function Inicio({ alCerrarSesion }) {
         : [];
 
       return lista.filter(
-        (votacion) => Number(obtenerIdVotacion(votacion)) !== idNumerico,
+        (votacion) =>
+          Number(obtenerIdVotacion(votacion)) !== idNumerico,
       );
     });
 
@@ -364,7 +361,8 @@ function Inicio({ alCerrarSesion }) {
         : [];
 
       return lista.filter(
-        (votacion) => Number(obtenerIdVotacion(votacion)) !== idNumerico,
+        (votacion) =>
+          Number(obtenerIdVotacion(votacion)) !== idNumerico,
       );
     });
 
@@ -378,7 +376,7 @@ function Inicio({ alCerrarSesion }) {
     setMensaje("");
   }
 
-  async function abrirDetalle(votacion) {
+  function abrirDetalle(votacion) {
     const idVotacion = obtenerIdVotacion(votacion);
 
     if (!idVotacion) {
@@ -386,22 +384,10 @@ function Inicio({ alCerrarSesion }) {
       return;
     }
 
-    try {
-      setError("");
-      setMensaje("");
-      setIdDetalleCargando(Number(idVotacion));
-
-      const detalle = await peticionApi(`/votaciones/${idVotacion}`);
-
-      setVotacionDetalle({
-        ...votacion,
-        ...detalle,
-      });
-    } catch (excepcion) {
-      setError(excepcion.message);
-    } finally {
-      setIdDetalleCargando(null);
-    }
+    setIdVotacionDetalle(Number(idVotacion));
+    setVistaActiva("DETALLE");
+    setError("");
+    setMensaje("");
   }
 
   async function copiarLinkVotacion(idVotacion) {
@@ -426,13 +412,11 @@ function Inicio({ alCerrarSesion }) {
     }
   }
 
-  function cerrarDetalle() {
-    setVotacionDetalle(null);
-  }
 
   function volverAlInicio() {
     setVistaActiva("INICIO");
     setIdVotacionEditar(null);
+    setIdVotacionDetalle(null);
     setError("");
     setMensaje("");
     cargarDatos();
@@ -447,7 +431,6 @@ function Inicio({ alCerrarSesion }) {
     );
   }
 
-  const opcionesDetalle = obtenerOpcionesOrdenadas(votacionDetalle);
 
   return (
     <div className="pagina-inicio">
@@ -478,15 +461,27 @@ function Inicio({ alCerrarSesion }) {
 
         {error && <div className="mensaje mensaje--error">{error}</div>}
 
-        {mensaje && <div className="mensaje mensaje--correcto">{mensaje}</div>}
+        {mensaje && (
+          <div className="mensaje mensaje--correcto">{mensaje}</div>
+        )}
 
         {vistaActiva === "PERFIL" && (
-          <PerfilUsuario volver={volverAlInicio} onActualizado={cargarDatos} />
+          <PerfilUsuario
+            volver={volverAlInicio}
+            onActualizado={cargarDatos}
+          />
         )}
 
         {vistaActiva === "EDITAR" && (
           <EditarVotacion
             idVotacion={idVotacionEditar}
+            alVolver={volverAlInicio}
+          />
+        )}
+
+        {vistaActiva === "DETALLE" && (
+          <DetalleVotacion
+            idVotacion={idVotacionDetalle}
             alVolver={volverAlInicio}
           />
         )}
@@ -509,7 +504,9 @@ function Inicio({ alCerrarSesion }) {
                 <div className="estado-vacio estado-vacio--grande">
                   <div>
                     <h2>No hay elecciones activas</h2>
-                    <p>Las votaciones activas aparecerán en esta sección.</p>
+                    <p>
+                      Las votaciones activas aparecerán en esta sección.
+                    </p>
                   </div>
                 </div>
               )}
@@ -527,7 +524,9 @@ function Inicio({ alCerrarSesion }) {
                       type="search"
                       placeholder="Buscar"
                       value={busqueda}
-                      onChange={(evento) => setBusqueda(evento.target.value)}
+                      onChange={(evento) =>
+                        setBusqueda(evento.target.value)
+                      }
                     />
                   </label>
 
@@ -562,9 +561,6 @@ function Inicio({ alCerrarSesion }) {
                     {eleccionesFiltradas.map((votacion) => {
                       const imagen = obtenerImagenEleccion(votacion);
                       const idVotacion = obtenerIdVotacion(votacion);
-                      const cargandoDetalle =
-                        Number(idDetalleCargando) === Number(idVotacion);
-
                       return (
                         <tr key={idVotacion}>
                           <td data-label="Elección">
@@ -575,7 +571,8 @@ function Inicio({ alCerrarSesion }) {
                                   alt=""
                                   className="informacion-eleccion__imagen"
                                   onError={(evento) => {
-                                    evento.currentTarget.style.display = "none";
+                                    evento.currentTarget.style.display =
+                                      "none";
                                   }}
                                 />
                               ) : (
@@ -626,10 +623,9 @@ function Inicio({ alCerrarSesion }) {
                               <button
                                 type="button"
                                 className="boton-accion boton-accion--detalle"
-                                disabled={cargandoDetalle}
                                 onClick={() => abrirDetalle(votacion)}
                               >
-                                {cargandoDetalle ? "Cargando..." : "Detalle"}
+                                Detalle
                               </button>
 
                               <button
@@ -670,185 +666,6 @@ function Inicio({ alCerrarSesion }) {
         )}
       </main>
 
-      {votacionDetalle && (
-        <div
-          className="modal-detalle-votacion"
-          role="presentation"
-          onMouseDown={(evento) => {
-            if (evento.target === evento.currentTarget) {
-              cerrarDetalle();
-            }
-          }}
-        >
-          <section
-            className="modal-detalle-votacion__contenido"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="titulo-detalle-votacion"
-          >
-            <button
-              type="button"
-              className="modal-detalle-votacion__cerrar"
-              aria-label="Cerrar detalle"
-              onClick={cerrarDetalle}
-            >
-              ×
-            </button>
-
-            <div className="modal-detalle-votacion__encabezado">
-              {obtenerImagenEleccion(votacionDetalle) && (
-                <img
-                  src={obtenerImagenEleccion(votacionDetalle)}
-                  alt=""
-                  className="modal-detalle-votacion__portada"
-                  onError={(evento) => {
-                    evento.currentTarget.style.display = "none";
-                  }}
-                />
-              )}
-
-              <div>
-                <span className="modal-detalle-votacion__estado">
-                  {traducirEstado(votacionDetalle.estado)}
-                </span>
-
-                <h2 id="titulo-detalle-votacion">{votacionDetalle.titulo}</h2>
-              </div>
-            </div>
-
-            <p className="modal-detalle-votacion__descripcion">
-              {votacionDetalle.descripcion ||
-                "Esta elección no tiene descripción."}
-            </p>
-
-            <div className="modal-detalle-votacion__datos">
-              <div>
-                <span>Privacidad</span>
-                <strong>
-                  {traducirPrivacidad(votacionDetalle.privacidad)}
-                </strong>
-              </div>
-
-              <div>
-                <span>Tipo de voto</span>
-                <strong>{traducirTipoVoto(votacionDetalle.tipoVoto)}</strong>
-              </div>
-
-              <div>
-                <span>Selección</span>
-                <strong>
-                  {traducirTipoSeleccion(votacionDetalle.tipoSeleccion)}
-                </strong>
-              </div>
-
-              <div>
-                <span>Gráfica</span>
-                <strong>
-                  {traducirTipoGrafica(votacionDetalle.tipoGrafica)}
-                </strong>
-              </div>
-
-              <div>
-                <span>Fecha de inicio</span>
-                <strong>{formatearFecha(votacionDetalle.fechaInicio)}</strong>
-              </div>
-
-              <div>
-                <span>Fecha de cierre</span>
-                <strong>{formatearFecha(votacionDetalle.fechaFin)}</strong>
-              </div>
-
-              <div>
-                <span>Total de votos</span>
-                <strong>
-                  {formateadorNumero.format(obtenerTotalVotos(votacionDetalle))}
-                </strong>
-              </div>
-
-              <div>
-                <span>Edad mínima</span>
-                <strong>
-                  {votacionDetalle.edadMinima
-                    ? `${votacionDetalle.edadMinima} años`
-                    : "Sin límite"}
-                </strong>
-              </div>
-
-              <div>
-                <span>Cambio de voto</span>
-                <strong>
-                  {traducirBooleano(votacionDetalle.permiteCambioVoto)}
-                </strong>
-              </div>
-
-              <div>
-                <span>Comentarios</span>
-                <strong>
-                  {traducirBooleano(votacionDetalle.comentariosPermitidos)}
-                </strong>
-              </div>
-            </div>
-
-            <div className="modal-detalle-votacion__opciones">
-              <div className="modal-detalle-votacion__titulo-opciones">
-                <h3>Opciones disponibles</h3>
-                <span>{opcionesDetalle.length}</span>
-              </div>
-
-              {opcionesDetalle.length > 0 ? (
-                <div className="modal-detalle-votacion__lista-opciones">
-                  {opcionesDetalle.map((opcion, indice) => (
-                    <div
-                      key={opcion.idOpcion ?? opcion.id ?? indice}
-                      className="modal-detalle-votacion__opcion"
-                    >
-                      {opcion.imagenUrl ? (
-                        <img
-                          src={resolverUrlArchivo(opcion.imagenUrl)}
-                          alt=""
-                          onError={(evento) => {
-                            evento.currentTarget.style.display = "none";
-                          }}
-                        />
-                      ) : (
-                        <span className="modal-detalle-votacion__numero-opcion">
-                          {indice + 1}
-                        </span>
-                      )}
-
-                      <span>{opcion.nombre}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="modal-detalle-votacion__sin-opciones">
-                  No se encontraron opciones para esta elección.
-                </p>
-              )}
-            </div>
-
-            <div className="modal-detalle-votacion__acciones">
-              <button
-                type="button"
-                className="modal-detalle-votacion__boton modal-detalle-votacion__boton--secundario"
-                onClick={cerrarDetalle}
-              >
-                Cerrar
-              </button>
-
-              <button
-                type="button"
-                className="modal-detalle-votacion__boton modal-detalle-votacion__boton--principal"
-                onClick={() =>
-                  copiarLinkVotacion(obtenerIdVotacion(votacionDetalle))
-                }
-              >
-                Copiar link
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
     </div>
   );
 }
