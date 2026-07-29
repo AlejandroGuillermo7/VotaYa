@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import BarraLateral from "../Components/BarraLateral";
+import logovotar from "../assets/icons/votar.png";
+
 import EncabezadoUsuario from "../Components/EncabezadoUsuario";
 
 import { peticionApi, resolverUrlArchivo } from "../api/clienteApi";
@@ -114,10 +116,6 @@ function MisVotos({ alCerrarSesion }) {
 
       const participaciones = normalizarParticipaciones(respuestaVotos);
 
-      /*
-       * Consultamos los datos completos de cada
-       * elección en la que participó el usuario.
-       */
       const votosConDetalles = await Promise.all(
         participaciones.map(async (participacion) => {
           try {
@@ -140,18 +138,11 @@ function MisVotos({ alCerrarSesion }) {
               titulo: detalleVotacion.titulo || participacion.titulo,
             };
           } catch {
-            /*
-             * Si no se puede consultar el detalle,
-             * conservamos lo que regresó /votos/mios.
-             */
             return participacion;
           }
         }),
       );
 
-      /*
-       * Mostramos primero los votos más recientes.
-       */
       votosConDetalles.sort(
         (primero, segundo) =>
           new Date(segundo.fechaVoto).getTime() -
@@ -291,7 +282,11 @@ function MisVotos({ alCerrarSesion }) {
                               className="informacion-voto__imagen"
                             />
                           ) : (
-                            <div className="informacion-voto__icono">🗳️</div>
+                            <img
+                              src={logovotar}
+                              alt=""
+                              className="informacion-voto__imagen"
+                            />
                           )}
 
                           <div className="informacion-voto__texto">
@@ -339,7 +334,7 @@ function MisVotos({ alCerrarSesion }) {
                   <tr>
                     <td colSpan="5">
                       <div className="tabla-mis-votos__vacia">
-                        <span>🗳️</span>
+                        <span></span>
 
                         <strong>No se encontraron votos</strong>
 

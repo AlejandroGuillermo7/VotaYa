@@ -14,9 +14,6 @@
   margin-left: 190px;
   padding: 20px 28px 35px;
 }
-
-/* Mensaje de error */
-
 .mensaje-mis-votos-error {
   margin-top: 15px;
   padding: 12px 15px;
@@ -28,8 +25,6 @@
   border: 1px solid #ffd1d4;
   border-radius: 8px;
 }
-
-/* Panel principal */
 
 .panel-mis-votos {
   margin-top: 30px;
@@ -72,8 +67,6 @@
   gap: 14px;
 }
 
-/* Buscador */
-
 .buscador-mis-votos {
   display: flex;
   align-items: center;
@@ -109,8 +102,6 @@
   color: #9ba4b4;
 }
 
-/* Selector */
-
 .selector-tipo-voto {
   height: 34px;
   min-width: 125px;
@@ -124,8 +115,6 @@
   border-radius: 7px;
   outline: none;
 }
-
-/* Tabla */
 
 .contenedor-tabla-mis-votos {
   width: 100%;
@@ -166,8 +155,6 @@
 .tabla-mis-votos tbody tr:hover {
   background: #fafcff;
 }
-
-/* Información de la elección */
 
 .informacion-voto {
   display: flex;
@@ -223,8 +210,6 @@
   font-size: 8px;
 }
 
-/* Etiquetas */
-
 .etiqueta-tipo-voto,
 .estado-votacion {
   display: inline-flex;
@@ -239,43 +224,6 @@
 
   border-radius: 6px;
 }
-
-.etiqueta-tipo-voto--anonimo {
-  color: #5a4a8a;
-  background: #f1edff;
-}
-
-.etiqueta-tipo-voto--identificado {
-  color: #176b3b;
-  background: #e9faef;
-}
-
-.estado-votacion--activa {
-  color: #176b3b;
-  background: #e9faef;
-}
-
-.estado-votacion--programada {
-  color: #2464bd;
-  background: #edf4ff;
-}
-
-.estado-votacion--finalizada {
-  color: #626b78;
-  background: #eef1f5;
-}
-
-.estado-votacion--cancelada {
-  color: #9e1e25;
-  background: #fff0f1;
-}
-
-.estado-votacion--borrador {
-  color: #8a641d;
-  background: #fff6dd;
-}
-
-/* Tabla vacía */
 
 .tabla-mis-votos__vacia {
   display: grid;
@@ -304,8 +252,6 @@
   color: #8992a1;
   font-size: 10px;
 }
-
-/* Carga */
 
 .pantalla-mis-votos-carga {
   display: grid;
@@ -342,8 +288,6 @@
   display: none;
 }
 
-/* Tablet */
-
 @media (min-width: 681px) and (max-width: 950px) {
   .contenido-mis-votos {
     width: calc(100% - 165px);
@@ -357,7 +301,6 @@
   }
 }
 
-/* Teléfono */
 
 @media (max-width: 680px) {
   .pagina-mis-votos {
