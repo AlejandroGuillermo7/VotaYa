@@ -83,7 +83,7 @@ function GraficaVertical({
 }) {
   const mayorCantidad = Math.max(
     ...opciones.map((opcion) => opcion.totalVotos),
-    1,
+    0,
   );
 
   return (
@@ -93,9 +93,9 @@ function GraficaVertical({
           Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
         const altura =
-          opcion.totalVotos === 0
-            ? 55
-            : 65 + (opcion.totalVotos / mayorCantidad) * 80;
+          mayorCantidad === 0 || opcion.totalVotos <= 0
+            ? 0
+            : (opcion.totalVotos / mayorCantidad) * 145;
 
         return (
           <button
@@ -112,17 +112,19 @@ function GraficaVertical({
             onClick={() => alSeleccionar(opcion)}
             title={`Votar por ${opcion.nombre}`}
           >
-            <div
-              className={[
-                "grafica-disponible-vertical__barra",
-                estaSeleccionada
-                  ? "grafica-disponible-vertical__barra--seleccionada"
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" ")}
-              style={{ height: `${altura}px` }}
-            />
+            {opcion.totalVotos > 0 && (
+              <div
+                className={[
+                  "grafica-disponible-vertical__barra",
+                  estaSeleccionada
+                    ? "grafica-disponible-vertical__barra--seleccionada"
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                style={{ height: `${altura}px` }}
+              />
+            )}
 
             <span className="grafica-disponible-vertical__nombre">
               {opcion.nombre}
@@ -141,7 +143,7 @@ function GraficaHorizontal({
 }) {
   const mayorCantidad = Math.max(
     ...opciones.map((opcion) => opcion.totalVotos),
-    1,
+    0,
   );
 
   return (
@@ -151,9 +153,9 @@ function GraficaHorizontal({
           Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
         const anchura =
-          opcion.totalVotos === 0
+          mayorCantidad === 0 || opcion.totalVotos <= 0
             ? 0
-            : Math.max(7, (opcion.totalVotos / mayorCantidad) * 100);
+            : (opcion.totalVotos / mayorCantidad) * 100;
 
         const imagen = resolverUrlArchivo(opcion.imagenUrl);
 
@@ -178,20 +180,29 @@ function GraficaHorizontal({
               {opcion.nombre}
             </span>
 
-            <div className="grafica-disponible-horizontal__pista">
-              <div
-                className={[
-                  "grafica-disponible-horizontal__barra",
-                  estaSeleccionada
-                    ? "grafica-disponible-horizontal__barra--seleccionada"
-                    : "",
-                ]
-                  .filter(Boolean)
-                  .join(" ")}
-                style={{
-                  width: `${estaSeleccionada ? Math.max(anchura, 12) : anchura}%`,
-                }}
-              />
+            <div
+              className={[
+                "grafica-disponible-horizontal__pista",
+                opcion.totalVotos > 0
+                  ? "grafica-disponible-horizontal__pista--con-votos"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+            >
+              {opcion.totalVotos > 0 && (
+                <div
+                  className={[
+                    "grafica-disponible-horizontal__barra",
+                    estaSeleccionada
+                      ? "grafica-disponible-horizontal__barra--seleccionada"
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                  style={{ width: `${anchura}%` }}
+                />
+              )}
             </div>
 
             {imagen ? (
