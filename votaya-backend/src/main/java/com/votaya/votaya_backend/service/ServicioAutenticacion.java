@@ -41,6 +41,7 @@ public class ServicioAutenticacion {
     @Value("${google.client-id}")
     private String googleClientId;
 
+    
     @Transactional
     public AutenticacionDTO.Respuesta registrar(
             AutenticacionDTO.SolicitudRegistro solicitud
@@ -56,7 +57,9 @@ public class ServicioAutenticacion {
         }
 
         Usuario usuario = Usuario.builder()
-                .nombres(solicitud.nombres().trim())
+                .nombres(
+                        solicitud.nombres().trim()
+                )
                 .apellidoPaterno(
                         solicitud.apellidoPaterno().trim()
                 )
@@ -72,13 +75,15 @@ public class ServicioAutenticacion {
                                 solicitud.contrasena()
                         )
                 )
-                .fotoUrl(solicitud.fotoUrl())
+                .fotoUrl(
+                        solicitud.fotoUrl()
+                )
                 .rol(RolUsuario.USUARIO)
                 .estado(EstadoUsuario.ACTIVO)
                 .correoVerificado(false)
                 .build();
 
-        usuarioRepositorio.save(usuario);
+        usuarioRepositorio.saveAndFlush(usuario);
 
         servicioAuditoria.registrar(
                 usuario,
@@ -91,6 +96,7 @@ public class ServicioAutenticacion {
         return crearRespuesta(usuario);
     }
 
+    
     public AutenticacionDTO.Respuesta iniciarSesion(
             AutenticacionDTO.SolicitudLogin solicitud
     ) {
@@ -126,6 +132,8 @@ public class ServicioAutenticacion {
         return crearRespuesta(usuario);
     }
 
+    
+    
     @Transactional
     public AutenticacionDTO.Respuesta iniciarSesionGoogle(
             AutenticacionDTO.SolicitudGoogle solicitud
@@ -141,7 +149,7 @@ public class ServicioAutenticacion {
 
         if (correo == null) {
             throw new ReglaNegocioExcepcion(
-                    "Google no proporcionó un correo"
+                    "Google no proporcionó un correo electrónico"
             );
         }
 
@@ -151,22 +159,36 @@ public class ServicioAutenticacion {
                 datosGoogle.getEmailVerified()
         )) {
             throw new ReglaNegocioExcepcion(
-                    "El correo de Google no está verificado"
+                    "El correo proporcionado por Google no está verificado"
             );
         }
 
-        String correoFinal = correo;
-
         Usuario usuario = usuarioRepositorio
                 .findByCorreoIgnoreCase(correo)
-                .orElseGet(
-                        () -> crearUsuarioGoogle(
-                                datosGoogle,
-                                correoFinal
-                        )
-                );
+                .orElse(null);
+
+        boolean usuarioNuevo = false;
+
+        if (usuario == null) {
+            usuario = crearUsuarioGoogle(
+                    datosGoogle,
+                    correo
+            );
+
+            usuarioNuevo = true;
+        }
 
         validarUsuarioActivo(usuario);
+
+        if (usuarioNuevo) {
+            servicioAuditoria.registrar(
+                    usuario,
+                    "REGISTRAR_USUARIO_GOOGLE",
+                    "USUARIO",
+                    usuario.getIdUsuario(),
+                    null
+            );
+        }
 
         servicioAuditoria.registrar(
                 usuario,
@@ -179,6 +201,8 @@ public class ServicioAutenticacion {
         return crearRespuesta(usuario);
     }
 
+    
+    
     private GoogleIdToken.Payload validarTokenGoogle(
             String credential
     ) {
@@ -195,16 +219,18 @@ public class ServicioAutenticacion {
                             )
                             .build();
 
-            GoogleIdToken token =
-                    verificador.verify(credential);
+            GoogleIdToken tokenGoogle =
+                    verificador.verify(
+                            credential
+                    );
 
-            if (token == null) {
+            if (tokenGoogle == null) {
                 throw new ReglaNegocioExcepcion(
                         "La credencial de Google no es válida"
                 );
             }
 
-            return token.getPayload();
+            return tokenGoogle.getPayload();
 
         } catch (
                 GeneralSecurityException |
@@ -216,79 +242,111 @@ public class ServicioAutenticacion {
         }
     }
 
+
+
     private Usuario crearUsuarioGoogle(
-            GoogleIdToken.Payload datos,
+            GoogleIdToken.Payload datosGoogle,
             String correo
     ) {
-        String nombres = obtenerDato(
-                datos,
+        String nombres = obtenerDatoGoogle(
+                datosGoogle,
                 "given_name"
         );
 
-        String apellidos = obtenerDato(
-                datos,
+        String apellidos = obtenerDatoGoogle(
+                datosGoogle,
                 "family_name"
         );
 
-        String nombreCompleto = obtenerDato(
-                datos,
+        String nombreCompletoGoogle = obtenerDatoGoogle(
+                datosGoogle,
                 "name"
         );
 
-        String fotoUrl = obtenerDato(
-                datos,
+        String fotoGoogle = obtenerDatoGoogle(
+                datosGoogle,
                 "picture"
         );
 
-        if (nombres == null) {
+        if (nombres == null || nombres.isBlank()) {
             nombres = obtenerPrimerNombre(
-                    nombreCompleto
+                    nombreCompletoGoogle
             );
         }
 
-        if (nombres == null) {
+        if (nombres == null || nombres.isBlank()) {
             nombres = "Usuario";
         }
 
-        String apellidoPaterno =
-                obtenerApellidoPaterno(
-                        apellidos,
-                        nombreCompleto,
-                        nombres
-                );
+        String apellidoPaterno = "Google";
+        String apellidoMaterno = null;
 
-        String apellidoMaterno =
-                obtenerApellidoMaterno(
-                        apellidos
-                );
+        if (apellidos != null && !apellidos.isBlank()) {
+            String[] partesApellidos =
+                    apellidos.trim()
+                            .split("\\s+");
 
-        String contrasenaAleatoria =
-                UUID.randomUUID()
-                        + "-"
-                        + UUID.randomUUID();
+            apellidoPaterno =
+                    partesApellidos[0];
 
-        Usuario usuario = Usuario.builder()
+            if (partesApellidos.length > 1) {
+                apellidoMaterno =
+                        String.join(
+                                " ",
+                                java.util.Arrays.copyOfRange(
+                                        partesApellidos,
+                                        1,
+                                        partesApellidos.length
+                                )
+                        );
+            }
+        } else if (
+                nombreCompletoGoogle != null
+                && !nombreCompletoGoogle.isBlank()
+        ) {
+            String[] partesNombre =
+                    nombreCompletoGoogle.trim()
+                            .split("\\s+");
+
+            if (partesNombre.length > 1) {
+                apellidoPaterno =
+                        partesNombre[
+                                partesNombre.length - 1
+                        ];
+            }
+        }
+
+        String contrasenaAleatoria =UUID.randomUUID().toString();
+
+        Usuario usuarioNuevo = Usuario.builder()
                 .nombres(
-                        limitar(nombres, 100)
+                        limitarTexto(
+                                nombres,
+                                100,
+                                "Usuario"
+                        )
                 )
                 .apellidoPaterno(
-                        limitar(
+                        limitarTexto(
                                 apellidoPaterno,
-                                80
+                                80,
+                                "Google"
                         )
                 )
                 .apellidoMaterno(
-                        limitarOpcional(
+                        limitarTextoOpcional(
                                 apellidoMaterno,
                                 80
                         )
                 )
-                /*
-                 * Google no proporciona fecha de nacimiento
-                 * durante este inicio de sesión.
-                 */
+                
+                
                 .fechaNacimiento(
-                        LocalDate.of(2000, 1, 1)
+                        LocalDate.of(
+                                2000,
+                                1,
+                                1
+                        )
                 )
                 .correo(correo)
                 .passwordHash(
@@ -297,8 +355,8 @@ public class ServicioAutenticacion {
                         )
                 )
                 .fotoUrl(
-                        limitarOpcional(
-                                fotoUrl,
+                        limitarTextoOpcional(
+                                fotoGoogle,
                                 500
                         )
                 )
@@ -307,93 +365,45 @@ public class ServicioAutenticacion {
                 .correoVerificado(true)
                 .build();
 
-        usuarioRepositorio.save(usuario);
-
-        servicioAuditoria.registrar(
-                usuario,
-                "REGISTRAR_USUARIO_GOOGLE",
-                "USUARIO",
-                usuario.getIdUsuario(),
-                null
+        return usuarioRepositorio.saveAndFlush(
+                usuarioNuevo
         );
-
-        return usuario;
     }
 
-    private String obtenerDato(
+    private String obtenerDatoGoogle(
             GoogleIdToken.Payload datos,
             String clave
     ) {
         Object valor = datos.get(clave);
 
-        return valor == null
-                ? null
-                : limpiar(valor.toString());
+        if (valor == null) {
+            return null;
+        }
+
+        return limpiar(
+                valor.toString()
+        );
     }
 
     private String obtenerPrimerNombre(
             String nombreCompleto
     ) {
-        if (nombreCompleto == null) {
+        if (
+                nombreCompleto == null
+                || nombreCompleto.isBlank()
+        ) {
             return null;
         }
 
         String[] partes =
-                nombreCompleto.split("\\s+");
+                nombreCompleto.trim()
+                        .split("\\s+");
 
-        return partes.length == 0
-                ? null
-                : partes[0];
-    }
-
-    private String obtenerApellidoPaterno(
-            String apellidos,
-            String nombreCompleto,
-            String nombres
-    ) {
-        if (apellidos != null) {
-            String[] partes =
-                    apellidos.split("\\s+");
-
-            if (partes.length > 0) {
-                return partes[0];
-            }
-        }
-
-        if (nombreCompleto != null) {
-            String[] partes =
-                    nombreCompleto.split("\\s+");
-
-            if (partes.length > 1) {
-                return partes[partes.length - 1];
-            }
-        }
-
-        return "Google";
-    }
-
-    private String obtenerApellidoMaterno(
-            String apellidos
-    ) {
-        if (apellidos == null) {
+        if (partes.length == 0) {
             return null;
         }
 
-        String[] partes =
-                apellidos.split("\\s+");
-
-        if (partes.length < 2) {
-            return null;
-        }
-
-        return String.join(
-                " ",
-                java.util.Arrays.copyOfRange(
-                        partes,
-                        1,
-                        partes.length
-                )
-        );
+        return partes[0];
     }
 
     private void validarUsuarioActivo(
@@ -431,8 +441,7 @@ public class ServicioAutenticacion {
 
         if (
                 usuario.getApellidoMaterno() != null
-                && !usuario.getApellidoMaterno()
-                        .isBlank()
+                && !usuario.getApellidoMaterno().isBlank()
         ) {
             nombre +=
                     " "
@@ -442,38 +451,59 @@ public class ServicioAutenticacion {
         return nombre;
     }
 
-    private String limitar(
+    private String limitarTexto(
             String valor,
-            int maximo
+            int maximo,
+            String valorPredeterminado
     ) {
         String limpio =
                 valor == null || valor.isBlank()
-                        ? "Google"
+                        ? valorPredeterminado
                         : valor.trim();
 
-        return limpio.length() <= maximo
-                ? limpio
-                : limpio.substring(0, maximo);
+        if (limpio.length() <= maximo) {
+            return limpio;
+        }
+
+        return limpio.substring(
+                0,
+                maximo
+        );
     }
 
-    private String limitarOpcional(
+    private String limitarTextoOpcional(
             String valor,
             int maximo
     ) {
-        if (valor == null || valor.isBlank()) {
+        if (
+                valor == null
+                || valor.isBlank()
+        ) {
             return null;
         }
 
         String limpio = valor.trim();
 
-        return limpio.length() <= maximo
-                ? limpio
-                : limpio.substring(0, maximo);
+        if (limpio.length() <= maximo) {
+            return limpio;
+        }
+
+        return limpio.substring(
+                0,
+                maximo
+        );
     }
 
-    private String limpiar(String valor) {
-        return valor == null || valor.isBlank()
-                ? null
-                : valor.trim();
+    private String limpiar(
+            String valor
+    ) {
+        if (
+                valor == null
+                || valor.isBlank()
+        ) {
+            return null;
+        }
+
+        return valor.trim();
     }
 }
