@@ -1,110 +1,162 @@
 import { useState } from "react";
+
 import iconLogo from "../assets/icons/icon-login.png";
 import iconEmail from "../assets/icons/icon-email.svg";
 import iconPassword from "../assets/icons/icon-password.svg";
+
+import { peticionApi } from "../api/clienteApi";
+
 import "./ResetPassword.css";
 
 function ResetPassword({ irALogin }) {
-  const [paso, setPaso] = useState("solicitar");
+  const [paso, setPaso] =
+    useState("solicitar");
 
-  const [correo, setCorreo] = useState("");
-  const [token, setToken] = useState("");
-  const [nuevaContrasena, setNuevaContrasena] = useState("");
+  const [correo, setCorreo] =
+    useState("");
 
-  const [mensajeExito, setMensajeExito] = useState("");
-  const [error, setError] = useState("");
-  const [errorPasswordInput, setErrorPasswordInput] = useState("");
-  const [cargando, setCargando] = useState(false);
+  const [codigo, setCodigo] =
+    useState("");
 
-  const validarContrasenaRealTime = (val) => {
-    setNuevaContrasena(val);
-    if (!val) {
-      setErrorPasswordInput("La contraseña es requerida.");
-    } else if (val.length < 8) {
-      setErrorPasswordInput("Debe tener mínimo 8 caracteres.");
-    } else {
-      setErrorPasswordInput("");
-    }
-  };
+  const [
+    nuevaContrasena,
+    setNuevaContrasena,
+  ] = useState("");
 
-  async function manejarSolicitud(e) {
-    e.preventDefault();
+  const [
+    confirmarContrasena,
+    setConfirmarContrasena,
+  ] = useState("");
+
+  const [mensajeExito, setMensajeExito] =
+    useState("");
+
+  const [error, setError] =
+    useState("");
+
+  const [cargando, setCargando] =
+    useState(false);
+
+  async function manejarSolicitud(evento) {
+    evento.preventDefault();
+
     setError("");
     setMensajeExito("");
 
     if (!correo.trim()) {
-      setError("Ingresa tu correo electrónico.");
+      setError(
+        "Ingresa tu correo electrónico."
+      );
       return;
     }
 
     setCargando(true);
 
     try {
-      const respuesta = await fetch("http://localhost:8080/api/recuperacion/solicitar", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo }),
-      });
+      const respuesta = await peticionApi(
+        "/recuperacion/solicitar",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            correo: correo.trim(),
+          }),
+        }
+      );
 
-      const data = await respuesta.json();
+      setCodigo("");
 
-      if (!respuesta.ok) {
-        throw new Error(data.mensaje || "No se pudo enviar la solicitud.");
-      }
+      setMensajeExito(
+        respuesta?.mensaje ||
+          "Código enviado por WhatsApp."
+      );
 
-      setToken(""); 
-      setMensajeExito("Código enviado a tu correo. Por favor revísalo e ingresa los datos.");
       setPaso("restablecer");
-
-    } catch (err) {
-      setError(err.message || "Error al conectar con el servidor.");
+    } catch (excepcion) {
+      setError(
+        excepcion.message ||
+          "No se pudo enviar el código."
+      );
     } finally {
       setCargando(false);
     }
   }
 
-  async function manejarRestablecer(e) {
-    e.preventDefault();
+  async function manejarRestablecer(
+    evento
+  ) {
+    evento.preventDefault();
+
     setError("");
     setMensajeExito("");
 
-    if (!token.trim()) {
-      setError("Por favor ingresa el token recibido por correo.");
+    const codigoLimpio =
+      codigo.replace(/\D/g, "");
+
+    if (!/^\d{6}$/.test(codigoLimpio)) {
+      setError(
+        "Ingresa el código de 6 dígitos."
+      );
       return;
     }
 
     if (nuevaContrasena.length < 8) {
-      setErrorPasswordInput("La contraseña debe tener al menos 8 caracteres.");
+      setError(
+        "La contraseña debe tener al menos 8 caracteres."
+      );
+      return;
+    }
+
+    if (
+      nuevaContrasena !==
+      confirmarContrasena
+    ) {
+      setError(
+        "Las contraseñas no coinciden."
+      );
       return;
     }
 
     setCargando(true);
 
     try {
-      const respuesta = await fetch("http://localhost:8080/api/recuperacion/restablecer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: token.trim(),
-          nuevaContrasena: nuevaContrasena,
-        }),
-      });
+      const respuesta = await peticionApi(
+        "/recuperacion/restablecer",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            token: codigoLimpio,
+            nuevaContrasena,
+          }),
+        }
+      );
 
-      const data = await respuesta.json();
+      setMensajeExito(
+        respuesta?.mensaje ||
+          "Contraseña actualizada correctamente."
+      );
 
-      if (!respuesta.ok) {
-        throw new Error(data.mensaje || "El token es inválido o ha expirado.");
-      }
-
-      setMensajeExito("¡Contraseña actualizada correctamente! Redirigiendo al Login...");
       setTimeout(() => {
         irALogin();
-      }, 2500);
-
-    } catch (err) {
-      setError(err.message || "Error al restablecer la contraseña.");
+      }, 2000);
+    } catch (excepcion) {
+      setError(
+        excepcion.message ||
+          "El código es inválido o expiró."
+      );
     } finally {
       setCargando(false);
+    }
+  }
+
+  function cambiarCodigo(evento) {
+    const valor = evento.target.value
+      .replace(/\D/g, "")
+      .slice(0, 6);
+
+    setCodigo(valor);
+
+    if (error) {
+      setError("");
     }
   }
 
@@ -112,90 +164,185 @@ function ResetPassword({ irALogin }) {
     <div className="loginFondo">
       <div className="loginCard">
         <div className="loginIconoTop">
-          <img src={iconLogo} alt="Logo VotaYa" className="loginIconoTopImg" />
+          <img
+            src={iconLogo}
+            alt="Logo VotaYa"
+            className="loginIconoTopImg"
+          />
         </div>
 
-        <h2 className="LoginTitulo">Recuperar contraseña</h2>
+        <h2 className="LoginTitulo">
+          Recuperar contraseña
+        </h2>
 
         {paso === "solicitar" ? (
           <form onSubmit={manejarSolicitud}>
             <p className="instruccionesTexto">
-              Ingresa tu correo y te enviaremos las instrucciones.
+              Ingresa tu correo y enviaremos
+              un código al WhatsApp registrado
+              en tu cuenta.
             </p>
 
             <div className="loginCampo">
-              <label htmlFor="correo">Correo Electrónico</label>
+              <label htmlFor="correo">
+                Correo electrónico
+              </label>
+
               <div className="loginInputConIcono">
-                <img src={iconEmail} alt="" className="loginIcono" />
+                <img
+                  src={iconEmail}
+                  alt=""
+                  className="loginIcono"
+                />
+
                 <input
                   type="email"
                   id="correo"
                   value={correo}
                   placeholder="nombre@correo.com"
-                  onChange={(e) => setCorreo(e.target.value)}
+                  onChange={(evento) => {
+                    setCorreo(
+                      evento.target.value
+                    );
+
+                    setError("");
+                  }}
                 />
               </div>
             </div>
 
-            {error && <p className="loginError">{error}</p>}
+            {error && (
+              <p className="loginError">
+                {error}
+              </p>
+            )}
 
-            <button type="submit" className="loginBoton" disabled={cargando}>
-              {cargando ? "Enviando..." : "Continuar"}
+            <button
+              type="submit"
+              className="loginBoton"
+              disabled={cargando}
+            >
+              {cargando
+                ? "Enviando..."
+                : "Continuar"}
             </button>
           </form>
         ) : (
-          <form onSubmit={manejarRestablecer}>
+          <form
+            onSubmit={manejarRestablecer}
+          >
             <p className="instruccionesTexto">
-              Revisa tu correo. Ingresa el token recibido y tu nueva contraseña.
+              {mensajeExito ||
+                "Ingresa el código enviado por WhatsApp."}
             </p>
 
             <div className="loginCampo">
-              <label htmlFor="token">Token / Código</label>
+              <label htmlFor="codigo">
+                Código de recuperación
+              </label>
+
               <div className="loginInputConIcono">
                 <input
                   type="text"
-                  id="token"
-                  value={token}
-                  placeholder="Pega tu token enviado al correo"
-                  onChange={(e) => setToken(e.target.value)}
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  id="codigo"
+                  value={codigo}
+                  placeholder="000000"
+                  maxLength={6}
+                  className="entradaCodigoWhatsApp"
+                  onChange={cambiarCodigo}
                 />
               </div>
             </div>
 
             <div className="loginCampo">
-              <label htmlFor="nuevaContrasena">Nueva Contraseña</label>
-              <div className={`loginInputConIcono ${errorPasswordInput ? "campo-error" : ""}`}>
-                <img src={iconPassword} alt="" className="loginIcono" />
+              <label htmlFor="nuevaContrasena">
+                Nueva contraseña
+              </label>
+
+              <div className="loginInputConIcono">
+                <img
+                  src={iconPassword}
+                  alt=""
+                  className="loginIcono"
+                />
+
                 <input
                   type="password"
                   id="nuevaContrasena"
                   value={nuevaContrasena}
                   placeholder="Mínimo 8 caracteres"
-                  onChange={(e) => validarContrasenaRealTime(e.target.value)}
+                  maxLength={72}
+                  onChange={(evento) => {
+                    setNuevaContrasena(
+                      evento.target.value
+                    );
+
+                    setError("");
+                  }}
                 />
               </div>
-              {errorPasswordInput && (
-                <span className="mensajeErrorCampo">
-                  {errorPasswordInput}
-                </span>
-              )}
             </div>
 
-            {mensajeExito && <p className="mensajeExito">{mensajeExito}</p>}
-            {error && <p className="loginError">{error}</p>}
+            <div className="loginCampo">
+              <label htmlFor="confirmarContrasena">
+                Confirmar contraseña
+              </label>
 
-            <button 
-              type="submit" 
-              className="loginBoton botonRestablecer" 
-              disabled={cargando || !!errorPasswordInput}
+              <div className="loginInputConIcono">
+                <img
+                  src={iconPassword}
+                  alt=""
+                  className="loginIcono"
+                />
+
+                <input
+                  type="password"
+                  id="confirmarContrasena"
+                  value={confirmarContrasena}
+                  placeholder="Repite la contraseña"
+                  maxLength={72}
+                  onChange={(evento) => {
+                    setConfirmarContrasena(
+                      evento.target.value
+                    );
+
+                    setError("");
+                  }}
+                />
+              </div>
+            </div>
+
+            {mensajeExito && (
+              <p className="mensajeExito">
+                {mensajeExito}
+              </p>
+            )}
+
+            {error && (
+              <p className="loginError">
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="loginBoton botonRestablecer"
+              disabled={cargando}
             >
-              {cargando ? "Guardando..." : "Restablecer contraseña"}
+              {cargando
+                ? "Guardando..."
+                : "Restablecer contraseña"}
             </button>
           </form>
         )}
 
         <div className="loginRegistrate contenedorVolver">
-          <p className="registrate volverLink" onClick={irALogin}>
+          <p
+            className="registrate volverLink"
+            onClick={irALogin}
+          >
             Volver al inicio de sesión
           </p>
         </div>

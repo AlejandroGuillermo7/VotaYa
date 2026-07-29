@@ -1,9 +1,12 @@
 package com.votaya.votaya_backend.service;
 
-import lombok.RequiredArgsConstructor;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.HexFormat;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,106 +20,194 @@ import com.votaya.votaya_backend.enumeraciones.EstadoUsuario;
 import com.votaya.votaya_backend.model.TokenRecuperacion;
 import com.votaya.votaya_backend.model.Usuario;
 
-import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.time.LocalDateTime;
-import java.util.*;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class ServicioRecuperacion {
 
-    private final JavaMailSender mailSender;
     private final UsuarioRepositorio usuarioRepositorio;
     private final TokenRecuperacionRepositorio tokenRepositorio;
     private final PasswordEncoder codificadorContrasena;
+    private final ServicioWhatsApp servicioWhatsApp;
 
-    private final SecureRandom generadorSeguro = new SecureRandom();
+    private final SecureRandom generadorSeguro =
+            new SecureRandom();
 
     @Transactional
-    public RecuperacionDTO.RespuestaToken solicitar(RecuperacionDTO.SolicitudToken solicitud) {
+    public RecuperacionDTO.RespuestaToken solicitar(
+            RecuperacionDTO.SolicitudToken solicitud
+    ) {
+        String correo = solicitud.correo()
+                .trim()
+                .toLowerCase();
+
         Usuario usuario = usuarioRepositorio
-                .findByCorreoIgnoreCase(solicitud.correo())
-                .orElseThrow(() -> new RecursoNoEncontradoExcepcion(
-                        "No existe una cuenta con ese correo"));
+                .findByCorreoIgnoreCase(correo)
+                .orElseThrow(
+                        () -> new RecursoNoEncontradoExcepcion(
+                                "No existe una cuenta con ese correo"
+                        )
+                );
 
-        if (usuario.getEstado() == EstadoUsuario.ELIMINADO) {
-            throw new ReglaNegocioExcepcion("La cuenta fue eliminada");
+        if (
+                usuario.getEstado()
+                        == EstadoUsuario.ELIMINADO
+        ) {
+            throw new ReglaNegocioExcepcion(
+                    "La cuenta fue eliminada"
+            );
         }
 
-        String token = generarToken();
-        String hash = calcularHash(token);
-
-        TokenRecuperacion recuperacion = TokenRecuperacion.builder()
-                .usuario(usuario)
-                .tokenHash(hash)
-                .fechaExpiracion(LocalDateTime.now().plusMinutes(20))
-                .utilizado(false)
-                .build();
-
-        tokenRepositorio.save(recuperacion);
-
-        try {
-                SimpleMailMessage mensaje = new SimpleMailMessage();
-                mensaje.setFrom("tu_correo@gmail.com"); 
-                mensaje.setTo(usuario.getCorreo());
-                mensaje.setSubject("Código de Recuperación de contraseña - VotaYa");
-                mensaje.setText("Hola,\n\n El token de recuperación es:\n" + token);
-
-                mailSender.send(mensaje);
-                System.out.println(">>> ¡CORREO ENVIADO CON ÉXITO A: " + usuario.getCorreo() + " <<<");
-            } catch (Exception e) {
-                System.err.println(">>> ERROR SMTP: " + e.getMessage());
-                e.printStackTrace();
+        if (
+                usuario.getTelefono() == null
+                || usuario.getTelefono().isBlank()
+        ) {
+            throw new ReglaNegocioExcepcion(
+                    "Esta cuenta no tiene un teléfono registrado"
+            );
         }
+
+        String codigo = generarCodigo();
+        String hash = calcularHash(codigo);
+
+        TokenRecuperacion recuperacion =
+                TokenRecuperacion.builder()
+                        .usuario(usuario)
+                        .tokenHash(hash)
+                        .fechaExpiracion(
+                                LocalDateTime.now()
+                                        .plusMinutes(10)
+                        )
+                        .utilizado(false)
+                        .build();
+
+        /*
+         * Guardamos primero para tener el código registrado.
+         * Si WhatsApp falla, la transacción se revierte.
+         */
+        tokenRepositorio.saveAndFlush(recuperacion);
+
+        servicioWhatsApp.enviarCodigoRecuperacion(
+                usuario.getTelefono(),
+                codigo
+        );
+
+        String telefonoOculto =
+                ocultarTelefono(
+                        usuario.getTelefono()
+                );
 
         return new RecuperacionDTO.RespuestaToken(
-                "Se ha enviado un correo con el token de recuperación.",
-                "");
+                "Enviamos un código por WhatsApp al número "
+                        + telefonoOculto,
+                ""
+        );
     }
 
     @Transactional
-    public void restablecer(RecuperacionDTO.SolicitudRestablecer solicitud) {
-        String hash = calcularHash(solicitud.token());
+    public void restablecer(
+            RecuperacionDTO.SolicitudRestablecer solicitud
+    ) {
+        String codigo = solicitud.token()
+                .trim();
 
-        TokenRecuperacion token = tokenRepositorio
-                .findByTokenHashAndUtilizadoFalse(hash)
-                .orElseThrow(() -> new ReglaNegocioExcepcion("Token inválido"));
+        String hash = calcularHash(codigo);
 
-        if (LocalDateTime.now().isAfter(token.getFechaExpiracion())) {
-            throw new ReglaNegocioExcepcion("El token ya expiró");
+        TokenRecuperacion token =
+                tokenRepositorio
+                        .findByTokenHashAndUtilizadoFalse(
+                                hash
+                        )
+                        .orElseThrow(
+                                () -> new ReglaNegocioExcepcion(
+                                        "El código es inválido"
+                                )
+                        );
+
+        if (
+                LocalDateTime.now()
+                        .isAfter(
+                                token.getFechaExpiracion()
+                        )
+        ) {
+            throw new ReglaNegocioExcepcion(
+                    "El código ya expiró"
+            );
         }
 
-        Usuario usuario = token.getUsuario();
+        Usuario usuario =
+                token.getUsuario();
 
         usuario.setPasswordHash(
-                codificadorContrasena.encode(solicitud.nuevaContrasena()));
+                codificadorContrasena.encode(
+                        solicitud.nuevaContrasena()
+                )
+        );
 
         usuarioRepositorio.save(usuario);
 
         token.setUtilizado(true);
+
         tokenRepositorio.save(token);
     }
 
-    private String generarToken() {
-        byte[] bytes = new byte[32];
-        generadorSeguro.nextBytes(bytes);
+    private String generarCodigo() {
+        int numero =
+                generadorSeguro.nextInt(
+                        1_000_000
+                );
 
-        return Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(bytes);
+        return String.format(
+                "%06d",
+                numero
+        );
     }
 
-    private String calcularHash(String token) {
+    private String calcularHash(
+            String valor
+    ) {
         try {
-            MessageDigest resumen = MessageDigest.getInstance("SHA-256");
+            MessageDigest resumen =
+                    MessageDigest.getInstance(
+                            "SHA-256"
+                    );
 
-            return HexFormat.of().formatHex(
+            byte[] resultado =
                     resumen.digest(
-                            token.getBytes(StandardCharsets.UTF_8)));
+                            valor.getBytes(
+                                    StandardCharsets.UTF_8
+                            )
+                    );
 
-        } catch (NoSuchAlgorithmException excepcion) {
-            throw new IllegalStateException(excepcion);
+            return HexFormat.of()
+                    .formatHex(resultado);
+
+        } catch (
+                NoSuchAlgorithmException excepcion
+        ) {
+            throw new IllegalStateException(
+                    "No se pudo calcular el hash",
+                    excepcion
+            );
         }
+    }
+
+    private String ocultarTelefono(
+            String telefono
+    ) {
+        if (
+                telefono == null
+                || telefono.length() < 4
+        ) {
+            return "registrado";
+        }
+
+        String ultimosCuatro =
+                telefono.substring(
+                        telefono.length() - 4
+                );
+
+        return "*******" + ultimosCuatro;
     }
 }
