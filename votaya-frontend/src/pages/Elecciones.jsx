@@ -183,7 +183,7 @@ function GraficaHorizontal({
   const listaOpciones = Array.isArray(opciones) ? opciones : [];
 
   const votosNormalizados = listaOpciones.map((opcion) =>
-    Number(opcion.totalVotos ?? 0),
+    Math.max(Number(opcion.totalVotos ?? 0), 0),
   );
 
   const mayorCantidad = Math.max(...votosNormalizados, 0);
@@ -191,13 +191,19 @@ function GraficaHorizontal({
   return (
     <div className="grafica-disponible-horizontal">
       {listaOpciones.map((opcion) => {
-        const totalVotos = Number(opcion.totalVotos ?? 0);
+        const totalVotos = Math.max(Number(opcion.totalVotos ?? 0), 0);
 
         const estaSeleccionada =
           Number(opcion.idOpcion) === Number(idOpcionSeleccionada);
 
-        const anchura =
-          mayorCantidad === 0 ? 0 : (totalVotos / mayorCantidad) * 100;
+        /*
+         * Resultado entre 0 y 1:
+         *
+         * 10 votos de un máximo de 20 = 0.5
+         * 20 votos de un máximo de 20 = 1
+         */
+        const proporcion =
+          mayorCantidad === 0 ? 0 : Math.min(totalVotos / mayorCantidad, 1);
 
         const imagen = resolverUrlArchivo(opcion.imagenUrl);
 
@@ -233,7 +239,7 @@ function GraficaHorizontal({
                   .filter(Boolean)
                   .join(" ")}
                 style={{
-                  width: `${anchura}%`,
+                  transform: `scaleX(${proporcion})`,
                 }}
               />
             </div>
@@ -260,7 +266,6 @@ function GraficaHorizontal({
     </div>
   );
 }
-
 /* =========================================================
    GRÁFICA DE PASTEL
 ========================================================= */
@@ -370,7 +375,6 @@ function GraficaPastel({
     </div>
   );
 }
-
 
 function TarjetaEleccionDisponible({
   votacion,
@@ -515,22 +519,15 @@ function TarjetaEleccionDisponible({
   );
 }
 
-const CLAVE_VOTACIONES_OCULTAS =
-  "votaya_votaciones_ocultas";
+const CLAVE_VOTACIONES_OCULTAS = "votaya_votaciones_ocultas";
 
 function obtenerVotacionesOcultas() {
   try {
-    const guardadas = localStorage.getItem(
-      CLAVE_VOTACIONES_OCULTAS
-    );
+    const guardadas = localStorage.getItem(CLAVE_VOTACIONES_OCULTAS);
 
-    const ids = guardadas
-      ? JSON.parse(guardadas)
-      : [];
+    const ids = guardadas ? JSON.parse(guardadas) : [];
 
-    return Array.isArray(ids)
-      ? ids.map(Number)
-      : [];
+    return Array.isArray(ids) ? ids.map(Number) : [];
   } catch {
     return [];
   }
@@ -574,31 +571,22 @@ function Elecciones({ alCerrarSesion, alCrearVotacion }) {
           peticionApi("/categorias"),
         ]);
 
-      const listaVotacionesOriginal =
-  normalizarLista(respuestaVotaciones);
-  console.table(
-  listaVotacionesOriginal.map((votacion) => ({
-    id: votacion.idVotacion ?? votacion.id,
-    titulo: votacion.titulo,
-  }))
-);
-
-const idsOcultos =
-  obtenerVotacionesOcultas();
-
-const listaVotaciones =
-  listaVotacionesOriginal.filter(
-    (votacion) => {
-      const id =
-        votacion.idVotacion ??
-        votacion.id;
-
-      return !idsOcultos.includes(
-        Number(id)
+      const listaVotacionesOriginal = normalizarLista(respuestaVotaciones);
+      console.table(
+        listaVotacionesOriginal.map((votacion) => ({
+          id: votacion.idVotacion ?? votacion.id,
+          titulo: votacion.titulo,
+        })),
       );
-    }
-  );
-        
+
+      const idsOcultos = obtenerVotacionesOcultas();
+
+      const listaVotaciones = listaVotacionesOriginal.filter((votacion) => {
+        const id = votacion.idVotacion ?? votacion.id;
+
+        return !idsOcultos.includes(Number(id));
+      });
+
       const listaCategorias = normalizarLista(respuestaCategorias);
 
       let listaParticipaciones = [];

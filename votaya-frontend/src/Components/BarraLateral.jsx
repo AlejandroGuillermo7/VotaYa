@@ -49,7 +49,7 @@ function BarraLateral({
           className={obtenerClase("mis-elecciones")}
           onClick={() => navegar("/mis-elecciones")}
         >
-          Mis elecciones
+          Mis votaciones
         </button>
 
         <button
@@ -57,7 +57,7 @@ function BarraLateral({
           className={obtenerClase("elecciones")}
           onClick={() => navegar("/elecciones")}
         >
-          Elecciones
+          Votaciones
         </button>
 
         <button
