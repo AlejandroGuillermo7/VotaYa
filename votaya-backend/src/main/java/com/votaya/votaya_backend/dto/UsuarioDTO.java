@@ -1,15 +1,16 @@
 package com.votaya.votaya_backend.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Past;
-import jakarta.validation.constraints.Size;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.votaya.votaya_backend.enumeraciones.EstadoUsuario;
 import com.votaya.votaya_backend.enumeraciones.RolUsuario;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public final class UsuarioDTO {
 
@@ -17,19 +18,37 @@ public final class UsuarioDTO {
     }
 
     public record SolicitudActualizar(
-            @NotBlank @Size(max = 100) String nombres,
+            @NotBlank
+            @Size(max = 100)
+            String nombres,
 
-            @NotBlank @Size(max = 80) String apellidoPaterno,
+            @NotBlank
+            @Size(max = 80)
+            String apellidoPaterno,
 
-            @Size(max = 80) String apellidoMaterno,
+            @Size(max = 80)
+            String apellidoMaterno,
 
-            @Past LocalDate fechaNacimiento,
+            @Past
+            LocalDate fechaNacimiento,
 
-            @NotBlank @Email @Size(max = 150) String correo,
+            @NotBlank
+            @Email
+            @Size(max = 150)
+            String correo,
 
-            @Size(max = 500) String fotoUrl,
+            @Pattern(
+                    regexp = "^$|^\\+[1-9][0-9]{9,14}$",
+                    message = "El teléfono debe incluir código de país, por ejemplo +529511234567"
+            )
+            String telefono,
 
-            @Size(min = 8, max = 100) String nuevaContrasena) {
+            @Size(max = 500)
+            String fotoUrl,
+
+            @Size(min = 8, max = 72)
+            String nuevaContrasena
+    ) {
     }
 
     public record Respuesta(
@@ -39,11 +58,12 @@ public final class UsuarioDTO {
             String apellidoMaterno,
             LocalDate fechaNacimiento,
             String correo,
+            String telefono,
             String fotoUrl,
             RolUsuario rol,
             EstadoUsuario estado,
             Boolean correoVerificado,
-            LocalDateTime fechaRegistro) {
+            LocalDateTime fechaRegistro
+    ) {
     }
-
 }

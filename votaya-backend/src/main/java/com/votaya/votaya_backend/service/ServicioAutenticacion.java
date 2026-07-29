@@ -49,7 +49,15 @@ public class ServicioAutenticacion {
         String correo = solicitud.correo()
                 .trim()
                 .toLowerCase();
+        String telefono = normalizarTelefono(
+        solicitud.telefono()
+        );
 
+        if (usuarioRepositorio.existsByTelefono(telefono)) {
+        throw new ReglaNegocioExcepcion(
+                "El número telefónico ya está registrado"
+        );
+        }
         if (usuarioRepositorio.existsByCorreoIgnoreCase(correo)) {
             throw new ReglaNegocioExcepcion(
                     "El correo ya está registrado"
@@ -69,7 +77,7 @@ public class ServicioAutenticacion {
                 .fechaNacimiento(
                         solicitud.fechaNacimiento()
                 )
-                .correo(correo)
+                .correo(correo).telefono(telefono)
                 .passwordHash(
                         codificadorContrasena.encode(
                                 solicitud.contrasena()
@@ -318,7 +326,7 @@ public class ServicioAutenticacion {
 
         String contrasenaAleatoria =UUID.randomUUID().toString();
 
-        Usuario usuarioNuevo = Usuario.builder()
+        Usuario usuarioNuevo = Usuario.builder().telefono(null)
                 .nombres(
                         limitarTexto(
                                 nombres,
@@ -506,4 +514,27 @@ public class ServicioAutenticacion {
 
         return valor.trim();
     }
+
+    private String normalizarTelefono(String telefono) {
+        if (telefono == null || telefono.isBlank()) {
+                throw new ReglaNegocioExcepcion(
+                        "El número telefónico es obligatorio"
+                );
+        }
+
+        String limpio = telefono
+                .replace(" ", "")
+                .replace("-", "")
+                .replace("(", "")
+                .replace(")", "")
+                .trim();
+
+        if (!limpio.matches("^\\+[1-9][0-9]{9,14}$")) {
+                throw new ReglaNegocioExcepcion(
+                        "El teléfono debe incluir código de país, por ejemplo +529511234567"
+                );
+        }
+
+        return limpio;
+        }
 }

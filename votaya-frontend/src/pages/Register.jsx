@@ -13,6 +13,7 @@ function Register({ irALogin }) {
   const [apellidoM, setApellidoM] = useState("");
   const [fNacimiento, setFNacimiento] = useState("");
   const [correo, setCorreo] = useState("");
+  const [telefono, setTelefono] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [confContraseña, setConfContraseña] = useState("");
 
@@ -48,6 +49,7 @@ function Register({ irALogin }) {
     if (!apellidoM.trim()) nuevosErrores.apellidoM = true;
     if (!fNacimiento.trim()) nuevosErrores.fNacimiento = true;
     if (!correo.trim()) nuevosErrores.correo = true;
+    if (!telefono.trim()) {nuevosErrores.telefono = true;}
     if (!contraseña.trim()) nuevosErrores.contraseña = true;
     if (!confContraseña.trim()) nuevosErrores.confContraseña = true;
 
@@ -60,6 +62,20 @@ function Register({ irALogin }) {
     if (!formato.test(correo)) {
       setError("Ingresa un correo electrónico válido, ej: user@correo.com");
       setErroresCampos({ correo: true });
+      return false;
+    }
+    const formatoTelefono = /^\+[1-9][0-9]{9,14}$/;
+
+    const telefonoLimpio = telefono
+      .replace(/\s/g, "")
+      .replace(/-/g, "")
+      .replace(/[()]/g, "");
+
+    if (!formatoTelefono.test(telefonoLimpio)) {
+      setError(
+        "Ingresa el teléfono con código de país, por ejemplo +529511234567"
+      );
+      setErroresCampos({ telefono: true });
       return false;
     }
 
@@ -96,6 +112,10 @@ function Register({ irALogin }) {
         apellidoMaterno: apellidoM,
         fechaNacimiento: fNacimiento,
         correo: correo,
+        telefono: telefono
+        .replace(/\s/g, "")
+        .replace(/-/g, "")
+        .replace(/[()]/g, ""),
         contrasena: contraseña,
       };
 
@@ -286,6 +306,40 @@ function Register({ irALogin }) {
               />
             </div>
           </div>
+
+          <div className="formulario-campo">
+          <label htmlFor="telefono">
+            Teléfono con WhatsApp
+          </label>
+
+          <div
+            className={`campo-con-icono ${
+              erroresCampos.telefono
+                ? "campo-error"
+                : ""
+            }`}
+          >
+            <span className="icono-telefono-registro">
+              ☎
+            </span>
+
+            <input
+              type="tel"
+              id="telefono"
+              value={telefono}
+              placeholder="+529511234567"
+              maxLength={16}
+              onChange={(e) => {
+                setTelefono(e.target.value);
+                limpiarError("telefono");
+              }}
+            />
+          </div>
+
+          <small className="ayuda-telefono">
+            Incluye el código de país. Para México usa +52.
+          </small>
+        </div>
 
           <div className="formulario-campo">
             <label htmlFor="contraseña">Contraseña</label>

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public final class AutenticacionDTO {
@@ -37,7 +38,14 @@ public final class AutenticacionDTO {
             String correo,
 
             @NotBlank
-            @Size(min = 6, max = 72)
+            @Pattern(
+                    regexp = "^\\+[1-9][0-9]{9,14}$",
+                    message = "El teléfono debe incluir código de país, por ejemplo +529511234567"
+            )
+            String telefono,
+
+            @NotBlank
+            @Size(min = 8, max = 72)
             String contrasena,
 
             String fotoUrl

@@ -18,7 +18,7 @@ function PerfilUsuario({ volver, onActualizado }) {
   const [apellidoM, setApellidoM] = useState("");
   const [fechaN, setFechaN] = useState("");
   const [correo, setCorreo] = useState("");
-
+  const [telefono, setTelefono] = useState("");
   const [fotoPerfil, setFotoPerfil] = useState(null);
   const [archivoFoto, setArchivoFoto] = useState(null);
   const [fotoFallo, setFotoFallo] = useState(false);
@@ -52,7 +52,7 @@ function PerfilUsuario({ volver, onActualizado }) {
       setApellidoM(data.apellidoMaterno || "");
       setFechaN(data.fechaNacimiento || "");
       setCorreo(data.correo || "");
-
+      setTelefono(data.telefono || "");
       setFotoFallo(false);
       setFotoPerfil(data.fotoUrl ? resolverUrlArchivo(data.fotoUrl) : null);
     } catch (error) {
@@ -138,6 +138,10 @@ function PerfilUsuario({ volver, onActualizado }) {
         apellidoMaterno: apellidoM || null,
         fechaNacimiento: fechaN,
         correo: correo,
+        telefono: telefono
+        .replace(/\s/g, "")
+        .replace(/-/g, "")
+        .replace(/[()]/g, ""),
         nuevaContrasena: isVerificada && contraseñaNueva ? contraseñaNueva : null,
       };
 
@@ -307,6 +311,35 @@ function PerfilUsuario({ volver, onActualizado }) {
             </div>
           </div>
         </section>
+        
+        <div className="fila-correo-unico">
+          <div className="formulario-campo">
+            <label htmlFor="telefono">
+              Teléfono con WhatsApp
+            </label>
+
+            <div className="campo-con-icono">
+              <span className="icono-telefono-perfil">
+                ☎
+              </span>
+
+              <input
+                type="tel"
+                id="telefono"
+                value={telefono}
+                placeholder="+529511234567"
+                maxLength={16}
+                onChange={(e) =>
+                  setTelefono(e.target.value)
+                }
+              />
+            </div>
+
+            <small className="ayuda-telefono">
+              Incluye el código de país. Para México usa +52.
+            </small>
+          </div>
+        </div>
 
         <section className="seccion-form">
           <h2>Cambiar contraseña</h2>

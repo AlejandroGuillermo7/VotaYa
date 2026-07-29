@@ -139,7 +139,12 @@
             <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
-
+          <!-- WHATSSAPP -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>12.3.0</version>
+        </dependency>
         <!-- DevTools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

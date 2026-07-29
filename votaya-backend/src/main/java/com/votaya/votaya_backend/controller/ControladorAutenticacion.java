@@ -86,6 +86,7 @@ public class ControladorAutenticacion {
                         solicitud.apellidoMaterno(),
                         solicitud.fechaNacimiento(),
                         solicitud.correo(),
+                        solicitud.telefono(),
                         solicitud.contrasena(),
                         urlFoto
                 );
