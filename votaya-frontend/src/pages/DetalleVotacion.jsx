@@ -107,9 +107,7 @@ function obtenerImagenPortada(votacion) {
     return resolverUrlArchivo(votacion.imagenPortadaUrl);
   }
 
-  const opciones = Array.isArray(votacion?.opciones)
-    ? votacion.opciones
-    : [];
+  const opciones = Array.isArray(votacion?.opciones) ? votacion.opciones : [];
 
   const opcionConImagen = opciones.find((opcion) => opcion.imagenUrl);
 
@@ -143,8 +141,7 @@ function combinarOpciones(detalle, resultados) {
     })
     .sort(
       (primera, segunda) =>
-        Number(primera.ordenVisual ?? 0) -
-        Number(segunda.ordenVisual ?? 0),
+        Number(primera.ordenVisual ?? 0) - Number(segunda.ordenVisual ?? 0),
     );
 }
 
@@ -264,20 +261,43 @@ function GraficaDetalle({ opciones }) {
   );
 }
 
-function TablaParticipantes({ participantes, tipoVoto }) {
+function TablaParticipantes({ participantes, tipoVoto, totalVotos }) {
   const lista = Array.isArray(participantes) ? participantes : [];
   const esAnonima = tipoVoto === "ANONIMO";
+
+  if (esAnonima) {
+    return (
+      <section className="detalle-votacion__participantes">
+        <div className="detalle-votacion__seccion-titulo">
+          <div>
+            <h2>Participación anónima</h2>
+            <p>
+              Esta elección protege completamente la identidad de quienes
+              votaron. No se muestran nombres, correos, fotografías ni la opción
+              elegida por cada persona.
+            </p>
+          </div>
+
+          <span>{formateadorNumero.format(Number(totalVotos || 0))}</span>
+        </div>
+
+        <div className="detalle-votacion__anonimato-aviso">
+          <strong>Identidades protegidas</strong>
+          <p>
+            Solo se presenta el total general de votos y los resultados
+            acumulados por opción.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="detalle-votacion__participantes">
       <div className="detalle-votacion__seccion-titulo">
         <div>
-          <h2>Personas que han votado</h2>
-          <p>
-            {esAnonima
-              ? "Por seguridad, en una elección anónima se muestra quién participó, pero no la opción elegida."
-              : "Aquí se muestra cada participante y la opción que seleccionó."}
-          </p>
+          <h2>Personas publicas que han votado</h2>
+          <p>Aquí se muestra cada participante y la opción que seleccionó.</p>
         </div>
 
         <span>{formateadorNumero.format(lista.length)}</span>
@@ -295,7 +315,7 @@ function TablaParticipantes({ participantes, tipoVoto }) {
                 <th>Participante</th>
                 <th>Correo</th>
                 <th>Fecha del voto</th>
-                <th>{esAnonima ? "Voto" : "Votó por"}</th>
+                <th>Votó por</th>
               </tr>
             </thead>
 
@@ -305,7 +325,7 @@ function TablaParticipantes({ participantes, tipoVoto }) {
 
                 return (
                   <tr
-                    key={`${participante.idUsuario ?? "anonimo"}-${participante.fechaVoto ?? indice}`}
+                    key={`${participante.idUsuario ?? "participante"}-${participante.fechaVoto ?? indice}`}
                   >
                     <td data-label="Participante">
                       <div className="detalle-votacion__participante-identidad">
@@ -332,28 +352,15 @@ function TablaParticipantes({ participantes, tipoVoto }) {
                       </div>
                     </td>
 
-                    <td data-label="Correo">
-                      {participante.correo || "—"}
-                    </td>
+                    <td data-label="Correo">{participante.correo || "—"}</td>
 
                     <td data-label="Fecha del voto">
                       {formatearFechaHora(participante.fechaVoto)}
                     </td>
 
-                    <td data-label={esAnonima ? "Voto" : "Votó por"}>
-                      <span
-                        className={[
-                          "detalle-votacion__opcion-votada",
-                          esAnonima
-                            ? "detalle-votacion__opcion-votada--anonima"
-                            : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                      >
-                        {esAnonima
-                          ? "Voto anónimo"
-                          : participante.opcionSeleccionada || "—"}
+                    <td data-label="Votó por">
+                      <span className="detalle-votacion__opcion-votada">
+                        {participante.opcionSeleccionada || "—"}
                       </span>
                     </td>
                   </tr>
@@ -398,12 +405,20 @@ function DetalleVotacion({ idVotacion, alVolver }) {
         setCargando(true);
         setError("");
 
-        const [respuestaDetalle, respuestaResultados, respuestaParticipantes] =
-          await Promise.all([
-            peticionApi(`/votaciones/${idVotacion}`),
-            peticionApi(`/votaciones/${idVotacion}/resultados`),
-            peticionApi(`/votaciones/${idVotacion}/participantes`),
-          ]);
+        const [respuestaDetalle, respuestaResultados] = await Promise.all([
+          peticionApi(`/votaciones/${idVotacion}`),
+          peticionApi(`/votaciones/${idVotacion}/resultados`),
+        ]);
+
+        let listaParticipantes = [];
+
+        if (respuestaDetalle?.tipoVoto === "IDENTIFICADO") {
+          const respuestaParticipantes = await peticionApi(
+            `/votaciones/${idVotacion}/participantes`,
+          );
+
+          listaParticipantes = normalizarLista(respuestaParticipantes);
+        }
 
         if (cancelado) {
           return;
@@ -411,7 +426,7 @@ function DetalleVotacion({ idVotacion, alVolver }) {
 
         setDetalle(respuestaDetalle);
         setResultados(respuestaResultados);
-        setParticipantes(normalizarLista(respuestaParticipantes));
+        setParticipantes(listaParticipantes);
       } catch (excepcion) {
         if (!cancelado) {
           setError(excepcion.message);
@@ -464,15 +479,7 @@ function DetalleVotacion({ idVotacion, alVolver }) {
     <section className="detalle-votacion">
       <div className="detalle-votacion__cabecera-pagina">
         <div>
-          <button
-            type="button"
-            className="detalle-votacion__volver"
-            onClick={alVolver}
-          >
-            ← Volver
-          </button>
-
-          <h1>Detalle de elección.</h1>
+          <h1>Detalle de votacion.</h1>
         </div>
       </div>
 
@@ -579,6 +586,7 @@ function DetalleVotacion({ idVotacion, alVolver }) {
       <TablaParticipantes
         participantes={participantes}
         tipoVoto={detalle.tipoVoto}
+        totalVotos={totalVotos}
       />
     </section>
   );

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.votaya.votaya_backend.Repository.DetalleVotacionRepositorio;
+import com.votaya.votaya_backend.Repository.VotoRepositorio;
 import com.votaya.votaya_backend.dto.DetalleParticipanteProyeccion;
 import com.votaya.votaya_backend.dto.DetalleVotacionDTO;
 import com.votaya.votaya_backend.model.Usuario;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class ServicioDetalleVotacion {
 
     private final DetalleVotacionRepositorio detalleVotacionRepositorio;
+    private final VotoRepositorio votoRepositorio;
     private final ServicioVotacion servicioVotacion;
     private final ServicioUsuarioActual servicioUsuarioActual;
 
@@ -37,19 +39,36 @@ public class ServicioDetalleVotacion {
 
         boolean esAnonima = "ANONIMO".equals(votacion.getTipoVoto().name());
 
-        List<DetalleParticipanteProyeccion> filas = esAnonima
-                ? detalleVotacionRepositorio.obtenerParticipantesAnonimos(idVotacion)
-                : detalleVotacionRepositorio.obtenerVotosIdentificados(idVotacion);
+        /*
+         * En una elección anónima jamás se consultan ni se devuelven
+         * nombres, correos, fotografías o relaciones usuario-opción.
+         * Únicamente se devuelve el total agregado de votos.
+         */
+        if (esAnonima) {
+            long totalVotos = votoRepositorio.countByVotacionIdVotacion(
+                    idVotacion
+            );
 
-        List<DetalleVotacionDTO.Participante> participantes = filas
-                .stream()
-                .map(this::convertir)
-                .toList();
+            return new DetalleVotacionDTO.RespuestaParticipantes(
+                    idVotacion,
+                    votacion.getTipoVoto().name(),
+                    true,
+                    Math.toIntExact(totalVotos),
+                    List.of()
+            );
+        }
+
+        List<DetalleVotacionDTO.Participante> participantes =
+                detalleVotacionRepositorio
+                        .obtenerVotosIdentificados(idVotacion)
+                        .stream()
+                        .map(this::convertir)
+                        .toList();
 
         return new DetalleVotacionDTO.RespuestaParticipantes(
                 idVotacion,
                 votacion.getTipoVoto().name(),
-                esAnonima,
+                false,
                 participantes.size(),
                 participantes
         );

@@ -11,13 +11,6 @@ import com.votaya.votaya_backend.model.Voto;
 
 public interface DetalleVotacionRepositorio extends JpaRepository<Voto, Long> {
 
-    /*
-     * Para elecciones identificadas sí se puede relacionar al usuario
-     * con la opción seleccionada.
-     *
-     * GROUP_CONCAT permite mostrar en una sola fila varias opciones
-     * cuando la elección es de selección múltiple.
-     */
     @Query(value = """
             SELECT
                 u.id_usuario AS idUsuario,
@@ -58,35 +51,6 @@ public interface DetalleVotacionRepositorio extends JpaRepository<Voto, Long> {
             ORDER BY v.fecha_emision DESC
             """, nativeQuery = true)
     List<DetalleParticipanteProyeccion> obtenerVotosIdentificados(
-            @Param("idVotacion") Long idVotacion
-    );
-
-    /*
-     * En una elección anónima la tabla voto no conserva id_usuario.
-     * Por eso se consulta participacion para mostrar quién participó,
-     * pero nunca la opción elegida.
-     */
-    @Query(value = """
-            SELECT
-                u.id_usuario AS idUsuario,
-                CONCAT_WS(
-                    ' ',
-                    u.nombres,
-                    u.apellido_paterno,
-                    NULLIF(u.apellido_materno, '')
-                ) AS nombreCompleto,
-                u.correo AS correo,
-                u.foto_url AS fotoUrl,
-                COALESCE(p.fecha_voto, p.fecha_registro) AS fechaVoto,
-                'Voto anónimo' AS opcionSeleccionada
-            FROM participacion p
-            INNER JOIN usuario u
-                ON u.id_usuario = p.id_usuario
-            WHERE p.id_votacion = :idVotacion
-                AND p.fecha_voto IS NOT NULL
-            ORDER BY p.fecha_voto DESC
-            """, nativeQuery = true)
-    List<DetalleParticipanteProyeccion> obtenerParticipantesAnonimos(
             @Param("idVotacion") Long idVotacion
     );
 }
