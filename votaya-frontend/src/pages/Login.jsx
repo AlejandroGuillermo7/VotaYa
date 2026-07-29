@@ -382,7 +382,12 @@ function Login({
             </div>
           </div>
 
-          
+          <p
+            className="loginContraseña"
+            onClick={irARecuperar}
+          >
+            ¿Olvidaste tu contraseña?
+          </p>
 
           {error && (
             <p className="loginError">
