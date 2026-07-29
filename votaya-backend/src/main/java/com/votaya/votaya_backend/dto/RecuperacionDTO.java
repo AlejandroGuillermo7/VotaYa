@@ -2,6 +2,7 @@ package com.votaya.votaya_backend.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public final class RecuperacionDTO {
@@ -10,17 +11,29 @@ public final class RecuperacionDTO {
     }
 
     public record SolicitudToken(
-            @NotBlank @Email String correo) {
+            @NotBlank
+            @Email
+            String correo
+    ) {
     }
 
     public record RespuestaToken(
             String mensaje,
-            String token) {
+            String token
+    ) {
     }
 
     public record SolicitudRestablecer(
-            @NotBlank String token,
+            @NotBlank
+            @Pattern(
+                    regexp = "^[0-9]{6}$",
+                    message = "El código debe contener 6 dígitos"
+            )
+            String token,
 
-            @NotBlank @Size(min = 8, max = 72) String nuevaContrasena) {
+            @NotBlank
+            @Size(min = 8, max = 72)
+            String nuevaContrasena
+    ) {
     }
 }
