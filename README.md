@@ -1,21 +1,14 @@
 <div align="center">
 
 # VotaYa
-<br><br><br>
 
 ### Sistema Web de Gestión y Control de Votaciones
-<br><br><br>
 
 **Materia:** Programación Web
-<br><br><br>
 
-**Integrantes:**
-<br>
-Enríquez Rodríguez Alejandro Guillermo
-<br>
+**Integrantes:**  
+Enríquez Rodríguez Alejandro Guillermo  
 Gómez Roblero Ángel Jahir
-
-<br><br><br>
 
 [Repositorio](https://github.com/AlejandroGuillermo7/VotaYa) ·
 [Proyecto desplegado](https://votaya.com.mx) ·
@@ -131,7 +124,7 @@ erDiagram
     VOTACION ||--o{ VOTO : recibe
 
     VOTO ||--o{ VOTO_OPCION : incluye
-    OPCION_VOTACION ||--o{ VOTO_OPCION : seleccionada
+    OPCION_VOTACION ||--o{ VOTO_OPCION : selecciona
 
     USUARIO ||--o{ COMENTARIO : escribe
     VOTACION ||--o{ COMENTARIO : contiene
@@ -149,8 +142,8 @@ erDiagram
         VARCHAR telefono
         VARCHAR password_hash
         VARCHAR foto_url
-        ENUM rol
-        ENUM estado
+        VARCHAR rol
+        VARCHAR estado
         BOOLEAN correo_verificado
         DATETIME fecha_registro
     }
@@ -171,12 +164,12 @@ erDiagram
         VARCHAR imagen_portada_url
         DATETIME fecha_inicio
         DATETIME fecha_fin
-        ENUM estado
-        ENUM privacidad
-        ENUM tipo_voto
-        ENUM tipo_seleccion
+        VARCHAR estado
+        VARCHAR privacidad
+        VARCHAR tipo_voto
+        VARCHAR tipo_seleccion
         TINYINT max_selecciones
-        ENUM tipo_grafica
+        VARCHAR tipo_grafica
         TINYINT edad_minima
         BOOLEAN comentarios_permitidos
         BOOLEAN permite_cambio_voto
@@ -195,7 +188,7 @@ erDiagram
         BIGINT id_invitacion PK
         BIGINT id_votacion FK
         BIGINT id_usuario FK
-        ENUM estado
+        VARCHAR estado
         DATETIME fecha_invitacion
         DATETIME fecha_respuesta
     }
@@ -218,8 +211,8 @@ erDiagram
     }
 
     VOTO_OPCION {
-        BIGINT id_voto PK, FK
-        BIGINT id_opcion PK, FK
+        BIGINT id_voto PK
+        BIGINT id_opcion PK
         BIGINT id_votacion FK
     }
 
