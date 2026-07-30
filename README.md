@@ -109,138 +109,131 @@ comentario · token_recuperacion · auditoria
 
 ```mermaid
 erDiagram
-
     USUARIO ||--o{ VOTACION : crea
     CATEGORIA ||--o{ VOTACION : clasifica
     VOTACION ||--|{ OPCION_VOTACION : contiene
-
     USUARIO ||--o{ INVITACION_VOTACION : recibe
     VOTACION ||--o{ INVITACION_VOTACION : genera
-
-    USUARIO ||--o{ PARTICIPACION : realiza
+    USUARIO ||--o{ PARTICIPACION : participa
     VOTACION ||--o{ PARTICIPACION : registra
-
     USUARIO ||--o{ VOTO : emite
     VOTACION ||--o{ VOTO : recibe
-
-    VOTO ||--o{ VOTO_OPCION : incluye
+    VOTO ||--o{ VOTO_OPCION : contiene
     OPCION_VOTACION ||--o{ VOTO_OPCION : selecciona
-
     USUARIO ||--o{ COMENTARIO : escribe
     VOTACION ||--o{ COMENTARIO : contiene
-
     USUARIO ||--o{ TOKEN_RECUPERACION : solicita
     USUARIO ||--o{ AUDITORIA : genera
 
     USUARIO {
-        BIGINT id_usuario PK
-        VARCHAR nombres
-        VARCHAR apellido_paterno
-        VARCHAR apellido_materno
-        DATE fecha_nacimiento
-        VARCHAR correo UK
-        VARCHAR telefono
-        VARCHAR password_hash
-        VARCHAR foto_url
-        VARCHAR rol
-        VARCHAR estado
-        BOOLEAN correo_verificado
-        DATETIME fecha_registro
+        int id_usuario PK
+        string nombres
+        string apellido_paterno
+        string apellido_materno
+        date fecha_nacimiento
+        string correo UK
+        string telefono
+        string password_hash
+        string foto_url
+        string rol
+        string estado
+        boolean correo_verificado
+        date fecha_registro
     }
 
     CATEGORIA {
-        SMALLINT id_categoria PK
-        VARCHAR nombre UK
-        VARCHAR descripcion
-        DATETIME fecha_creacion
+        int id_categoria PK
+        string nombre UK
+        string descripcion
+        date fecha_creacion
     }
 
     VOTACION {
-        BIGINT id_votacion PK
-        BIGINT id_creador FK
-        SMALLINT id_categoria FK
-        VARCHAR titulo
-        TEXT descripcion
-        VARCHAR imagen_portada_url
-        DATETIME fecha_inicio
-        DATETIME fecha_fin
-        VARCHAR estado
-        VARCHAR privacidad
-        VARCHAR tipo_voto
-        VARCHAR tipo_seleccion
-        TINYINT max_selecciones
-        VARCHAR tipo_grafica
-        TINYINT edad_minima
-        BOOLEAN comentarios_permitidos
-        BOOLEAN permite_cambio_voto
-        DATETIME fecha_creacion
+        int id_votacion PK
+        int id_creador FK
+        int id_categoria FK
+        string titulo
+        string descripcion
+        string imagen_portada_url
+        date fecha_inicio
+        date fecha_fin
+        string estado
+        string privacidad
+        string tipo_voto
+        string tipo_seleccion
+        int max_selecciones
+        string tipo_grafica
+        int edad_minima
+        boolean comentarios_permitidos
+        boolean permite_cambio_voto
+        date fecha_creacion
     }
 
     OPCION_VOTACION {
-        BIGINT id_opcion PK
-        BIGINT id_votacion FK
-        VARCHAR nombre
-        VARCHAR imagen_url
-        SMALLINT orden_visual
+        int id_opcion PK
+        int id_votacion FK
+        string nombre
+        string imagen_url
+        int orden_visual
     }
 
     INVITACION_VOTACION {
-        BIGINT id_invitacion PK
-        BIGINT id_votacion FK
-        BIGINT id_usuario FK
-        VARCHAR estado
-        DATETIME fecha_invitacion
-        DATETIME fecha_respuesta
+        int id_invitacion PK
+        int id_votacion FK
+        int id_usuario FK
+        string estado
+        date fecha_invitacion
+        date fecha_respuesta
     }
 
     PARTICIPACION {
-        BIGINT id_participacion PK
-        BIGINT id_votacion FK
-        BIGINT id_usuario FK
-        DATETIME fecha_registro
-        DATETIME fecha_voto
+        int id_participacion PK
+        int id_votacion FK
+        int id_usuario FK
+        date fecha_registro
+        date fecha_voto
     }
 
     VOTO {
-        BIGINT id_voto PK
-        BIGINT id_votacion FK
-        BIGINT id_usuario FK
-        CHAR folio_publico UK
-        DATETIME fecha_emision
-        VARCHAR token_cambio_hash
+        int id_voto PK
+        int id_votacion FK
+        int id_usuario FK
+        string folio_publico UK
+        date fecha_emision
+        string token_cambio_hash
     }
 
     VOTO_OPCION {
-        BIGINT id_voto PK
-        BIGINT id_opcion PK
-        BIGINT id_votacion FK
+        int id_voto PK
+        int id_opcion PK
+        int id_votacion FK
     }
 
     COMENTARIO {
-        BIGINT id_comentario PK
-        BIGINT id_votacion FK
-        BIGINT id_usuario FK
-        VARCHAR contenido
-        DATETIME fecha_creacion
+        int id_comentario PK
+        int id_votacion FK
+        int id_usuario FK
+        string contenido
+        date fecha_creacion
     }
 
     TOKEN_RECUPERACION {
-        BIGINT id_token PK
-        BIGINT id_usuario FK
-        VARCHAR token_hash UK
-        DATETIME fecha_creacion
-        DATETIME fecha_expiracion
-        BOOLEAN utilizado
+        int id_token PK
+        int id_usuario FK
+        string token_hash UK
+        date fecha_creacion
+        date fecha_expiracion
+        boolean utilizado
     }
 
     AUDITORIA {
-        BIGINT id_auditoria PK
-        BIGINT id_usuario FK
-        VARCHAR accion
-        VARCHAR entidad
-        BIGINT id_entidad
-        DATETIME fecha
-        TEXT detalles
+        int id_auditoria PK
+        int id_usuario FK
+        string accion
+        string entidad
+        int id_entidad
+        date fecha
+        string detalles
     }
 ```
 
