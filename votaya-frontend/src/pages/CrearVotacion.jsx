@@ -737,56 +737,7 @@ const [error, setError] = useState("");
               </div>
             </div>
 
-            <div className="grupo-regla">
-              <label>Tipo de Selección</label>
-
-              <div className="grupo-conmutador">
-                <button
-                  type="button"
-                  className={
-                    tipoSeleccion === "UNICA"
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setTipoSeleccion("UNICA")
-                  }
-                >
-                  Opción única
-                </button>
-
-                <button
-                  type="button"
-                  className={
-                    tipoSeleccion === "MULTIPLE"
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setTipoSeleccion("MULTIPLE")
-                  }
-                >
-                  Opción múltiple
-                </button>
-              </div>
-            </div>
-
-            {tipoSeleccion === "MULTIPLE" && (
-              <div className="grupo-regla">
-                <label>Máx. Selecciones</label>
-
-                <input
-                  type="number"
-                  min="2"
-                  max={opciones.length}
-                  value={maxSelecciones}
-                  onChange={(e) =>
-                    setMaxSelecciones(e.target.value)
-                  }
-                  className="entrada-max-selecciones"
-                />
-              </div>
-            )}
+            
 
             <div className="grupo-regla">
               <label>¿Permitir cambiar voto?</label>

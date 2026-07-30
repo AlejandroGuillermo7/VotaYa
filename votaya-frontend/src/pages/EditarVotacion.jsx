@@ -1213,49 +1213,6 @@ if (
               </div>
             </div>
 
-
-            <div className="grupo-regla">
-              <label>
-                Restricción de Edad
-              </label>
-
-              <div className="grupo-conmutador">
-                <button
-                  type="button"
-                  className={
-                    restriccionEdad ===
-                    "todos"
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setRestriccionEdad(
-                      "todos"
-                    )
-                  }
-                >
-                  Todos
-                </button>
-
-                <button
-                  type="button"
-                  className={
-                    restriccionEdad ===
-                    "18"
-                      ? "activo"
-                      : ""
-                  }
-                  onClick={() =>
-                    setRestriccionEdad(
-                      "18"
-                    )
-                  }
-                >
-                  +18 años
-                </button>
-              </div>
-            </div>
-
             <div className="grupo-regla columna-completa">
               <label>
                 Tipo de gráfica
