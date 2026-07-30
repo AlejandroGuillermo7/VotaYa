@@ -84,17 +84,11 @@ function Usuarios({ alCerrarSesion }) {
       const [datosPerfil, respuestaUsuarios] = await Promise.all([
         peticionApi("/usuarios/perfil"),
 
-        /*
-         * El controlador usa:
-         * @RequestMapping("/api/admin")
-         *
-         * clienteApi ya agrega /api.
-         */
         peticionApi("/admin/usuarios"),
       ]);
 
       if (datosPerfil.rol !== "ADMINISTRADOR") {
-        window.location.replace("/mis-elecciones");
+        window.location.replace("/mis-votaciones");
 
         return;
       }

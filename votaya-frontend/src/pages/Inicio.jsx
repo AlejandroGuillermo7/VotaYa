@@ -378,12 +378,6 @@ function Inicio({ alCerrarSesion }) {
       return;
     }
 
-    /*
-     * En producción toma el dominio configurado en .env:
-     * VITE_FRONTEND_URL=https://votaya.com.mx
-     *
-     * En desarrollo, si no existe esa variable, usa localhost.
-     */
     const origenFrontend = String(
       import.meta.env.VITE_FRONTEND_URL || window.location.origin,
     ).replace(/\/+$/, "");
@@ -423,7 +417,7 @@ function Inicio({ alCerrarSesion }) {
     <div className="pagina-inicio">
       <BarraLateral
         perfil={perfil}
-        seccionActiva="mis-elecciones"
+        seccionActiva="mis-votaciones"
         abierta={menuLateralAbierto}
         alCerrar={() => setMenuLateralAbierto(false)}
         alCerrarSesion={alCerrarSesion}

@@ -46,8 +46,8 @@ function BarraLateral({
       <nav className="menu-lateral">
         <button
           type="button"
-          className={obtenerClase("mis-elecciones")}
-          onClick={() => navegar("/mis-elecciones")}
+          className={obtenerClase("mis-votaciones")}
+          onClick={() => navegar("/mis-votaciones")}
         >
           Mis votaciones
         </button>

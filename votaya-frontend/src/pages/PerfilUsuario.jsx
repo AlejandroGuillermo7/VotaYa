@@ -9,7 +9,7 @@ import "./PerfilUsuario.css";
 const resolverUrlArchivo = (ruta) => {
   if (!ruta) return null;
   if (ruta.startsWith("http") || ruta.startsWith("blob:")) return ruta;
-  return `http://localhost:8080${ruta.startsWith("/") ? "" : "/"}${ruta}`;
+  return `${(import.meta.env.VITE_API_URL || "/api").replace(/\/api\/?$/, "")}${ruta.startsWith("/") ? "" : "/"}${ruta}`;
 };
 
 function PerfilUsuario({ volver, onActualizado }) {
@@ -35,7 +35,7 @@ function PerfilUsuario({ volver, onActualizado }) {
 
   const obtenerPerfil = async () => {
     try {
-      const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/usuarios/perfil`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -93,7 +93,7 @@ function PerfilUsuario({ volver, onActualizado }) {
     setMensaje({ tipo: "", texto: "" });
 
     try {
-      const respuesta = await fetch("http://localhost:8080/api/usuarios/verificar-password", {
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/usuarios/verificar-password`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -156,7 +156,7 @@ function PerfilUsuario({ volver, onActualizado }) {
         formData.append("foto", archivoFoto);
       }
 
-      const respuesta = await fetch("http://localhost:8080/api/usuarios/perfil", {
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/usuarios/perfil`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

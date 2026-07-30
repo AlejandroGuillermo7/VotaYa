@@ -15,9 +15,6 @@
   padding: 20px 36px 38px;
 }
 
-/* =========================================================
-   MENSAJES
-========================================================= */
 
 .mensaje-elecciones-error,
 .mensaje-elecciones-correcto {
@@ -38,10 +35,6 @@
   background: #edfff4;
   border: 1px solid #c3f1d4;
 }
-
-/* =========================================================
-   BARRA DE FILTROS
-========================================================= */
 
 .barra-filtros-elecciones {
   display: grid;
@@ -117,9 +110,6 @@
   background: #f5f8ff;
 }
 
-/* =========================================================
-   REJILLA Y TARJETAS
-========================================================= */
 
 .rejilla-elecciones {
   display: grid;
@@ -267,10 +257,6 @@
   cursor: not-allowed;
 }
 
-/* =========================================================
-   GRÁFICA VERTICAL
-========================================================= */
-
 .grafica-disponible-vertical {
   display: flex;
   align-items: flex-end;
@@ -378,9 +364,6 @@
   opacity: 1 !important;
 }
 
-/* =========================================================
-   GRÁFICA HORIZONTAL PROPORCIONAL
-========================================================= */
 
 .grafica-disponible-horizontal {
   display: flex;
@@ -513,9 +496,6 @@
   opacity: 1 !important;
 }
 
-/* =========================================================
-   GRÁFICA DE PASTEL
-========================================================= */
 
 .grafica-disponible-pastel {
   display: grid;
@@ -642,9 +622,6 @@
   font-weight: 500;
 }
 
-/* =========================================================
-   SIN RESULTADOS
-========================================================= */
 
 .elecciones-sin-resultados {
   display: grid;
@@ -671,9 +648,6 @@
   font-size: 11px;
 }
 
-/* =========================================================
-   PANTALLA DE CARGA
-========================================================= */
 
 .pantalla-elecciones-carga {
   display: grid;
@@ -704,9 +678,6 @@
   display: none;
 }
 
-/* =========================================================
-   TABLET
-========================================================= */
 
 @media (max-width: 1100px) {
   .barra-filtros-elecciones {
@@ -735,9 +706,6 @@
   }
 }
 
-/* =========================================================
-   TELÉFONO
-========================================================= */
 
 @media (max-width: 680px) {
   .pagina-elecciones {
@@ -835,12 +803,6 @@
     padding-top: 18px;
   }
 }
-
-
-/* =========================================================
-   OPCIÓN SELECCIONADA — APARTADO ELECCIONES
-   No afecta Inicio ni Mis votaciones.
-========================================================= */
 
 .pagina-elecciones
   .grafica-opcion--seleccionada

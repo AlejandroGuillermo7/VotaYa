@@ -141,7 +141,7 @@ function TodasElecciones({ alCerrarSesion }) {
       ]);
 
       if (datosPerfil.rol !== "ADMINISTRADOR") {
-        window.location.replace("/mis-elecciones");
+        window.location.replace("/mis-votaciones");
 
         return;
       }

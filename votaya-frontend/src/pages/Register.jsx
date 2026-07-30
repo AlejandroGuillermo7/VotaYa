@@ -125,7 +125,7 @@ function Register({ irALogin }) {
         formData.append("foto", archivoFoto);
       }
 
-      const respuesta = await fetch("http://localhost:8080/api/auth/registro", {
+      const respuesta = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/auth/registro`, {
         method: "POST",
         body: formData,
       });

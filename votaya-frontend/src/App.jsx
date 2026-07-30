@@ -54,8 +54,8 @@ function App() {
       return;
     }
 
-    window.history.replaceState({}, "", "/mis-elecciones");
-    setRuta("/mis-elecciones");
+    window.history.replaceState({}, "", "/mis-votaciones");
+    setRuta("/mis-votaciones");
   }
 
   function cerrarSesion() {
