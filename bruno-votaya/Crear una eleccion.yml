@@ -1,0 +1,79 @@
+info:
+  name: Crear una eleccion
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/votaciones
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "¿Cuál fue el mejor jugador del mundial 2026?",
+        "descripcion": "Votación para elegir al mejor jugador del mundial.",
+        "imagenPortadaUrl": null,
+        "fechaInicio": "2026-07-26T00:00:00",
+        "fechaFin": "2026-08-10T23:59:59",
+        "idCategoria": 1,
+        "privacidad": "PUBLICA",
+        "tipoVoto": "ANONIMO",
+        "tipoSeleccion": "UNICA",
+        "maxSelecciones": 1,
+        "tipoGrafica": "BARRAS",
+        "edadMinima": null,
+        "comentariosPermitidos": true,
+        "permiteCambioVoto": true,
+        "estado": "ACTIVA",
+        "opciones": [
+          {
+            "nombre": "Messi",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Haaland",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Mbappe",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Harry Kane",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Bellingham",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Dembele",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Quiñones",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "CR7",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Olise",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Vinicius",
+            "imagenUrl": null
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQyQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiVVNVQVJJTyIsImlhdCI6MTc4NTA4ODg5MCwiZXhwIjoxNzg1MTc1MjkwfQ.AW0nJ65uF0zmG2TfZODEE4mtC0y6TX5JbXCmU-W1sVg
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

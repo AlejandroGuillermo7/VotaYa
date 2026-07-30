@@ -1,0 +1,56 @@
+info:
+  name: Editar votacion
+  type: http
+  seq: 20
+
+http:
+  method: PUT
+  url: https://votaya.com.mx/api/votaciones/1
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "¿Quién fue el mejor jugador del mundial 2026?",
+        "descripcion": "Votación actualizada para elegir al mejor futbolista.",
+        "imagenPortadaUrl": "/imagenes/copa.png",
+        "fechaInicio": "2026-07-27T00:00:00",
+        "fechaFin": "2026-08-25T23:59:59",
+        "idCategoria": 1,
+        "privacidad": "PUBLICA",
+        "tipoVoto": "IDENTIFICADO",
+        "tipoSeleccion": "UNICA",
+        "maxSelecciones": 1,
+        "tipoGrafica": "BARRAS",
+        "edadMinima": null,
+        "comentariosPermitidos": true,
+        "permiteCambioVoto": true,
+        "opciones": [
+          {
+            "idOpcion": 1,
+            "nombre": "Messi",
+            "imagenUrl": null,
+            "ordenVisual": 1
+          },
+          {
+            "idOpcion": 2,
+            "nombre": "Haaland",
+            "imagenUrl": null,
+            "ordenVisual": 2
+          },
+          {
+            "idOpcion": 3,
+            "nombre": "Mbappé",
+            "imagenUrl": null,
+            "ordenVisual": 3
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTM3NjUxMiwiZXhwIjoxNzg1NDYyOTEyfQ.p5NO_zaBe_HBgcLv8hA2gKxSkVxPIztQ8RBtzgTS3MQ0aiJWboVU9dQAjBjFEV3DYlGX8QUSysKin4teo6aG-w
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

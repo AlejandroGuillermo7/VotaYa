@@ -1,0 +1,25 @@
+info:
+  name: RegistroUsuario
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/auth/registro
+  body:
+    type: json
+    data: |-
+      {
+        "nombres": "Ángel Jahir",
+        "apellidoPaterno": "Gómez",
+        "apellidoMaterno": "Roblero",
+        "fechaNacimiento": "2005-01-01",
+        "correo": "jahirprueba2908@gmail.com",
+        "contrasena": "Jahir753159*"
+      }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

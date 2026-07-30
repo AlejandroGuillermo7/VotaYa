@@ -1,0 +1,58 @@
+info:
+  name: Crear Votacion Anonima
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/votaciones
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "¿Cuál es tu lenguaje de programación favorito?",
+        "descripcion": "Selecciona el lenguaje que más utilizas.",
+        "imagenPortadaUrl": null,
+        "fechaInicio": "2026-07-27T00:00:00",
+        "fechaFin": "2026-08-20T23:59:59",
+        "idCategoria": 2,
+        "privacidad": "PUBLICA",
+        "tipoVoto": "ANONIMO",
+        "tipoSeleccion": "UNICA",
+        "maxSelecciones": 1,
+        "tipoGrafica": "PASTEL",
+        "edadMinima": null,
+        "comentariosPermitidos": true,
+        "permiteCambioVoto": true,
+        "opciones": [
+          {
+            "nombre": "Java",
+            "imagenUrl": null,
+            "ordenVisual": 1
+          },
+          {
+            "nombre": "JavaScript",
+            "imagenUrl": null,
+            "ordenVisual": 2
+          },
+          {
+            "nombre": "Python",
+            "imagenUrl": null,
+            "ordenVisual": 3
+          },
+          {
+            "nombre": "C++",
+            "imagenUrl": null,
+            "ordenVisual": 4
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTM3NjUxMiwiZXhwIjoxNzg1NDYyOTEyfQ.p5NO_zaBe_HBgcLv8hA2gKxSkVxPIztQ8RBtzgTS3MQ0aiJWboVU9dQAjBjFEV3DYlGX8QUSysKin4teo6aG-w
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

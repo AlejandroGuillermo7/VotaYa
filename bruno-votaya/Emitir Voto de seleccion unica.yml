@@ -1,0 +1,23 @@
+info:
+  name: Emitir Voto de seleccion unica
+  type: http
+  seq: 25
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/votaciones/1/votos
+  body:
+    type: json
+    data: |-
+      {
+        "idsOpciones": [4]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6Miwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTE3MTI4MSwiZXhwIjoxNzg1MjU3NjgxfQ.PJMR0mm9MO3bs7QSfDM_h1_5Au2YXlUrVPuFknEzViY
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

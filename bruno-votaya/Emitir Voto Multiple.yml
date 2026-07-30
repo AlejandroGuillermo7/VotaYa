@@ -1,0 +1,23 @@
+info:
+  name: Emitir Voto Multiple
+  type: http
+  seq: 27
+
+http:
+  method: GET
+  url: https://votaya.com.mx/api/votaciones/3/votos
+  body:
+    type: json
+    data: |-
+      {
+        "idsOpciones": [12, 13, 15]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTM3NjUxMiwiZXhwIjoxNzg1NDYyOTEyfQ.p5NO_zaBe_HBgcLv8hA2gKxSkVxPIztQ8RBtzgTS3MQ0aiJWboVU9dQAjBjFEV3DYlGX8QUSysKin4teo6aG-w
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,24 @@
+info:
+  name: Crear Categoria
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/categorias
+  body:
+    type: json
+    data: |-
+      {
+        "nombre": "Deportes",
+        "descripcion": "Votaciones relacionadas con deportes"
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTM3NjUxMiwiZXhwIjoxNzg1NDYyOTEyfQ.p5NO_zaBe_HBgcLv8hA2gKxSkVxPIztQ8RBtzgTS3MQ0aiJWboVU9dQAjBjFEV3DYlGX8QUSysKin4teo6aG-w
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

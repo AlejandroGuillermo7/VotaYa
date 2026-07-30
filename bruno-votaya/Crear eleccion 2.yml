@@ -1,0 +1,47 @@
+info:
+  name: Crear eleccion 2
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: https://www.votaya.com.mx/api/votaciones
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "¿Cuál es tu mascota favorita?",
+        "descripcion": "Selecciona tu mascota favorita.",
+        "imagenPortadaUrl": null,
+        "fechaInicio": "2026-07-26T00:00:00",
+        "fechaFin": "2026-08-10T23:59:59",
+        "idCategoria": 2,
+        "privacidad": "PUBLICA",
+        "tipoVoto": "IDENTIFICADO",
+        "tipoSeleccion": "UNICA",
+        "maxSelecciones": 1,
+        "tipoGrafica": "BARRAS",
+        "edadMinima": null,
+        "comentariosPermitidos": true,
+        "permiteCambioVoto": true,
+        "estado": "ACTIVA",
+        "opciones": [
+          {
+            "nombre": "Perro",
+            "imagenUrl": null
+          },
+          {
+            "nombre": "Gato",
+            "imagenUrl": null
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiVVNVQVJJTyIsImlhdCI6MTc4NTI1ODEyOSwiZXhwIjoxNzg1MzQ0NTI5fQ.xFiTgwDArS6HaDa5SqlS0chUU4re0PA4nCmlMDbcHPQuM7bepLPaA4oZJIaLHx9d4gjtMBrpZoypn5eH1Z726g
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

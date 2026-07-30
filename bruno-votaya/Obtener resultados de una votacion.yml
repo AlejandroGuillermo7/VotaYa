@@ -1,0 +1,17 @@
+info:
+  name: Obtener resultados de una votacion
+  type: http
+  seq: 28
+
+http:
+  method: GET
+  url: https://www.votaya.com.mx/api/votaciones/10/resultados
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTM0MTE5MiwiZXhwIjoxNzg1NDI3NTkyfQ.wUV90Clr2Xm4dnmXp1URw-LJZ5BxS5Khl56LRLmMGtJO-tjc91IxqjojnwgEF0lHPTr3kysQtxAT2-Xw7Q_gZQ
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,88 @@
+info:
+  name: Crear Votacion selección unica
+  type: http
+  seq: 11
+
+http:
+  method: POST
+  url: https://votaya.com.mx/api/votaciones
+  body:
+    type: json
+    data: |-
+      {
+        "titulo": "¿Cuál fue el mejor jugador del mundial 2026?",
+        "descripcion": "Votación para elegir al mejor jugador del mundial.",
+        "imagenPortadaUrl": "/imagenes/copa.png",
+        "fechaInicio": "2026-07-27T00:00:00",
+        "fechaFin": "2026-08-15T23:59:59",
+        "idCategoria": 1,
+        "privacidad": "PUBLICA",
+        "tipoVoto": "IDENTIFICADO",
+        "tipoSeleccion": "UNICA",
+        "maxSelecciones": 1,
+        "tipoGrafica": "BARRAS",
+        "edadMinima": null,
+        "comentariosPermitidos": true,
+        "permiteCambioVoto": true,
+        "opciones": [
+          {
+            "nombre": "Messi",
+            "imagenUrl": null,
+            "ordenVisual": 1
+          },
+          {
+            "nombre": "Haaland",
+            "imagenUrl": null,
+            "ordenVisual": 2
+          },
+          {
+            "nombre": "Mbappé",
+            "imagenUrl": null,
+            "ordenVisual": 3
+          },
+          {
+            "nombre": "Harry Kane",
+            "imagenUrl": null,
+            "ordenVisual": 4
+          },
+          {
+            "nombre": "Bellingham",
+            "imagenUrl": null,
+            "ordenVisual": 5
+          },
+          {
+            "nombre": "Dembélé",
+            "imagenUrl": null,
+            "ordenVisual": 6
+          },
+          {
+            "nombre": "Quiñones",
+            "imagenUrl": null,
+            "ordenVisual": 7
+          },
+          {
+            "nombre": "CR7",
+            "imagenUrl": null,
+            "ordenVisual": 8
+          },
+          {
+            "nombre": "Olise",
+            "imagenUrl": null,
+            "ordenVisual": 9
+          },
+          {
+            "nombre": "Vinícius",
+            "imagenUrl": null,
+            "ordenVisual": 10
+          }
+        ]
+      }
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJqYWhpcmdvbWV6eXQzQGdtYWlsLmNvbSIsImlkVXN1YXJpbyI6MSwicm9sIjoiQURNSU5JU1RSQURPUiIsImlhdCI6MTc4NTM3NjUxMiwiZXhwIjoxNzg1NDYyOTEyfQ.p5NO_zaBe_HBgcLv8hA2gKxSkVxPIztQ8RBtzgTS3MQ0aiJWboVU9dQAjBjFEV3DYlGX8QUSysKin4teo6aG-w
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
