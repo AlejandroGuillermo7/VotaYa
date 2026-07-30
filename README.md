@@ -1,272 +1,376 @@
 <div align="center">
 
 # VotaYa
+<br><br><br>
 
 ### Sistema Web de Gestión y Control de Votaciones
+<br><br><br>
 
 **Materia:** Programación Web
+<br><br><br>
 
 **Integrantes:**
-- Enríquez Rodríguez Alejandro Guillermo
-- Gómez Roblero Ángel Jahir
+<br>
+Enríquez Rodríguez Alejandro Guillermo
+<br>
+Gómez Roblero Ángel Jahir
+
+<br><br><br>
+
+[Repositorio](https://github.com/AlejandroGuillermo7/VotaYa) ·
+[Proyecto desplegado](https://votaya.com.mx) ·
+[GitHub Projects](https://github.com/users/AlejandroGuillermo7/projects/1/views/1) ·
+[Prototipo en Figma](https://www.figma.com/design/cR3nfCHOgHstbR6BejilUn/Sin-t%C3%ADtulo?node-id=0-1&t=GAFbIwEOJnfqkMnD-0)
 
 </div>
 
-# Descripción del proyecto
+
+---
+
+## Índice
+
+- [Descripción del proyecto](#descripción-del-proyecto)
+- [Problemática que resuelve](#problemática-que-resuelve)
+- [Módulos principales](#módulos-principales)
+- [Roles del sistema](#roles-del-sistema)
+- [Tecnologías utilizadas](#tecnologías-utilizadas)
+- [Funciones principales](#funciones-principales)
+- [Base de datos](#base-de-datos)
+- [Instalación del proyecto](#instalación-del-proyecto)
+- [Credenciales de prueba](#credenciales-de-prueba)
+- [API](#api)
+- [Pruebas con Bruno](#pruebas-con-bruno)
+- [Despliegue](#despliegue)
+- [Enlaces](#enlaces)
+
+---
+
+## Descripción del proyecto
 
 **VotaYa** es una plataforma web que permite crear, administrar y participar en votaciones de forma segura, rápida y organizada.
 
-El sistema permite que cualquier usuario registrado pueda crear una votación, definir sus fechas de inicio y finalización, agregar opciones de voto y compartirla con otros participantes.
+Cualquier usuario registrado puede crear una votación, definir sus fechas de inicio y finalización, agregar opciones de voto y compartirla con otros participantes. Los usuarios emiten su voto una sola vez y consultan los resultados mediante gráficas. Dependiendo de la configuración de cada votación, el voto puede ser **anónimo** o **identificado**.
 
-Los usuarios pueden emitir su voto una sola vez y consultar los resultados mediante gráficas. Dependiendo de la configuración de cada votación, el voto puede ser anónimo o identificado.
+## Problemática que resuelve
 
-# Problemática que resuelve
+Actualmente, muchas votaciones se realizan mediante formularios o métodos manuales que no garantizan un control adecuado sobre los participantes, la confidencialidad del voto ni la autenticidad de los resultados.
 
-Actualmente, muchas votaciones se realizan mediante formularios o métodos manuales que no garantizan un control adecuado sobre los participantes, la confidencialidad del voto o la autenticidad de los resultados.
+VotaYa ofrece una solución donde las votaciones son más seguras y organizadas: evita votos duplicados, permite controlar quién puede participar, y muestra los resultados de forma clara mediante estadísticas y gráficas.
 
-VotaYa busca ofrecer una solución donde las votaciones sean más seguras y organizadas, evitando votos duplicados, permitiendo controlar quién puede participar y mostrando los resultados de manera clara mediante estadísticas y gráficas.
+## Módulos principales
 
-# Módulos principales
+| Módulo | Descripción |
+|---|---|
+| **Usuario** | Guarda los datos de las personas registradas y permite gestionar su cuenta, iniciar sesión, editar su perfil y recuperar su contraseña. |
+| **Votación** | Permite crear, editar, publicar y cerrar votaciones, además de configurar fechas, privacidad y reglas de participación. |
+| **Opción de votación** | Guarda las respuestas, candidatos o alternativas disponibles dentro de cada votación. |
+| **Voto** | Almacena la opción seleccionada por cada participante. Según la configuración, el voto puede ser anónimo o identificado. |
+| **Categoría** | Permite clasificar las votaciones según su tema (tecnología, educación, deportes, entretenimiento, etc.). |
 
-## Usuario
+## Roles del sistema
 
-Guarda los datos de las personas registradas y permite gestionar su cuenta, iniciar sesión, editar su perfil y recuperar su contraseña.
+| Rol | Permisos |
+|---|---|
+| **Administrador** | Gestiona los usuarios, las votaciones y el funcionamiento general de la plataforma. |
+| **Usuario registrado** | Crea y administra sus propias votaciones, edita su perfil, participa en otras votaciones y consulta resultados. |
+| **Visitante** | Participa en votaciones públicas cuando la configuración lo permite, pero no puede crear votaciones. |
 
-## Votación
+## Tecnologías utilizadas
 
-Permite crear, editar, publicar y cerrar votaciones, además de configurar fechas, privacidad y reglas de participación.
+**Backend:** Java · Spring Boot · Spring Security · JWT
+**Frontend:** React · Vite · HTML · CSS · JavaScript
+**Base de datos:** MySQL
+**Comunicación:** Twilio WhatsApp · Google OAuth
+**Herramientas:** Git · GitHub · Bruno
 
-## Opción de votación
+## Funciones principales
 
-Guarda las respuestas, candidatos o alternativas disponibles dentro de cada votación.
+- Registro de usuarios
+- Inicio de sesión con correo y contraseña
+- Inicio de sesión con Google
+- Autenticación mediante JWT
+- Edición de perfil
+- Recuperación de contraseña por WhatsApp
+- Creación y edición de votaciones
+- Configuración de fechas y reglas
+- Votaciones públicas y privadas
+- Votos anónimos o identificados
+- Selección única o múltiple
+- Visualización de resultados mediante gráficas
+- Administración de usuarios
+- Pruebas de la API con Bruno
 
-## Voto
+## Base de datos
 
-Almacena la opción seleccionada por cada participante. Dependiendo de la configuración, el voto puede ser anónimo o identificado.
+El proyecto utiliza **MySQL**, con tablas relacionadas entre sí para almacenar usuarios, categorías, votaciones, opciones, votos, participaciones, comentarios, invitaciones, tokens de recuperación y auditoría.
 
-## Categoría
+**Tablas principales:**
 
-Permite clasificar las votaciones según su tema, por ejemplo: tecnología, educación, deportes o entretenimiento.
+```
+usuario · categoria · votacion · opcion_votacion · voto
+voto_opcion · participacion · invitacion_votacion
+comentario · token_recuperacion · auditoria
+```
 
-# Roles del sistema
+# Diagrama Entidad-Relación
 
-## Administrador
+```mermaid
+erDiagram
 
-Gestiona los usuarios, las votaciones y el funcionamiento general de la plataforma.
+    USUARIO ||--o{ VOTACION : crea
+    CATEGORIA ||--o{ VOTACION : clasifica
+    VOTACION ||--|{ OPCION_VOTACION : contiene
 
-## Usuario registrado
+    USUARIO ||--o{ INVITACION_VOTACION : recibe
+    VOTACION ||--o{ INVITACION_VOTACION : genera
 
-Puede crear y administrar sus propias votaciones, editar su perfil, participar en otras votaciones y consultar resultados.
+    USUARIO ||--o{ PARTICIPACION : realiza
+    VOTACION ||--o{ PARTICIPACION : registra
 
-## Visitante
+    USUARIO ||--o{ VOTO : emite
+    VOTACION ||--o{ VOTO : recibe
 
-Puede participar en votaciones públicas cuando la configuración lo permita, pero no puede crear votaciones.
+    VOTO ||--o{ VOTO_OPCION : incluye
+    OPCION_VOTACION ||--o{ VOTO_OPCION : seleccionada
 
-# Tecnologías utilizadas
+    USUARIO ||--o{ COMENTARIO : escribe
+    VOTACION ||--o{ COMENTARIO : contiene
 
-- Java
-- Spring Boot
-- Spring Security
-- JWT
-- React
-- Vite
-- MySQL
-- HTML
-- CSS
-- JavaScript
-- Git
-- GitHub
-- Bruno
-- Twilio
-- Google OAuth
+    USUARIO ||--o{ TOKEN_RECUPERACION : solicita
+    USUARIO ||--o{ AUDITORIA : genera
 
-# Funciones principales
+    USUARIO {
+        BIGINT id_usuario PK
+        VARCHAR nombres
+        VARCHAR apellido_paterno
+        VARCHAR apellido_materno
+        DATE fecha_nacimiento
+        VARCHAR correo UK
+        VARCHAR telefono
+        VARCHAR password_hash
+        VARCHAR foto_url
+        ENUM rol
+        ENUM estado
+        BOOLEAN correo_verificado
+        DATETIME fecha_registro
+    }
 
-- Registro de usuarios.
-- Inicio de sesión con correo y contraseña.
-- Inicio de sesión con Google.
-- Autenticación mediante JWT.
-- Edición de perfil.
-- Recuperación de contraseña por WhatsApp.
-- Creación de votaciones.
-- Edición de votaciones.
-- Configuración de fechas y reglas.
-- Votaciones públicas y privadas.
-- Votos anónimos o identificados.
-- Selección única o múltiple.
-- Visualización de resultados mediante gráficas.
-- Administración de usuarios.
-- Pruebas de la API con Bruno.
+    CATEGORIA {
+        SMALLINT id_categoria PK
+        VARCHAR nombre UK
+        VARCHAR descripcion
+        DATETIME fecha_creacion
+    }
 
-# Base de datos
+    VOTACION {
+        BIGINT id_votacion PK
+        BIGINT id_creador FK
+        SMALLINT id_categoria FK
+        VARCHAR titulo
+        TEXT descripcion
+        VARCHAR imagen_portada_url
+        DATETIME fecha_inicio
+        DATETIME fecha_fin
+        ENUM estado
+        ENUM privacidad
+        ENUM tipo_voto
+        ENUM tipo_seleccion
+        TINYINT max_selecciones
+        ENUM tipo_grafica
+        TINYINT edad_minima
+        BOOLEAN comentarios_permitidos
+        BOOLEAN permite_cambio_voto
+        DATETIME fecha_creacion
+    }
 
-La base de datos utiliza MySQL y contiene tablas relacionadas para almacenar usuarios, categorías, votaciones, opciones, votos, participaciones, comentarios, invitaciones, tokens de recuperación y auditoría.
+    OPCION_VOTACION {
+        BIGINT id_opcion PK
+        BIGINT id_votacion FK
+        VARCHAR nombre
+        VARCHAR imagen_url
+        SMALLINT orden_visual
+    }
 
-Entre las tablas principales se encuentran:
+    INVITACION_VOTACION {
+        BIGINT id_invitacion PK
+        BIGINT id_votacion FK
+        BIGINT id_usuario FK
+        ENUM estado
+        DATETIME fecha_invitacion
+        DATETIME fecha_respuesta
+    }
 
-- usuario
-- categoria
-- votacion
-- opcion_votacion
-- voto
-- voto_opcion
-- participacion
-- invitacion_votacion
-- comentario
-- token_recuperacion
-- auditoria
+    PARTICIPACION {
+        BIGINT id_participacion PK
+        BIGINT id_votacion FK
+        BIGINT id_usuario FK
+        DATETIME fecha_registro
+        DATETIME fecha_voto
+    }
 
-# Instalación del proyecto
+    VOTO {
+        BIGINT id_voto PK
+        BIGINT id_votacion FK
+        BIGINT id_usuario FK
+        CHAR folio_publico UK
+        DATETIME fecha_emision
+        VARCHAR token_cambio_hash
+    }
 
-## Clonar el repositorio
+    VOTO_OPCION {
+        BIGINT id_voto PK, FK
+        BIGINT id_opcion PK, FK
+        BIGINT id_votacion FK
+    }
+
+    COMENTARIO {
+        BIGINT id_comentario PK
+        BIGINT id_votacion FK
+        BIGINT id_usuario FK
+        VARCHAR contenido
+        DATETIME fecha_creacion
+    }
+
+    TOKEN_RECUPERACION {
+        BIGINT id_token PK
+        BIGINT id_usuario FK
+        VARCHAR token_hash UK
+        DATETIME fecha_creacion
+        DATETIME fecha_expiracion
+        BOOLEAN utilizado
+    }
+
+    AUDITORIA {
+        BIGINT id_auditoria PK
+        BIGINT id_usuario FK
+        VARCHAR accion
+        VARCHAR entidad
+        BIGINT id_entidad
+        DATETIME fecha
+        TEXT detalles
+    }
+```
+
+## Instalación del proyecto
+
+### Clonar el repositorio
 
 ```bash
 git clone https://github.com/AlejandroGuillermo7/VotaYa.git
 ```
 
-## Backend
-
-Entrar a la carpeta del backend:
+### Backend
 
 ```bash
 cd votaya-backend
-```
-
-Ejecutar:
-
-```bash
 mvn clean spring-boot:run
 ```
 
 El backend se ejecuta en:
-
-```text
+```
 http://localhost:8080
 ```
 
-## Frontend
-
-Entrar a la carpeta del frontend:
+### Frontend
 
 ```bash
 cd votaya-frontend
-```
-
-Instalar dependencias:
-
-```bash
 npm install
-```
-
-Ejecutar:
-
-```bash
 npm run dev
 ```
 
-# Credenciales de prueba
+## Credenciales de prueba
 
-## Administrador
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Administrador | jahirgomezyt3@gmail.com | 12345678 |
+| Usuario | ale1111prepa7@gmail.com | 123456789 |
+| Usuario visitante| sofia@gmail.com | 123456789 |
 
-```text
-Correo: pendiente
-Contraseña: pendiente
+
+## API
+
+**URL base:**
 ```
-
-## Usuario
-
-```text
-Correo: pendiente
-Contraseña: pendiente
-```
-
-# API
-
-URL base de la API:
-
-```text
 https://votaya.com.mx/api
 ```
 
-Algunos endpoints principales son:
+**Endpoints principales:**
 
-```text
-POST /api/auth/registro
-POST /api/auth/login
-GET /api/usuarios/perfil
-PUT /api/usuarios/perfil
-POST /api/votaciones
-PUT /api/votaciones/{id}
-GET /api/votaciones
-GET /api/votaciones/{id}
-POST /api/recuperacion/solicitar
-POST /api/recuperacion/restablecer
-```
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/api/auth/registro` | Registro de usuario |
+| POST | `/api/auth/login` | Inicio de sesión |
+| GET | `/api/usuarios/perfil` | Consultar perfil |
+| PUT | `/api/usuarios/perfil` | Editar perfil |
+| POST | `/api/votaciones` | Crear votación |
+| PUT | `/api/votaciones/{id}` | Editar votación |
+| GET | `/api/votaciones` | Listar votaciones |
+| GET | `/api/votaciones/{id}` | Detalle de una votación |
+| POST | `/api/recuperacion/solicitar` | Solicitar recuperación de contraseña |
+| POST | `/api/recuperacion/restablecer` | Restablecer contraseña |
 
 Las rutas protegidas requieren un token JWT en el encabezado:
-
-```text
+```
 Authorization: Bearer TOKEN
 ```
 
-# Pruebas con Bruno
+## Pruebas con Bruno
 
-La API fue probada utilizando Bruno.
+La API fue probada utilizando **Bruno**, cubriendo:
 
-Las pruebas incluyen:
+- Registro e inicio de sesión
+- Obtención y uso del token JWT
+- Consulta y edición de perfil
+- Creación y edición de votaciones
+- Consulta de votaciones disponibles
+- Consulta del detalle de una votación
+- Emisión de votos
+- Consulta del historial de votos
+- Consulta de resultados de una votación
+- Consulta de categorías
+- Recuperación y restablecimiento de contraseña
+- Consulta de usuarios desde el panel administrador
+- Eliminación lógica y reactivación de usuarios
+- Administración de votaciones
+- Peticiones protegidas mediante JWT
+- Acceso a endpoints según el rol del usuario
+- Casos de error por datos inválidos
+- Casos de error por credenciales incorrectas
+- Casos de error por token ausente o inválido
+- Casos de acceso denegado
+- Casos de recurso no encontrado
 
-- Registro.
-- Inicio de sesión.
-- Obtención de token JWT.
-- Consulta de perfil.
-- Edición de perfil.
-- Creación de votación.
-- Edición de votación.
-- Peticiones protegidas.
-- Casos de error.
+La colección se encuentra en la carpeta [`bruno-votaya`](./bruno-votaya) de este repositorio.
 
-La colección de Bruno se encuentra dentro del repositorio en la carpeta:
+## Comunicación con el usuario
 
-```text
-bruno-votaya
-```
+El sistema utiliza **Twilio WhatsApp** para enviar códigos de recuperación de contraseña.
 
-# Despliegue
+Cuando un usuario solicita recuperar su cuenta, el backend genera un código temporal, lo asocia al usuario y lo envía al número de WhatsApp registrado en su perfil.
 
-El proyecto se encuentra desplegado en una VPS.
+También se utiliza **Google OAuth** para permitir el inicio de sesión mediante una cuenta de Google.
 
-Sitio web:
+## Despliegue
 
-```text
-https://votaya.com.mx
-```
+| | |
+|---|---|
+| **Sitio web** | https://votaya.com.mx |
+| **URL base de la API** | https://votaya.com.mx/api |
 
-URL base de la API:
+## Enlaces
 
-```text
-https://votaya.com.mx/api
-```
+| Recurso | Link |
+|---|---|
+| Repositorio de GitHub | https://github.com/AlejandroGuillermo7/VotaYa |
+| GitHub Projects | https://github.com/users/AlejandroGuillermo7/projects/1/views/1 |
+| Proyecto desplegado | https://votaya.com.mx |
+| Prototipo de Figma | https://www.figma.com/design/cR3nfCHOgHstbR6BejilUn/Sin-t%C3%ADtulo?node-id=0-1&t=GAFbIwEOJnfqkMnD-0 |
 
-# Integrantes
+---
 
-Enríquez Rodríguez Alejandro Guillermo
+<div align="center">
 
-Gómez Roblero Ángel Jahir
+**Gómez Roblero Ángel Jahir** . **Enríquez Rodríguez Alejandro Guillermo**  
 
-# Enlaces
-
-## Repositorio de GitHub
-
-https://github.com/AlejandroGuillermo7/VotaYa
-
-## GitHub Projects
-
-https://github.com/users/AlejandroGuillermo7/projects/1/views/1
-
-## Proyecto desplegado
-
-https://votaya.com.mx
-
-## Prototipo de Figma
-
-https://www.figma.com/design/cR3nfCHOgHstbR6BejilUn/Sin-t%C3%ADtulo?node-id=0-1&t=GAFbIwEOJnfqkMnD-0
+</div>
