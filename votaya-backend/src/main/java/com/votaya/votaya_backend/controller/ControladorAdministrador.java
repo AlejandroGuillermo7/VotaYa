@@ -23,44 +23,44 @@ import lombok.RequiredArgsConstructor;
 @PreAuthorize("hasRole('ADMINISTRADOR')")
 public class ControladorAdministrador {
 
-    private final ServicioUsuario servicioUsuario;
-    private final ServicioVotacion servicioVotacion;
+        private final ServicioUsuario servicioUsuario;
+        private final ServicioVotacion servicioVotacion;
 
-    @GetMapping("/usuarios")
-    public ResponseEntity<List<UsuarioDTO.Respuesta>> listarUsuarios() {
+        @GetMapping("/usuarios")
+        public ResponseEntity<List<UsuarioDTO.Respuesta>> listarUsuarios() {
 
-        return ResponseEntity.ok(
-                servicioUsuario.listarTodos());
-    }
+                return ResponseEntity.ok(
+                                servicioUsuario.listarTodos());
+        }
 
-    @DeleteMapping("/usuarios/{idUsuario}")
-    public ResponseEntity<Void> eliminarUsuario(
-            @PathVariable Long idUsuario) {
-        servicioUsuario.eliminarLogicamente(
-                idUsuario);
+        @DeleteMapping("/usuarios/{idUsuario}")
+        public ResponseEntity<Void> eliminarUsuario(
+                        @PathVariable Long idUsuario) {
+                servicioUsuario.eliminarLogicamente(
+                                idUsuario);
 
-        return ResponseEntity
-                .noContent()
-                .build();
-    }
+                return ResponseEntity
+                                .noContent()
+                                .build();
+        }
 
-    @GetMapping("/votaciones")
-    public ResponseEntity<List<VotacionDTO.Respuesta>> listarVotaciones() {
+        @GetMapping("/votaciones")
+        public ResponseEntity<List<VotacionDTO.Respuesta>> listarVotaciones() {
 
-        return ResponseEntity.ok(
+                return ResponseEntity.ok(
+                                servicioVotacion
+                                                .listarTodasAdministrador());
+        }
+
+        @DeleteMapping("/votaciones/{idVotacion}")
+        public ResponseEntity<Void> eliminarVotacion(
+                        @PathVariable Long idVotacion) {
                 servicioVotacion
-                        .listarTodasAdministrador());
-    }
+                                .eliminarComoAdministrador(
+                                                idVotacion);
 
-    @DeleteMapping("/votaciones/{idVotacion}")
-    public ResponseEntity<Void> eliminarVotacion(
-            @PathVariable Long idVotacion) {
-        servicioVotacion
-                .eliminarComoAdministrador(
-                        idVotacion);
-
-        return ResponseEntity
-                .noContent()
-                .build();
-    }
+                return ResponseEntity
+                                .noContent()
+                                .build();
+        }
 }

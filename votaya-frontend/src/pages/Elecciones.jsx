@@ -135,6 +135,7 @@ function GraficaVertical({
     </div>
   );
 }
+
 function GraficaHorizontal({
   opciones,
   alSeleccionar,
@@ -165,9 +166,7 @@ function GraficaHorizontal({
             className={[
               "grafica-disponible-horizontal__fila",
               "grafica-opcion-horizontal",
-              estaSeleccionada
-                ? "grafica-opcion-horizontal--seleccionada"
-                : "",
+              estaSeleccionada ? "grafica-opcion-horizontal--seleccionada" : "",
             ]
               .filter(Boolean)
               .join(" ")}
@@ -348,7 +347,7 @@ function TarjetaEleccionDisponible({
     if (opciones.length === 0) {
       return (
         <div className="tarjeta-eleccion__sin-opciones">
-          Esta elección no tiene opciones disponibles.
+          Esta votación no tiene opciones disponibles.
         </div>
       );
     }
@@ -391,8 +390,7 @@ function TarjetaEleccionDisponible({
     }
 
     const opcionSeleccionada = opciones.find(
-      (opcion) =>
-        Number(opcion.idOpcion) === Number(idOpcionSeleccionada),
+      (opcion) => Number(opcion.idOpcion) === Number(idOpcionSeleccionada),
     );
 
     if (opcionSeleccionada) {
@@ -502,8 +500,7 @@ function Elecciones({ alCerrarSesion }) {
         peticionApi("/votos/mios"),
       ]);
 
-      const listaVotacionesDisponibles =
-        normalizarLista(votacionesDisponibles);
+      const listaVotacionesDisponibles = normalizarLista(votacionesDisponibles);
 
       const votacionesConResultados = await Promise.all(
         listaVotacionesDisponibles.map(async (votacion) => {
@@ -559,8 +556,7 @@ function Elecciones({ alCerrarSesion }) {
         const idOpcionGuardada = localStorage.getItem(clave);
 
         if (idOpcionGuardada) {
-          seleccionesGuardadas[idVotacion] =
-            Number(idOpcionGuardada);
+          seleccionesGuardadas[idVotacion] = Number(idOpcionGuardada);
         }
       });
 
@@ -593,14 +589,10 @@ function Elecciones({ alCerrarSesion }) {
   }
 
   const idsVotacionesParticipadas = useMemo(() => {
-    const lista = Array.isArray(participaciones)
-      ? participaciones
-      : [];
+    const lista = Array.isArray(participaciones) ? participaciones : [];
 
     return new Set(
-      lista.map((participacion) =>
-        Number(participacion.idVotacion),
-      ),
+      lista.map((participacion) => Number(participacion.idVotacion)),
     );
   }, [participaciones]);
 
@@ -689,8 +681,7 @@ function Elecciones({ alCerrarSesion }) {
     const idVotacion = Number(votacion.idVotacion);
     const idOpcion = Number(opcion.idOpcion);
 
-    const yaVoto =
-      idsVotacionesParticipadas.has(idVotacion);
+    const yaVoto = idsVotacionesParticipadas.has(idVotacion);
 
     if (idVotacionGuardando !== null) {
       return;
@@ -698,14 +689,11 @@ function Elecciones({ alCerrarSesion }) {
 
     if (yaVoto && !votacion.permiteCambioVoto) {
       setMensaje("");
-      setError(
-        "Ya participaste y esta elección no permite cambiar el voto.",
-      );
+      setError("Ya participaste y esta elección no permite cambiar el voto.");
       return;
     }
 
-    const opcionAnterior =
-      opcionesSeleccionadas[idVotacion] ?? null;
+    const opcionAnterior = opcionesSeleccionadas[idVotacion] ?? null;
 
     const claveOpcion = obtenerClaveOpcionSeleccionada(
       perfil.idUsuario,
@@ -737,8 +725,7 @@ function Elecciones({ alCerrarSesion }) {
             idVotacion,
           );
 
-          const tokenCambio =
-            localStorage.getItem(claveToken);
+          const tokenCambio = localStorage.getItem(claveToken);
 
           if (!tokenCambio) {
             throw new Error(
@@ -749,29 +736,20 @@ function Elecciones({ alCerrarSesion }) {
           cuerpo.tokenCambio = tokenCambio;
         }
 
-        await peticionApi(
-          `/votaciones/${idVotacion}/votos/mi-voto`,
-          {
-            method: "PUT",
-            body: JSON.stringify(cuerpo),
-          },
-        );
+        await peticionApi(`/votaciones/${idVotacion}/votos/mi-voto`, {
+          method: "PUT",
+          body: JSON.stringify(cuerpo),
+        });
 
-        setMensaje(
-          `Tu voto fue cambiado a "${opcion.nombre}".`,
-        );
+        setMensaje(`Tu voto fue cambiado a "${opcion.nombre}".`);
       } else {
-        const respuesta = await peticionApi(
-          `/votaciones/${idVotacion}/votos`,
-          {
-            method: "POST",
-            body: JSON.stringify(cuerpo),
-          },
-        );
+        const respuesta = await peticionApi(`/votaciones/${idVotacion}/votos`, {
+          method: "POST",
+          body: JSON.stringify(cuerpo),
+        });
 
         if (votacion.tipoVoto === "ANONIMO") {
-          const tokenCambio =
-            extraerTokenCambio(respuesta);
+          const tokenCambio = extraerTokenCambio(respuesta);
 
           if (tokenCambio) {
             const claveToken = obtenerClaveTokenCambio(
@@ -779,10 +757,7 @@ function Elecciones({ alCerrarSesion }) {
               idVotacion,
             );
 
-            localStorage.setItem(
-              claveToken,
-              String(tokenCambio),
-            );
+            localStorage.setItem(claveToken, String(tokenCambio));
           } else if (votacion.permiteCambioVoto) {
             console.warn(
               "El backend registró el voto anónimo, pero no devolvió tokenCambio.",
@@ -791,14 +766,10 @@ function Elecciones({ alCerrarSesion }) {
         }
 
         setParticipaciones((anteriores) => {
-          const lista = Array.isArray(anteriores)
-            ? anteriores
-            : [];
+          const lista = Array.isArray(anteriores) ? anteriores : [];
 
           const existe = lista.some(
-            (participacion) =>
-              Number(participacion.idVotacion) ===
-              idVotacion,
+            (participacion) => Number(participacion.idVotacion) === idVotacion,
           );
 
           if (existe) {
@@ -819,10 +790,7 @@ function Elecciones({ alCerrarSesion }) {
         );
       }
 
-      localStorage.setItem(
-        claveOpcion,
-        String(idOpcion),
-      );
+      localStorage.setItem(claveOpcion, String(idOpcion));
 
       /*
        * Se recargan resultados y participaciones después de guardar.
@@ -847,16 +815,11 @@ function Elecciones({ alCerrarSesion }) {
       if (opcionAnterior === null) {
         localStorage.removeItem(claveOpcion);
       } else {
-        localStorage.setItem(
-          claveOpcion,
-          String(opcionAnterior),
-        );
+        localStorage.setItem(claveOpcion, String(opcionAnterior));
       }
 
       setMensaje("");
-      setError(
-        excepcion.message || "No se pudo guardar el voto.",
-      );
+      setError(excepcion.message || "No se pudo guardar el voto.");
     } finally {
       setIdVotacionGuardando(null);
     }
@@ -911,103 +874,110 @@ function Elecciones({ alCerrarSesion }) {
           <>
             {error && <div className="mensaje-elecciones-error">{error}</div>}
 
-        {mensaje && (
-          <div className="mensaje-elecciones-correcto">{mensaje}</div>
-        )}
+            {mensaje && (
+              <div className="mensaje-elecciones-correcto">{mensaje}</div>
+            )}
 
-        <section className="barra-filtros-elecciones">
-          <div className="barra-filtros-elecciones__icono">
-            <span>▽</span>
-          </div>
+            <section className="barra-filtros-elecciones">
+              <div className="barra-filtros-elecciones__icono">
+                <span>▽</span>
+              </div>
 
-          <div className="barra-filtros-elecciones__titulo">Filtrar por</div>
+              <div className="barra-filtros-elecciones__titulo">
+                Filtrar por
+              </div>
 
-          <select
-            value={orden}
-            onChange={(evento) => setOrden(evento.target.value)}
-          >
-            <option value="MAS_VOTADAS">Más votados</option>
+              <select
+                value={orden}
+                onChange={(evento) => setOrden(evento.target.value)}
+              >
+                <option value="MAS_VOTADAS">Más votados</option>
 
-            <option value="RECIENTES">Más recientes</option>
+                <option value="RECIENTES">Más recientes</option>
 
-            <option value="CIERRAN_PRONTO">Cierran pronto</option>
-          </select>
+                <option value="CIERRAN_PRONTO">Cierran pronto</option>
+              </select>
 
-          <select
-            value={categoriaSeleccionada}
-            onChange={(evento) => setCategoriaSeleccionada(evento.target.value)}
-          >
-            <option value="TODAS">Categoría</option>
-
-            {categorias.map((categoria) => (
-              <option key={categoria.idCategoria} value={categoria.idCategoria}>
-                {categoria.nombre}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={fechaSeleccionada}
-            onChange={(evento) => setFechaSeleccionada(evento.target.value)}
-          >
-            <option value="TODAS">Fecha</option>
-
-            <option value="HOY">Terminan hoy</option>
-
-            <option value="7_DIAS">Próximos 7 días</option>
-
-            <option value="30_DIAS">Próximos 30 días</option>
-          </select>
-
-          <button
-            type="button"
-            className="barra-filtros-elecciones__limpiar"
-            onClick={limpiarFiltros}
-          >
-            ↻ Limpiar filtros
-          </button>
-
-          <button
-            type="button"
-            className="barra-filtros-elecciones__crear"
-            onClick={() => {
-              window.location.href = "/crear-votacion";
-            }}
-          >
-            Crear mi elección
-          </button>
-        </section>
-
-        <section className="rejilla-elecciones">
-          {votacionesFiltradas.map((votacion) => {
-            const idVotacion = Number(votacion.idVotacion);
-
-            return (
-              <TarjetaEleccionDisponible
-                key={idVotacion}
-                votacion={votacion}
-                yaVoto={idsVotacionesParticipadas.has(idVotacion)}
-                votando={idVotacionGuardando === idVotacion}
-                bloqueado={idVotacionGuardando !== null}
-                idOpcionSeleccionada={
-                  opcionesSeleccionadas[idVotacion] ?? null
+              <select
+                value={categoriaSeleccionada}
+                onChange={(evento) =>
+                  setCategoriaSeleccionada(evento.target.value)
                 }
-                alSeleccionarOpcion={registrarVoto}
-              />
-            );
-          })}
+              >
+                <option value="TODAS">Categoría</option>
 
-          {votacionesFiltradas.length === 0 && (
-            <div className="elecciones-sin-resultados">
-              <h2>No hay elecciones disponibles</h2>
+                {categorias.map((categoria) => (
+                  <option
+                    key={categoria.idCategoria}
+                    value={categoria.idCategoria}
+                  >
+                    {categoria.nombre}
+                  </option>
+                ))}
+              </select>
 
-              <p>
-                No se encontraron elecciones activas con los filtros
-                seleccionados.
-              </p>
-            </div>
-          )}
-        </section>
+              <select
+                value={fechaSeleccionada}
+                onChange={(evento) => setFechaSeleccionada(evento.target.value)}
+              >
+                <option value="TODAS">Fecha</option>
+
+                <option value="HOY">Terminan hoy</option>
+
+                <option value="7_DIAS">Próximos 7 días</option>
+
+                <option value="30_DIAS">Próximos 30 días</option>
+              </select>
+
+              <button
+                type="button"
+                className="barra-filtros-elecciones__limpiar"
+                onClick={limpiarFiltros}
+              >
+                ↻ Limpiar filtros
+              </button>
+
+              <button
+                type="button"
+                className="barra-filtros-elecciones__crear"
+                onClick={() => {
+                  window.location.href = "/crear-votacion";
+                }}
+              >
+                Crear mi elección
+              </button>
+            </section>
+
+            <section className="rejilla-elecciones">
+              {votacionesFiltradas.map((votacion) => {
+                const idVotacion = Number(votacion.idVotacion);
+
+                return (
+                  <TarjetaEleccionDisponible
+                    key={idVotacion}
+                    votacion={votacion}
+                    yaVoto={idsVotacionesParticipadas.has(idVotacion)}
+                    votando={idVotacionGuardando === idVotacion}
+                    bloqueado={idVotacionGuardando !== null}
+                    idOpcionSeleccionada={
+                      opcionesSeleccionadas[idVotacion] ?? null
+                    }
+                    alSeleccionarOpcion={registrarVoto}
+                  />
+                );
+              })}
+
+              {votacionesFiltradas.length === 0 && (
+                <div className="elecciones-sin-resultados">
+                  <h2>No hay elecciones disponibles</h2>
+
+                  <p>
+                    No se encontraron elecciones activas con los filtros
+                    seleccionados.
+                  </p>
+                </div>
+              )}
+            </section>
           </>
         )}
       </main>
