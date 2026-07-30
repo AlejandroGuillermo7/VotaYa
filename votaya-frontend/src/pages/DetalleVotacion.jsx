@@ -48,9 +48,7 @@ function convertirFecha(fecha) {
   if (!fecha) {
     return null;
   }
-
   const convertida = new Date(fecha);
-
   return Number.isNaN(convertida.getTime()) ? null : convertida;
 }
 

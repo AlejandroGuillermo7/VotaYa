@@ -705,10 +705,7 @@ function Elecciones({ alCerrarSesion }) {
       setMensaje("");
       setIdVotacionGuardando(idVotacion);
 
-      /*
-       * Se pinta de azul inmediatamente.
-       * Si el backend rechaza el voto, se restaura la opción anterior.
-       */
+    
       setOpcionesSeleccionadas((anteriores) => ({
         ...anteriores,
         [idVotacion]: idOpcion,
@@ -792,10 +789,7 @@ function Elecciones({ alCerrarSesion }) {
 
       localStorage.setItem(claveOpcion, String(idOpcion));
 
-      /*
-       * Se recargan resultados y participaciones después de guardar.
-       * La selección permanece porque ya quedó en localStorage.
-       */
+    
       await cargarDatos(false);
     } catch (excepcion) {
       setOpcionesSeleccionadas((anteriores) => {
@@ -892,9 +886,7 @@ function Elecciones({ alCerrarSesion }) {
                 onChange={(evento) => setOrden(evento.target.value)}
               >
                 <option value="MAS_VOTADAS">Más votados</option>
-
                 <option value="RECIENTES">Más recientes</option>
-
                 <option value="CIERRAN_PRONTO">Cierran pronto</option>
               </select>
 
